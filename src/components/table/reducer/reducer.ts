@@ -10,7 +10,6 @@ export const initialState: State = {
     })),
 };
 
-// Редюсер
 export const reducer = (state: State, action: Action): State => {
     switch (action.type) {
         case "EDIT_CELL":
