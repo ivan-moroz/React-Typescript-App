@@ -1,4 +1,4 @@
 
-export default function TodoPage() {
-    return <h1>React Typescript application</h1>;
+export default function HomePage() {
+    return <h1>React TypeScript application</h1>;
 }

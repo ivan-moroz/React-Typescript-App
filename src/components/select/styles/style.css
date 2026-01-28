@@ -1,0 +1,40 @@
+.select {
+    position: relative;
+    width: 200px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.select:focus {
+    outline: 2px solid #4caf50;
+}
+
+.select-value {
+    user-select: none;
+}
+
+.select-options {
+    position: absolute;
+    width: 100%;
+    top: 100%;
+    left: 0;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid #ccc;
+    background: white;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 10;
+}
+
+.option {
+    padding: 8px;
+}
+
+.option:hover,
+.option.highlighted {
+    background: #f0f0f0;
+}

@@ -21,6 +21,14 @@ export default function Navigation() {
             >
                 ToDo
             </NavLink>
+            <NavLink
+                to="/select"
+                style={({ isActive }) => ({
+                    fontWeight: isActive ? 'bold' : 'normal'
+                })}
+            >
+                Select
+            </NavLink>
         </nav>
     );
 }

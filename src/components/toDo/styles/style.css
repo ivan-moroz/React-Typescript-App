@@ -1,23 +1,6 @@
-/* ===== Reset ===== */
-* {
-    box-sizing: border-box;
-}
 
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f4f6f8;
-}
 
 /* ===== App ===== */
-.app {
-    max-width: 420px;
-    margin: 50px auto;
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
 .app h1 {
     text-align: center;
     margin-bottom: 20px;
