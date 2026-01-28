@@ -1,10 +1,10 @@
-import { State, Action } from '../types/todo';
+import { State, Action } from '../types/types';
 
 export const initialState: State = {
     todos: []
 };
 
-export function todoReducer(state: State, action: Action): State {
+export function reducer(state: State, action: Action): State {
     switch (action.type) {
         case 'ADD_TODO':
             return {

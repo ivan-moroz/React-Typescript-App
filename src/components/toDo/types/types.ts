@@ -1,11 +1,11 @@
-export type Todo = {
+export type Types = {
     id: number;
     text: string;
     completed: boolean;
 };
 
 export type State = {
-    todos: Todo[];
+    todos: Types[];
 };
 
 export type Action =

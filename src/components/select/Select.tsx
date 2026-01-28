@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import './styles/style.css';
-import {Props} from './types/select';
+import './styles/styles.css';
+import {Props} from './types/types';
 
 
 export default function CustomSelect({ options, value, onChange }: Props) {

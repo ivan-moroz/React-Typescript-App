@@ -1,7 +1,7 @@
-import { Todo } from '../types/todo';
+import { Types } from '../types/types';
 
 type Props = {
-    todo: Todo;
+    todo: Types;
     onToggle: (id: number) => void;
     onRemove: (id: number) => void;
 };

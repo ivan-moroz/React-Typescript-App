@@ -29,6 +29,14 @@ export default function Navigation() {
             >
                 Select
             </NavLink>
+            <NavLink
+                to="/table"
+                style={({ isActive }) => ({
+                    fontWeight: isActive ? 'bold' : 'normal'
+                })}
+            >
+                Table
+            </NavLink>
         </nav>
     );
 }

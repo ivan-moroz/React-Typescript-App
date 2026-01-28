@@ -8,6 +8,7 @@ import './styles/App.css';
 const Home = lazy(() => import('./pages/Home'));
 const TodoPage = lazy(() => import('./pages/TodoPage'));
 const SelectPage = lazy(() => import('./pages/Select'));
+const TablePage = lazy(() => import('./pages/Table'));
 
 export default function App() {
     return (
@@ -19,6 +20,7 @@ export default function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/todo" element={<TodoPage />} />
                     <Route path="/select" element={<SelectPage />} />
+                    <Route path="/table" element={<TablePage />} />
                 </Routes>
             </div>
         </BrowserRouter>

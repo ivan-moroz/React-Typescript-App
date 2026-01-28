@@ -1,10 +1,10 @@
 import React, { useReducer, useState } from 'react';
-import { todoReducer, initialState } from './reducer/todoReducer';
+import { reducer, initialState } from './reducer/reducer';
 import { TodoItem } from './components/TodoItem';
-import './styles/style.css';
+import './styles/styles.css';
 
 export default function App() {
-    const [state, dispatch] = useReducer(todoReducer, initialState);
+    const [state, dispatch] = useReducer(reducer, initialState);
     const [input, setInput] = useState('');
 
     const addTodo = (): void => {
