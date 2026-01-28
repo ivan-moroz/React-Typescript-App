@@ -19,8 +19,10 @@ const EditableTable: React.FC = () => {
 
     return (
         <div>
-            <button onClick={handleAddRow}>Add Row</button>
-            <button onClick={handleAddColumn}>Add Column</button>
+            <div className='input-group'>
+                <button onClick={handleAddRow}>Add Row</button>
+                <button onClick={handleAddColumn}>Add Column</button>
+            </div>
             <table border={1} style={{ marginTop: "10px", borderCollapse: "collapse" }}>
                 <thead>
                 <tr>

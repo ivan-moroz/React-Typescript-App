@@ -3,32 +3,6 @@
     margin-bottom: 20px;
 }
 
-.input-group {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.input-group input {
-    flex: 1;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.input-group button {
-    padding: 8px 14px;
-    border: none;
-    background: #4caf50;
-    color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.input-group button:hover {
-    background: #43a047;
-}
-
 .todo-list {
     list-style: none;
     padding: 0;
