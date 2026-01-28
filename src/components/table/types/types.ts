@@ -5,6 +5,7 @@ export type User = {
 
 export type State = {
     users: User[];
+    addedColumns: string[]
 };
 
 export type Action =

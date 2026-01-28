@@ -8,6 +8,7 @@ export const initialState: State = {
         age: 20 + i,
         city: `City ${i + 1}`,
     })),
+    addedColumns:[]
 };
 
 export const reducer = (state: State, action: Action): State => {
@@ -27,14 +28,18 @@ export const reducer = (state: State, action: Action): State => {
                 name: `User ${state.users.length + 1}`,
                 email: "",
                 age: "",
-                city: "",
+                city: ""
             };
+            state.addedColumns.forEach((col) => {
+                newRow[col] = ""
+            })
             return { ...state, users: [...state.users, newRow] };
         case "ADD_COLUMN":
             const newColumnName = `column${Object.keys(state.users[0]).length}`;
             return {
                 ...state,
                 users: state.users.map((user) => ({ ...user, [newColumnName]: "" })),
+                addedColumns: [...state.addedColumns, newColumnName]
             };
         default:
             return state;
