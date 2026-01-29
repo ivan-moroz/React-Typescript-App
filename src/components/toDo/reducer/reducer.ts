@@ -1,7 +1,13 @@
 import { State, Action } from '../types/types';
 
 export const initialState: State = {
-    todos: []
+    todos: [
+        {
+            id: Date.now(),
+            text: 'Learn React + TypeScript',
+            completed: false
+        }
+    ]
 };
 
 export function reducer(state: State, action: Action): State {
