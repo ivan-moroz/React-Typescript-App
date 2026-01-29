@@ -37,6 +37,14 @@ export default function Navigation() {
             >
                 Table
             </NavLink>
+            <NavLink
+                to="/calculator"
+                style={({ isActive }) => ({
+                    fontWeight: isActive ? 'bold' : 'normal'
+                })}
+            >
+                Calculator
+            </NavLink>
         </nav>
     );
 }

@@ -1,6 +1,6 @@
 import Table from '../components/table/Table'
 
-export default function HomePage() {
+export default function TablePage() {
     return (
         <div className="app wide">
             <Table />

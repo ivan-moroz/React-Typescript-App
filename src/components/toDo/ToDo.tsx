@@ -3,7 +3,7 @@ import { reducer, initialState } from './reducer/reducer';
 import { TodoItem } from './components/TodoItem';
 import './styles/styles.css';
 
-export default function App() {
+export default function ToDo() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [input, setInput] = useState('');
 
