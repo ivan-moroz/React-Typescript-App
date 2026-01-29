@@ -4,6 +4,12 @@ export type Types = {
     completed: boolean;
 };
 
+export type Props = {
+    todo: Types;
+    onToggle: (id: number) => void;
+    onRemove: (id: number) => void;
+};
+
 export type State = {
     todos: Types[];
 };
