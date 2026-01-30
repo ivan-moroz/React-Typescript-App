@@ -2,7 +2,7 @@ import React, { useReducer } from "react";
 
 import {reducer, initialState} from "./reducer/reducer";
 
-const EditableTable: React.FC = () => {
+function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const handleEdit = (id: number, column: string, value: string) => {

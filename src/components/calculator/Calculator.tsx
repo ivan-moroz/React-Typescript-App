@@ -5,7 +5,7 @@ import { reducer, initialState } from './reducer/reducer';
 import { ActionType } from './types/types';
 import './styles/styles.css';
 
-const Calculator: React.FC = () => {
+function Calculator() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const handleNumberClick = (number: string) => {
