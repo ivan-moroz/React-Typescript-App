@@ -2,6 +2,7 @@ nav {
     display: flex;
     padding: 20px 10px;
     gap: 40px;
+    flex-wrap: wrap;
 }
 
 nav a {
