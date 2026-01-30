@@ -19,9 +19,8 @@ export default function ToDo() {
     };
 
     return (
-        <div className="app">
+        <>
             <h1>ToDo List</h1>
-
             <form className="input-group" onSubmit={handleSubmit}>
                 <input
                     value={input}
@@ -45,7 +44,7 @@ export default function ToDo() {
                     />
                 ))}
             </ul>
-        </div>
+        </>
     );
 }
 

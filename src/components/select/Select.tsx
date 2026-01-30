@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.css';
 import {Props} from './types/types';
 
@@ -57,42 +57,45 @@ export default function CustomSelect({ options, value, onChange }: Props) {
     };
 
     return (
-        <div
-            ref={containerRef}
-            tabIndex={0}
-            className="select"
-            onKeyDown={handleKeyDown}
-            aria-haspopup="listbox"
-            aria-expanded={isOpen}
-        >
+        <>
+            <h1>Select</h1>
             <div
-                className="select-value"
-                onClick={() => setIsOpen(prev => !prev)}
+                ref={containerRef}
+                tabIndex={0}
+                className="select"
+                onKeyDown={handleKeyDown}
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
             >
-                {selectedOption?.label ?? 'Select option'}
-            </div>
+                <div
+                    className="select-value"
+                    onClick={() => setIsOpen(prev => !prev)}
+                >
+                    {selectedOption?.label ?? 'Select option'}
+                </div>
 
-            {isOpen && (
-                <ul className="select-options" role="listbox">
-                    {options.map((option, index) => (
-                        <li
-                            key={option.value}
-                            role="option"
-                            aria-selected={option.value === value}
-                            className={`option ${
-                                index === highlightedIndex ? 'highlighted' : ''
-                            }`}
-                            onMouseEnter={() => setHighlightedIndex(index)}
-                            onClick={() => {
-                                onChange(option.value);
-                                setIsOpen(false);
-                            }}
-                        >
-                            {option.label}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
+                {isOpen && (
+                    <ul className="select-options" role="listbox">
+                        {options.map((option, index) => (
+                            <li
+                                key={option.value}
+                                role="option"
+                                aria-selected={option.value === value}
+                                className={`option ${
+                                    index === highlightedIndex ? 'highlighted' : ''
+                                }`}
+                                onMouseEnter={() => setHighlightedIndex(index)}
+                                onClick={() => {
+                                    onChange(option.value);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                {option.label}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </>
     );
 }
