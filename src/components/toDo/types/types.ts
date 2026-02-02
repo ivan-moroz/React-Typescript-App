@@ -14,7 +14,13 @@ export type State = {
     todos: Types[];
 };
 
+export enum ActionType {
+    ADD_TODO = 'ADD_TODO',
+    TOGGLE_TODO = 'TOGGLE_TODO',
+    REMOVE_TODO = 'REMOVE_TODO'
+}
+
 export type Action =
-    | { type: 'ADD_TODO'; payload: string }
-    | { type: 'TOGGLE_TODO'; payload: number }
-    | { type: 'REMOVE_TODO'; payload: number };
+    | { type: ActionType.ADD_TODO; payload: string }
+    | { type: ActionType.TOGGLE_TODO; payload: number }
+    | { type: ActionType.REMOVE_TODO; payload: number };

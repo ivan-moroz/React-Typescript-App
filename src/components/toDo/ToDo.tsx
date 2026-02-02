@@ -2,6 +2,7 @@ import React, { useReducer, useState } from 'react';
 import { reducer, initialState } from './reducer/reducer';
 import { TodoItem } from './components/TodoItem';
 import './styles/styles.css';
+import {ActionType} from "./types/types";
 
 export default function ToDo() {
     const [state, dispatch] = useReducer(reducer, initialState);
@@ -9,7 +10,7 @@ export default function ToDo() {
 
     const addTodo = (): void => {
         if (!input.trim()) return;
-        dispatch({ type: 'ADD_TODO', payload: input });
+        dispatch({ type: ActionType.ADD_TODO, payload: input });
         setInput('');
     };
 
@@ -36,10 +37,10 @@ export default function ToDo() {
                         key={todo.id}
                         todo={todo}
                         onToggle={id =>
-                            dispatch({ type: 'TOGGLE_TODO', payload: id })
+                            dispatch({ type: ActionType.TOGGLE_TODO, payload: id })
                         }
                         onRemove={id =>
-                            dispatch({ type: 'REMOVE_TODO', payload: id })
+                            dispatch({ type: ActionType.REMOVE_TODO, payload: id })
                         }
                     />
                 ))}

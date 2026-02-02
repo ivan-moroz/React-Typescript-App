@@ -1,4 +1,4 @@
-import { State, Action } from '../types/types';
+import {State, Action, ActionType} from '../types/types';
 
 export const initialState: State = {
     todos: [
@@ -12,7 +12,7 @@ export const initialState: State = {
 
 export function reducer(state: State, action: Action): State {
     switch (action.type) {
-        case 'ADD_TODO':
+        case ActionType.ADD_TODO:
             return {
                 todos: [
                     ...state.todos,
@@ -24,7 +24,7 @@ export function reducer(state: State, action: Action): State {
                 ]
             };
 
-        case 'TOGGLE_TODO':
+        case ActionType.TOGGLE_TODO:
             return {
                 todos: state.todos.map(todo =>
                     todo.id === action.payload
@@ -33,7 +33,7 @@ export function reducer(state: State, action: Action): State {
                 )
             };
 
-        case 'REMOVE_TODO':
+        case ActionType.REMOVE_TODO:
             return {
                 todos: state.todos.filter(todo => todo.id !== action.payload)
             };
