@@ -8,7 +8,13 @@ export type State = {
     addedColumns: string[]
 };
 
+export enum ActionType {
+    EDIT_CELL = 'EDIT_CELL',
+    ADD_ROW = 'ADD_ROW',
+    ADD_COLUMN = 'ADD_COLUMN'
+}
+
 export type Action =
-    | { type: "EDIT_CELL"; payload: { id: number; column: string; value: string } }
-    | { type: "ADD_ROW" }
-    | { type: "ADD_COLUMN" };
+    | { type: ActionType.EDIT_CELL; payload: { id: number; column: string; value: string } }
+    | { type: ActionType.ADD_ROW }
+    | { type: ActionType.ADD_COLUMN };

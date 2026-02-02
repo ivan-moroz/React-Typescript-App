@@ -1,20 +1,21 @@
-import React, { useReducer } from "react";
+import React, {useReducer} from "react";
 
-import {reducer, initialState} from "./reducer/reducer";
+import {initialState, reducer} from "./reducer/reducer";
+import {ActionType} from "./types/types";
 
 function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const handleEdit = (id: number, column: string, value: string) => {
-        dispatch({ type: "EDIT_CELL", payload: { id, column, value } });
+        dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
     };
 
     const handleAddRow = () => {
-        dispatch({ type: "ADD_ROW" });
+        dispatch({ type: ActionType.ADD_ROW });
     };
 
     const handleAddColumn = () => {
-        dispatch({ type: "ADD_COLUMN" });
+        dispatch({ type: ActionType.ADD_COLUMN });
     };
 
     return (

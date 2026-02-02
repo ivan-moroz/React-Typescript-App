@@ -1,4 +1,4 @@
-import {Action, State, User} from "../types/types";
+import {Action, State, User, ActionType} from "../types/types";
 
 export const initialState: State = {
     users: Array.from({ length: 5 }, (_, i) => ({
@@ -13,7 +13,7 @@ export const initialState: State = {
 
 export const reducer = (state: State, action: Action): State => {
     switch (action.type) {
-        case "EDIT_CELL":
+        case ActionType.EDIT_CELL:
             return {
                 ...state,
                 users: state.users.map((user) =>
@@ -22,7 +22,7 @@ export const reducer = (state: State, action: Action): State => {
                         : user
                 ),
             };
-        case "ADD_ROW":
+        case ActionType.ADD_ROW:
             const newRow: User = {
                 id: state.users.length + 1,
                 name: `User ${state.users.length + 1}`,
@@ -34,7 +34,7 @@ export const reducer = (state: State, action: Action): State => {
                 newRow[col] = ""
             })
             return { ...state, users: [...state.users, newRow] };
-        case "ADD_COLUMN":
+        case ActionType.ADD_COLUMN:
             const newColumnName = `column${Object.keys(state.users[0]).length}`;
             return {
                 ...state,
