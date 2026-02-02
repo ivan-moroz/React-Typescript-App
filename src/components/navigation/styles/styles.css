@@ -7,4 +7,9 @@ nav {
 
 nav a {
     text-decoration: none;
+    color: #007bff;
+}
+
+nav a:hover {
+    color: #0056b3;
 }

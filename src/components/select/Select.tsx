@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.css';
-import {Props} from './types/types';
+import {Option, Props} from './types/types';
 
 
 export default function CustomSelect({ options, value, onChange }: Props) {
@@ -76,7 +76,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
 
                 {isOpen && (
                     <ul className="select-options" role="listbox">
-                        {options.map((option, index) => (
+                        {options.map((option: Option, index: number) => (
                             <li
                                 key={option.value}
                                 role="option"
