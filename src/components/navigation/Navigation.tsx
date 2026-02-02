@@ -1,47 +1,42 @@
 import { NavLink } from 'react-router-dom';
 import './styles/styles.css';
+import {ActiveStyleProps} from "./types/types";
+
+const activeStyle = ({ isActive }: ActiveStyleProps) => ({
+    fontWeight: isActive ? 'bold' : 'normal'
+});
 
 export default function Navigation() {
     return (
         <nav>
             <NavLink
                 to="/"
-                style={({ isActive }) => ({
-                    fontWeight: isActive ? 'bold' : 'normal'
-                })}
+                style={activeStyle}
             >
                 Home
             </NavLink>
 
             <NavLink
                 to="/todo"
-                style={({ isActive }) => ({
-                    fontWeight: isActive ? 'bold' : 'normal'
-                })}
+                style={activeStyle}
             >
                 ToDo
             </NavLink>
             <NavLink
                 to="/select"
-                style={({ isActive }) => ({
-                    fontWeight: isActive ? 'bold' : 'normal'
-                })}
+                style={activeStyle}
             >
                 Select
             </NavLink>
             <NavLink
                 to="/table"
-                style={({ isActive }) => ({
-                    fontWeight: isActive ? 'bold' : 'normal'
-                })}
+                style={activeStyle}
             >
                 Table
             </NavLink>
             <NavLink
                 to="/calculator"
-                style={({ isActive }) => ({
-                    fontWeight: isActive ? 'bold' : 'normal'
-                })}
+                style={activeStyle}
             >
                 Calculator
             </NavLink>
