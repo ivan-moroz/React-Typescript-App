@@ -8,19 +8,19 @@ import './styles/styles.css';
 function Calculator() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    const handleNumberClick = (number: string) => {
+    const handleNumberClick = (number: string):void => {
         dispatch({ type: ActionType.ADD_NUMBER, payload: number });
     };
 
-    const handleOperationClick = (operation: string) => {
+    const handleOperationClick = (operation: string):void => {
         dispatch({ type: ActionType.SET_OPERATION, payload: operation });
     };
 
-    const handleCalculate = () => {
+    const handleCalculate = ():void => {
         dispatch({ type: ActionType.CALCULATE });
     };
 
-    const handleClear = () => {
+    const handleClear = ():void => {
         dispatch({ type: ActionType.CLEAR });
     };
 

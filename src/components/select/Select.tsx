@@ -13,7 +13,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
 
     /* ===== Close on outside click ===== */
     useEffect(() => {
-        const handler = (e: MouseEvent) => {
+        const handler = (e: MouseEvent):void => {
             if (!containerRef.current?.contains(e.target as Node)) {
                 setIsOpen(false);
             }
@@ -24,7 +24,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
     }, []);
 
     /* ===== Keyboard support ===== */
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>):void => {
         if (!isOpen && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             setIsOpen(true);

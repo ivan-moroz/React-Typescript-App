@@ -6,15 +6,15 @@ import {ActionType} from "./types/types";
 function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    const handleEdit = (id: number, column: string, value: string) => {
+    const handleEdit = (id: number, column: string, value: string):void => {
         dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
     };
 
-    const handleAddRow = () => {
+    const handleAddRow = ():void => {
         dispatch({ type: ActionType.ADD_ROW });
     };
 
-    const handleAddColumn = () => {
+    const handleAddColumn = ():void => {
         dispatch({ type: ActionType.ADD_COLUMN });
     };
 
