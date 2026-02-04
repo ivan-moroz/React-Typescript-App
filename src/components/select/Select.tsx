@@ -68,6 +68,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
                 aria-expanded={isOpen}
             >
                 <div
+                    data-testid='select-trigger'
                     className="select-value"
                     onClick={() => setIsOpen(prev => !prev)}
                 >
@@ -75,7 +76,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
                 </div>
 
                 {isOpen && (
-                    <ul className="select-options" role="listbox">
+                    <ul data-testid='select-listbox' className="select-options" role="listbox">
                         {options.map((option: Option, index: number) => (
                             <li
                                 key={option.value}
