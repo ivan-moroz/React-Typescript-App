@@ -12,7 +12,7 @@ describe('ToDo Component', () => {
   test('adds a new todo', () => {
     render(<ToDo />);
     const input = screen.getByTestId('todo-input');
-    const addButton = screen.getByTestId('todo-add--button');
+    const addButton = screen.getByTestId('todo-add-button');
 
     fireEvent.change(input, { target: { value: 'New Todo' } });
     fireEvent.click(addButton);

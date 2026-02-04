@@ -29,7 +29,7 @@ export default function ToDo() {
                     onChange={e => setInput(e.target.value)}
                     placeholder="Add task"
                 />
-                <button data-testid='todo-add--button' type="submit">Add</button>
+                <button data-testid='todo-add-button' type="submit">Add</button>
             </form>
 
             <ul className="todo-list">
