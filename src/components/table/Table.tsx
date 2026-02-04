@@ -22,8 +22,8 @@ function EditableTable() {
         <div>
             <h1>Editable Table</h1>
             <div className='input-group'>
-                <button onClick={handleAddRow}>Add Row</button>
-                <button onClick={handleAddColumn}>Add Column</button>
+                <button data-testid='table-add-row' onClick={handleAddRow}>Add Row</button>
+                <button data-testid='table-add-column' onClick={handleAddColumn}>Add Column</button>
             </div>
             <table border={1} style={{ marginTop: "10px", borderCollapse: "collapse" }}>
                 <thead>
