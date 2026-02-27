@@ -39,6 +39,9 @@ export const reducer = (state: State, action: Action): State => {
                     case '/':
                         result = state.firstOperand / secondOperand;
                         break;
+                    case '%':
+                        result = (state.firstOperand * secondOperand) / 100;
+                        break;
                     default:
                         break;
                 }

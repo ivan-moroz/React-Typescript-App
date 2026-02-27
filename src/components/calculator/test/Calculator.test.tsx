@@ -20,6 +20,26 @@ describe('Calculator Component', () => {
     expect(screen.getByText('12')).toBeInTheDocument();
   });
 
+
+  test('handles percentage calculations', () => {
+    render(<Calculator />);
+    const button2 = screen.getByText('2');
+    const button0 = screen.getByText('0');
+    const buttonPercent = screen.getByText('%');
+    const button1 = screen.getByText('1');
+    const equalsButton = screen.getByText('=');
+
+    fireEvent.click(button2);
+    fireEvent.click(button0);
+    fireEvent.click(button0);
+    fireEvent.click(buttonPercent);
+    fireEvent.click(button1);
+    fireEvent.click(button0);
+    fireEvent.click(equalsButton);
+
+    expect(screen.getByText('20')).toBeInTheDocument();
+  });
+
   test('handles operation button clicks', () => {
     render(<Calculator />);
     const button1 = screen.getByText('6');
