@@ -1,19 +1,34 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.css';
-import {Option, Props} from './types/types';
+import { Option, Props } from './types/types';
 
-
-export default function CustomSelect({ options, value, onChange }: Props) {
+export default function CustomSelect({ options, value, onChange, multiple = false }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const selectedOption = options.find(opt => opt.value === value);
+    const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
+    const selectedOptions = options.filter((option) => selectedValues.includes(option.value));
+
+    const handleSelect = (optionValue: string): void => {
+        if (multiple) {
+            const hasValue = selectedValues.includes(optionValue);
+            const nextValue = hasValue
+                ? selectedValues.filter((item) => item !== optionValue)
+                : [...selectedValues, optionValue];
+
+            (onChange as (value: string[]) => void)(nextValue);
+            return;
+        }
+
+        (onChange as (value: string) => void)(optionValue);
+        setIsOpen(false);
+    };
 
     /* ===== Close on outside click ===== */
     useEffect(() => {
-        const handler = (e: MouseEvent):void => {
+        const handler = (e: MouseEvent): void => {
             if (!containerRef.current?.contains(e.target as Node)) {
                 setIsOpen(false);
             }
@@ -24,7 +39,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
     }, []);
 
     /* ===== Keyboard support ===== */
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>):void => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
         if (!isOpen && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             setIsOpen(true);
@@ -34,20 +49,19 @@ export default function CustomSelect({ options, value, onChange }: Props) {
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setHighlightedIndex(i => (i + 1) % options.length);
+                setHighlightedIndex((i) => (i + 1) % options.length);
                 break;
 
             case 'ArrowUp':
                 e.preventDefault();
-                setHighlightedIndex(i =>
+                setHighlightedIndex((i) =>
                     i === 0 ? options.length - 1 : i - 1
                 );
                 break;
 
             case 'Enter':
                 e.preventDefault();
-                onChange(options[highlightedIndex].value);
-                setIsOpen(false);
+                handleSelect(options[highlightedIndex].value);
                 break;
 
             case 'Escape':
@@ -70,25 +84,26 @@ export default function CustomSelect({ options, value, onChange }: Props) {
                 <div
                     data-testid='select-trigger'
                     className="select-value"
-                    onClick={() => setIsOpen(prev => !prev)}
+                    onClick={() => setIsOpen((prev) => !prev)}
                 >
-                    {selectedOption?.label ?? 'Select option'}
+                    {selectedOptions.length > 0
+                        ? selectedOptions.map((option) => option.label).join(', ')
+                        : 'Select option'}
                 </div>
 
                 {isOpen && (
-                    <ul data-testid='select-listbox' className="select-options" role="listbox">
+                    <ul data-testid='select-listbox' className="select-options" role="listbox" aria-multiselectable={multiple}>
                         {options.map((option: Option, index: number) => (
                             <li
                                 key={option.value}
                                 role="option"
-                                aria-selected={option.value === value}
+                                aria-selected={selectedValues.includes(option.value)}
                                 className={`option ${
                                     index === highlightedIndex ? 'highlighted' : ''
-                                }`}
+                                } ${selectedValues.includes(option.value) ? 'selected' : ''}`}
                                 onMouseEnter={() => setHighlightedIndex(index)}
                                 onClick={() => {
-                                    onChange(option.value);
-                                    setIsOpen(false);
+                                    handleSelect(option.value);
                                 }}
                             >
                                 {option.label}

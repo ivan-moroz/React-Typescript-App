@@ -10,7 +10,7 @@ const options = [
 ];
 
 export default function SelectPage() {
-    const [value, setValue] = useState('');
+    const [value, setValue] = useState<string[]>([]);
 
     return (
         <div className="app">
@@ -18,6 +18,7 @@ export default function SelectPage() {
                 options={options}
                 value={value}
                 onChange={setValue}
+                multiple
             />
         </div>
     )

@@ -37,3 +37,7 @@
 .option.highlighted {
     background: #f0f0f0;
 }
+
+.option.selected {
+    font-weight: 700;
+}
