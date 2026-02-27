@@ -26,7 +26,6 @@ function Calculator() {
 
     return (
         <>
-            <h1>Calculator</h1>
             <div className="calculator">
                 <div className="display">{state.display}</div>
                 <div className="buttons">

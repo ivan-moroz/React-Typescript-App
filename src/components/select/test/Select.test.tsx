@@ -30,12 +30,21 @@ describe('Select Component', () => {
     expect(screen.getByTestId('select-listbox')).toBeInTheDocument();
   });
 
-  test('calls onChange when an option is selected', () => {
+  test('calls onChange when a single option is selected', () => {
     const onChange = jest.fn();
     render(<Select options={options} value={value} onChange={onChange} />);
     const control = screen.getByTestId('select-trigger');
     fireEvent.click(control);
     fireEvent.click(screen.getByText('React'));
     expect(onChange).toHaveBeenCalledWith('react');
+  });
+
+  test('calls onChange with array when multi option is selected', () => {
+    const onChange = jest.fn();
+    render(<Select options={options} value={['vue']} onChange={onChange} isMulti />);
+    const control = screen.getByTestId('select-trigger');
+    fireEvent.click(control);
+    fireEvent.click(screen.getByText('React'));
+    expect(onChange).toHaveBeenCalledWith(['vue', 'react']);
   });
 });

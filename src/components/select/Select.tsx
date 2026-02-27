@@ -2,14 +2,45 @@ import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.css';
 import {Option, Props} from './types/types';
 
-
-export default function CustomSelect({ options, value, onChange }: Props) {
+export default function CustomSelect({ options, value, onChange, isMulti = false }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const selectedOption = options.find(opt => opt.value === value);
+    const selectedValues = isMulti && Array.isArray(value) ? value : [];
+    const selectedOption = !isMulti && typeof value === 'string'
+        ? options.find(opt => opt.value === value)
+        : undefined;
+
+    const displayLabel = isMulti
+        ? options
+            .filter(opt => selectedValues.includes(opt.value))
+            .map(opt => opt.label)
+            .join(', ') || 'Select options'
+        : selectedOption?.label ?? 'Select option';
+
+    const isOptionSelected = (optionValue: string): boolean => {
+        if (isMulti) {
+            return selectedValues.includes(optionValue);
+        }
+
+        return optionValue === value;
+    };
+
+    const applySelection = (optionValue: string): void => {
+        if (isMulti) {
+            const nextValues = selectedValues.includes(optionValue)
+                ? selectedValues.filter((selectedValue) => selectedValue !== optionValue)
+                : [...selectedValues, optionValue];
+
+            (onChange as (value: string[]) => void)(nextValues);
+            return;
+        }
+
+        (onChange as (value: string) => void)(optionValue);
+        setIsOpen(false);
+    };
 
     /* ===== Close on outside click ===== */
     useEffect(() => {
@@ -46,8 +77,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
 
             case 'Enter':
                 e.preventDefault();
-                onChange(options[highlightedIndex].value);
-                setIsOpen(false);
+                applySelection(options[highlightedIndex].value);
                 break;
 
             case 'Escape':
@@ -58,7 +88,6 @@ export default function CustomSelect({ options, value, onChange }: Props) {
 
     return (
         <>
-            <h1>Select</h1>
             <div
                 ref={containerRef}
                 tabIndex={0}
@@ -72,7 +101,7 @@ export default function CustomSelect({ options, value, onChange }: Props) {
                     className="select-value"
                     onClick={() => setIsOpen(prev => !prev)}
                 >
-                    {selectedOption?.label ?? 'Select option'}
+                    {displayLabel}
                 </div>
 
                 {isOpen && (
@@ -81,14 +110,15 @@ export default function CustomSelect({ options, value, onChange }: Props) {
                             <li
                                 key={option.value}
                                 role="option"
-                                aria-selected={option.value === value}
+                                aria-selected={isOptionSelected(option.value)}
                                 className={`option ${
+                                    isOptionSelected(option.value) ? 'selected' : ''
+                                } ${
                                     index === highlightedIndex ? 'highlighted' : ''
                                 }`}
                                 onMouseEnter={() => setHighlightedIndex(index)}
                                 onClick={() => {
-                                    onChange(option.value);
-                                    setIsOpen(false);
+                                    applySelection(option.value);
                                 }}
                             >
                                 {option.label}
