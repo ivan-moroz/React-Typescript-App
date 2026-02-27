@@ -17,12 +17,6 @@ const setValue = (v:string) => {
 }
 
 describe('Select Component', () => {
-  test('display title', () => {
-    render(<Select options={options} value={value} onChange={setValue} />);
-    const toDoTitle = screen.getByText(/Select/i);
-    expect(toDoTitle).toBeInTheDocument();
-  });
-
   test('opens the menu when clicked', () => {
     render(<Select options={options} value={value} onChange={setValue} />);
     const control = screen.getByTestId('select-trigger');

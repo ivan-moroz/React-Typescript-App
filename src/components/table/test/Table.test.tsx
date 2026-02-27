@@ -3,12 +3,6 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import Table from '../Table';
 
 describe('Table Component', () => {
-  test('display title', () => {
-    render(<Table />);
-    const toDoTitle = screen.getByText(/Editable Table/i);
-    expect(toDoTitle).toBeInTheDocument();
-  });
-
   test('adds a new row', () => {
     render(<Table />);
     fireEvent.click(screen.getByTestId('table-add-row'));

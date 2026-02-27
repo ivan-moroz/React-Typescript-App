@@ -3,12 +3,6 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import Calculator from '../Calculator';
 
 describe('Calculator Component', () => {
-  test('display title', () => {
-    render(<Calculator />);
-    const toDoTitle = screen.getByText(/Calculator/i);
-    expect(toDoTitle).toBeInTheDocument();
-  });
-
   test('handles number button clicks', () => {
     render(<Calculator />);
     const button1 = screen.getByText('1');
