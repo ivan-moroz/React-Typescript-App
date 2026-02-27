@@ -1,10 +1,13 @@
-import React, {useReducer} from "react";
+import React, {useReducer, useState} from "react";
 
 import {initialState, reducer} from "./reducer/reducer";
 import {ActionType} from "./types/types";
 
 function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
+    const [isDeleteMode, setIsDeleteMode] = useState(false);
+
+    const columns = Object.keys(state.users[0]);
 
     const handleEdit = (id: number, column: string, value: string):void => {
         dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
@@ -18,6 +21,14 @@ function EditableTable() {
         dispatch({ type: ActionType.ADD_COLUMN });
     };
 
+    const handleDeleteRow = (id: number):void => {
+        dispatch({ type: ActionType.DELETE_ROW, payload: { id } });
+    };
+
+    const handleDeleteColumn = (column: string):void => {
+        dispatch({ type: ActionType.DELETE_COLUMN, payload: { column } });
+    };
+
     return (
         <div>
             <h1>Editable Table</h1>
@@ -28,14 +39,36 @@ function EditableTable() {
             <table border={1} style={{ marginTop: "10px", borderCollapse: "collapse" }}>
                 <thead>
                 <tr>
-                    {Object.keys(state.users[0]).map((key) => (
-                        <th key={key}>{key}</th>
+                    <th>
+                        <button data-testid='table-toggle-delete' onClick={() => setIsDeleteMode((prev) => !prev)}>
+                            Delete
+                        </button>
+                    </th>
+                    {columns.map((key) => (
+                        <th key={key}>
+                            {key}
+                            {isDeleteMode && key !== 'id' && (
+                                <button
+                                    data-testid={`table-delete-column-${key}`}
+                                    onClick={() => handleDeleteColumn(key)}
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </th>
                     ))}
                 </tr>
                 </thead>
                 <tbody>
                 {state.users.map((user) => (
                     <tr key={user.id}>
+                        <td>
+                            {isDeleteMode && (
+                                <button data-testid={`table-delete-row-${user.id}`} onClick={() => handleDeleteRow(user.id)}>
+                                    ×
+                                </button>
+                            )}
+                        </td>
                         {Object.entries(user).map(([key, value]) => (
                             <td key={key}>
                                 <input

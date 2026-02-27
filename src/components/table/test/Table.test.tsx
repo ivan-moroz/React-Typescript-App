@@ -21,4 +21,20 @@ describe('Table Component', () => {
     fireEvent.click(screen.getByTestId('table-add-column'));
     expect(screen.getByText('column5')).toBeInTheDocument();
   });
+
+  test('deletes a row in delete mode', () => {
+    render(<Table />);
+    fireEvent.click(screen.getByTestId('table-toggle-delete'));
+    fireEvent.click(screen.getByTestId('table-delete-row-1'));
+    const rows = document.querySelectorAll('tbody tr');
+    expect(rows.length).toBe(4);
+  });
+
+  test('deletes a column in delete mode', () => {
+    render(<Table />);
+    fireEvent.click(screen.getByTestId('table-add-column'));
+    fireEvent.click(screen.getByTestId('table-toggle-delete'));
+    fireEvent.click(screen.getByTestId('table-delete-column-column5'));
+    expect(screen.queryByText('column5')).not.toBeInTheDocument();
+  });
 });

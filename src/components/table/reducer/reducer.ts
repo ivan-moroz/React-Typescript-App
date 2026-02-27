@@ -41,6 +41,29 @@ export const reducer = (state: State, action: Action): State => {
                 users: state.users.map((user) => ({ ...user, [newColumnName]: "" })),
                 addedColumns: [...state.addedColumns, newColumnName]
             };
+        case ActionType.DELETE_ROW:
+            if (state.users.length === 1) {
+                return state;
+            }
+
+            return {
+                ...state,
+                users: state.users.filter((user) => user.id !== action.payload.id),
+            };
+        case ActionType.DELETE_COLUMN:
+            if (action.payload.column === 'id') {
+                return state;
+            }
+
+            return {
+                ...state,
+                users: state.users.map((user) => {
+                    const updatedUser = { ...user };
+                    delete updatedUser[action.payload.column];
+                    return updatedUser;
+                }),
+                addedColumns: state.addedColumns.filter((column) => column !== action.payload.column)
+            };
         default:
             return state;
     }
