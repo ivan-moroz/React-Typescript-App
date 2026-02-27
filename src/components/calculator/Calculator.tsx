@@ -38,7 +38,7 @@ function Calculator() {
                         ))}
                     </div>
                     <div className="operations">
-                        {['+', '-', '*', '/'].map((op) => (
+                        {['+', '-', '*', '/', '%'].map((op) => (
                             <button key={op} onClick={() => handleOperationClick(op)}>
                                 {op}
                             </button>
