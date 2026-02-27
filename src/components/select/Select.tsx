@@ -88,7 +88,6 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
 
     return (
         <>
-            <h1>Select</h1>
             <div
                 ref={containerRef}
                 tabIndex={0}

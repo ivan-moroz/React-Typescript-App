@@ -20,7 +20,6 @@ function EditableTable() {
 
     return (
         <div>
-            <h1>Editable Table</h1>
             <div className='input-group'>
                 <button data-testid='table-add-row' onClick={handleAddRow}>Add Row</button>
                 <button data-testid='table-add-column' onClick={handleAddColumn}>Add Column</button>

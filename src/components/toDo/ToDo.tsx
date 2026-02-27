@@ -21,7 +21,6 @@ export default function ToDo() {
 
     return (
         <>
-            <h1>ToDo List</h1>
             <form className="input-group" onSubmit={handleSubmit}>
                 <input
                     data-testid='todo-input'

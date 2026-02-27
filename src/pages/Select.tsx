@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Select from '../components/select/Select';
 
 const options = [
@@ -15,12 +15,13 @@ export default function SelectPage() {
 
     return (
         <div className="app">
+            <h1>Select</h1>
             <Select
                 options={options}
                 value={singleValue}
                 onChange={setSingleValue}
             />
-
+            <h1>Multi Select</h1>
             <Select
                 options={options}
                 value={multiValue}
