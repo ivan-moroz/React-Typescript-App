@@ -10,14 +10,22 @@ const options = [
 ];
 
 export default function SelectPage() {
-    const [value, setValue] = useState('');
+    const [singleValue, setSingleValue] = useState('');
+    const [multiValue, setMultiValue] = useState<string[]>([]);
 
     return (
         <div className="app">
             <Select
                 options={options}
-                value={value}
-                onChange={setValue}
+                value={singleValue}
+                onChange={setSingleValue}
+            />
+
+            <Select
+                options={options}
+                value={multiValue}
+                onChange={setMultiValue}
+                isMulti
             />
         </div>
     )
