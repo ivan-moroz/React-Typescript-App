@@ -45,7 +45,17 @@ export default function ToDo() {
                     />
                 ))}
             </ul>
+
+            {state.deletedTodos.length > 0 && (
+                <div className="deleted-items-section">
+                    <h2>Deleted Items</h2>
+                    <ul className="deleted-list">
+                        {state.deletedTodos.map(todo => (
+                            <li key={todo.id}>{todo.text}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </>
     );
 }
-

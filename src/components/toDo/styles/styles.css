@@ -35,3 +35,21 @@
     cursor: pointer;
     font-size: 16px;
 }
+
+.deleted-items-section {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+}
+
+.deleted-items-section h2 {
+    font-size: 16px;
+    margin: 0 0 10px;
+}
+
+.deleted-list {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 0;
+    color: #666;
+}
