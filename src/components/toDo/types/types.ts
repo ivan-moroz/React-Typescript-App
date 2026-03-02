@@ -12,6 +12,7 @@ export type Props = {
 
 export type State = {
     todos: Types[];
+    deletedTodos: Types[];
 };
 
 export enum ActionType {

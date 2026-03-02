@@ -45,7 +45,22 @@ export default function ToDo() {
                     />
                 ))}
             </ul>
+
+            <section className="deleted-section">
+                <h2>Видалені</h2>
+
+                {state.deletedTodos.length === 0 ? (
+                    <p className="deleted-empty">Поки що немає видалених завдань.</p>
+                ) : (
+                    <ul className="todo-list deleted-list">
+                        {state.deletedTodos.map(todo => (
+                            <li key={todo.id} className="todo-item deleted-item">
+                                <span>{todo.text}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
         </>
     );
 }
-
