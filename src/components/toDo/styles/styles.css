@@ -35,3 +35,21 @@
     cursor: pointer;
     font-size: 16px;
 }
+
+.deleted-items {
+    margin-top: 24px;
+}
+
+.deleted-items h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.todo-item.deleted span {
+    color: #777;
+}
+
+.empty-state {
+    color: #777;
+    margin: 0;
+}

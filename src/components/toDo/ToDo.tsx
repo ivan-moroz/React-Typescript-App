@@ -2,7 +2,7 @@ import React, { useReducer, useState } from 'react';
 import { reducer, initialState } from './reducer/reducer';
 import { TodoItem } from './components/TodoItem';
 import './styles/styles.css';
-import {ActionType} from "./types/types";
+import { ActionType } from './types/types';
 
 export default function ToDo() {
     const [state, dispatch] = useReducer(reducer, initialState);
@@ -45,7 +45,31 @@ export default function ToDo() {
                     />
                 ))}
             </ul>
+
+            <section className="deleted-items" data-testid="deleted-items-section">
+                <h2>Deleted items</h2>
+                {state.deletedTodos.length === 0 ? (
+                    <p className="empty-state">No deleted items yet.</p>
+                ) : (
+                    <ul className="todo-list">
+                        {state.deletedTodos.map(todo => (
+                            <li key={todo.id} className="todo-item deleted">
+                                <span>{todo.text}</span>
+                                <button
+                                    onClick={() =>
+                                        dispatch({
+                                            type: ActionType.RESTORE_TODO,
+                                            payload: todo.id
+                                        })
+                                    }
+                                >
+                                    Restore
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
         </>
     );
 }
-

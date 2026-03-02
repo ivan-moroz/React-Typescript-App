@@ -7,7 +7,8 @@ export const initialState: State = {
             text: 'Learn React + TypeScript',
             completed: false
         }
-    ]
+    ],
+    deletedTodos: []
 };
 
 export function reducer(state: State, action: Action): State {
@@ -21,7 +22,8 @@ export function reducer(state: State, action: Action): State {
                         text: action.payload,
                         completed: false
                     }
-                ]
+                ],
+                deletedTodos: state.deletedTodos
             };
 
         case ActionType.TOGGLE_TODO:
@@ -30,12 +32,26 @@ export function reducer(state: State, action: Action): State {
                     todo.id === action.payload
                         ? { ...todo, completed: !todo.completed }
                         : todo
-                )
+                ),
+                deletedTodos: state.deletedTodos
             };
 
         case ActionType.REMOVE_TODO:
+            const todoToDelete = state.todos.find(todo => todo.id === action.payload);
+
             return {
-                todos: state.todos.filter(todo => todo.id !== action.payload)
+                todos: state.todos.filter(todo => todo.id !== action.payload),
+                deletedTodos: todoToDelete
+                    ? [todoToDelete, ...state.deletedTodos]
+                    : state.deletedTodos
+            };
+
+        case ActionType.RESTORE_TODO:
+            const todoToRestore = state.deletedTodos.find(todo => todo.id === action.payload);
+
+            return {
+                todos: todoToRestore ? [...state.todos, todoToRestore] : state.todos,
+                deletedTodos: state.deletedTodos.filter(todo => todo.id !== action.payload)
             };
 
         default:
