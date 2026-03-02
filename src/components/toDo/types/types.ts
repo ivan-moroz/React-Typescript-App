@@ -12,15 +12,18 @@ export type Props = {
 
 export type State = {
     todos: Types[];
+    deletedTodos: Types[];
 };
 
 export enum ActionType {
     ADD_TODO = 'ADD_TODO',
     TOGGLE_TODO = 'TOGGLE_TODO',
-    REMOVE_TODO = 'REMOVE_TODO'
+    REMOVE_TODO = 'REMOVE_TODO',
+    RESTORE_TODO = 'RESTORE_TODO'
 }
 
 export type Action =
     | { type: ActionType.ADD_TODO; payload: string }
     | { type: ActionType.TOGGLE_TODO; payload: number }
-    | { type: ActionType.REMOVE_TODO; payload: number };
+    | { type: ActionType.REMOVE_TODO; payload: number }
+    | { type: ActionType.RESTORE_TODO; payload: number };
