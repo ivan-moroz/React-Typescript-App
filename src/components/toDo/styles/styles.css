@@ -54,3 +54,8 @@
     color: #777;
     margin: 0;
 }
+
+.todo-item .material-icons {
+    font-size: 20px;
+    vertical-align: middle;
+}

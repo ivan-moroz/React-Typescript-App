@@ -4,7 +4,8 @@ export function TodoItem({
     todo,
     onToggle,
     onAction,
-    actionLabel = '❌',
+    actionLabel = <span className="material-icons">delete</span>,
+    actionAriaLabel = 'Remove todo',
     isDeleted = false
 }: Props) {
     return (
@@ -22,7 +23,7 @@ export function TodoItem({
                 </label>
             )}
 
-            <button onClick={() => onAction(todo.id)}>{actionLabel}</button>
+            <button aria-label={actionAriaLabel} onClick={() => onAction(todo.id)}>{actionLabel}</button>
         </li>
     );
 }

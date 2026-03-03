@@ -17,7 +17,7 @@ describe('ToDo Component', () => {
   test('moves removed todo to deleted items section', () => {
     render(<ToDo />);
 
-    const removeButton = screen.getByRole('button', { name: '❌' });
+    const removeButton = screen.getByRole('button', { name: 'Remove todo' });
     fireEvent.click(removeButton);
 
     const deletedSection = screen.getByTestId('deleted-items-section');
@@ -27,8 +27,8 @@ describe('ToDo Component', () => {
   test('restores item from deleted items section', () => {
     render(<ToDo />);
 
-    fireEvent.click(screen.getByRole('button', { name: '❌' }));
-    fireEvent.click(screen.getByRole('button', { name: '🔄' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove todo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Restore todo' }));
 
     expect(screen.getByText('Learn React + TypeScript')).toBeInTheDocument();
     expect(screen.getByText('Nothing found')).toBeInTheDocument();
