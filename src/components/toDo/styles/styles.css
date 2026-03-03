@@ -25,7 +25,7 @@
     cursor: pointer;
 }
 
-.todo-item.completed span {
+.todo-item.completed span:not(.material-icons) {
     text-decoration: line-through;
     color: #999;
 }
