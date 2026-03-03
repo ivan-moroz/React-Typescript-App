@@ -37,6 +37,10 @@
     font-size: 16px;
 }
 
+.todo-item button:hover {
+    background: #eeeeee;
+}
+
 .deleted-items {
     margin-top: 24px;
 }
