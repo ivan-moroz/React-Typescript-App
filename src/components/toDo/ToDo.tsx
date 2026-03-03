@@ -57,7 +57,7 @@ export default function ToDo() {
                                 key={todo.id}
                                 todo={todo}
                                 isDeleted
-                                actionLabel="Restore"
+                                actionLabel="🔄"
                                 onAction={id =>
                                     dispatch({
                                         type: ActionType.RESTORE_TODO,

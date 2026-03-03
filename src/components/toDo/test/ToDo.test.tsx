@@ -28,7 +28,7 @@ describe('ToDo Component', () => {
     render(<ToDo />);
 
     fireEvent.click(screen.getByRole('button', { name: '❌' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
+    fireEvent.click(screen.getByRole('button', { name: '🔄' }));
 
     expect(screen.getByText('Learn React + TypeScript')).toBeInTheDocument();
     expect(screen.getByText('Nothing found')).toBeInTheDocument();
