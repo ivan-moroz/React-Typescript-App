@@ -47,7 +47,7 @@ export default function ToDo() {
             </ul>
 
             <section className="deleted-items" data-testid="deleted-items-section">
-                <h2>Deleted items</h2>
+                <h2>Deleted</h2>
                 {state.deletedTodos.length === 0 ? (
                     <p className="empty-state">Nothing found</p>
                 ) : (
