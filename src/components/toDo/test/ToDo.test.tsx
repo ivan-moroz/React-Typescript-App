@@ -31,6 +31,6 @@ describe('ToDo Component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
 
     expect(screen.getByText('Learn React + TypeScript')).toBeInTheDocument();
-    expect(screen.getByText('No deleted items yet.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing found')).toBeInTheDocument();
   });
 });
