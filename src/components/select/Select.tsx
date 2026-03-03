@@ -101,7 +101,8 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
                     className="select-value"
                     onClick={() => setIsOpen(prev => !prev)}
                 >
-                    {displayLabel}
+                    <span className="select-label">{displayLabel}</span>
+                    <span className={`material-icons select-arrow ${isOpen ? 'open' : ''}`}>keyboard_arrow_down</span>
                 </div>
 
                 {isOpen && (

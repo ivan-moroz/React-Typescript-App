@@ -11,7 +11,20 @@
 }
 
 .select-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     user-select: none;
+}
+
+.select-arrow {
+    font-size: 20px;
+    color: #666;
+    transition: transform 0.2s ease;
+}
+
+.select-arrow.open {
+    transform: rotate(180deg);
 }
 
 .select-options {
