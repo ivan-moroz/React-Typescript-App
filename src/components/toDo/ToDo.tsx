@@ -39,7 +39,7 @@ export default function ToDo() {
                         onToggle={id =>
                             dispatch({ type: ActionType.TOGGLE_TODO, payload: id })
                         }
-                        onRemove={id =>
+                        onAction={id =>
                             dispatch({ type: ActionType.REMOVE_TODO, payload: id })
                         }
                     />
@@ -53,19 +53,18 @@ export default function ToDo() {
                 ) : (
                     <ul className="todo-list">
                         {state.deletedTodos.map(todo => (
-                            <li key={todo.id} className="todo-item deleted">
-                                <span>{todo.text}</span>
-                                <button
-                                    onClick={() =>
-                                        dispatch({
-                                            type: ActionType.RESTORE_TODO,
-                                            payload: todo.id
-                                        })
-                                    }
-                                >
-                                    Restore
-                                </button>
-                            </li>
+                            <TodoItem
+                                key={todo.id}
+                                todo={todo}
+                                isDeleted
+                                actionLabel="Restore"
+                                onAction={id =>
+                                    dispatch({
+                                        type: ActionType.RESTORE_TODO,
+                                        payload: id
+                                    })
+                                }
+                            />
                         ))}
                     </ul>
                 )}
