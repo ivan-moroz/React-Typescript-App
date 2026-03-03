@@ -6,8 +6,10 @@ export type Types = {
 
 export type Props = {
     todo: Types;
-    onToggle: (id: number) => void;
-    onRemove: (id: number) => void;
+    onToggle?: (id: number) => void;
+    onAction: (id: number) => void;
+    actionLabel?: string;
+    isDeleted?: boolean;
 };
 
 export type State = {
