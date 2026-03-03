@@ -15,4 +15,14 @@ describe('Table Component', () => {
     fireEvent.click(screen.getByTestId('table-add-column'));
     expect(screen.getByText('column5')).toBeInTheDocument();
   });
+
+
+  test('renders id column as non-editable text', () => {
+    render(<Table />);
+    const firstBodyRow = document.querySelectorAll('tbody tr')[0];
+    const idCell = firstBodyRow.querySelectorAll('td')[0];
+
+    expect(idCell.querySelector('input')).toBeNull();
+    expect(idCell).toHaveTextContent('1');
+  });
 });

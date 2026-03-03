@@ -37,13 +37,17 @@ function EditableTable() {
                     <tr key={user.id}>
                         {Object.entries(user).map(([key, value]) => (
                             <td key={key}>
-                                <input
-                                    type="text"
-                                    value={value}
-                                    onChange={(e) =>
-                                        handleEdit(user.id, key, e.target.value)
-                                    }
-                                />
+                                {key === 'id' ? (
+                                    <span>{value}</span>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={value}
+                                        onChange={(e) =>
+                                            handleEdit(user.id, key, e.target.value)
+                                        }
+                                    />
+                                )}
                             </td>
                         ))}
                     </tr>
