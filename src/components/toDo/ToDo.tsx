@@ -57,7 +57,8 @@ export default function ToDo() {
                                 key={todo.id}
                                 todo={todo}
                                 isDeleted
-                                actionLabel="🔄"
+                                actionLabel={<span className="material-icons">restore_from_trash</span>}
+                                actionAriaLabel="Restore todo"
                                 onAction={id =>
                                     dispatch({
                                         type: ActionType.RESTORE_TODO,

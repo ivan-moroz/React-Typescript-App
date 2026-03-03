@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 export type Types = {
     id: number;
     text: string;
@@ -8,7 +10,8 @@ export type Props = {
     todo: Types;
     onToggle?: (id: number) => void;
     onAction: (id: number) => void;
-    actionLabel?: string;
+    actionLabel?: ReactNode;
+    actionAriaLabel?: string;
     isDeleted?: boolean;
 };
 
