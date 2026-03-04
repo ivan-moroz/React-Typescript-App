@@ -1,33 +1,32 @@
 .select {
-    position: relative;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px;
-    cursor: pointer;
-}
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
 
-.select:focus {
+  &:focus {
     outline: 2px solid #4caf50;
-}
+  }
 
-.select-value {
+  &-value {
     display: flex;
     align-items: center;
     justify-content: space-between;
     user-select: none;
-}
+  }
 
-.select-arrow {
+  &-arrow {
     font-size: 20px;
     color: #666;
     transition: transform 0.2s ease;
-}
 
-.select-arrow.open {
-    transform: rotate(180deg);
-}
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
 
-.select-options {
+  &-options {
     position: absolute;
     width: 100%;
     top: 100%;
@@ -40,17 +39,18 @@
     max-height: 150px;
     overflow-y: auto;
     z-index: 10;
-}
 
-.option {
-    padding: 8px;
-}
+    .option {
+      padding: 8px;
 
-.option:hover,
-.option.highlighted {
-    background: #f0f0f0;
-}
+      &:hover,
+      &.highlighted {
+        background: #f0f0f0;
+      }
 
-.option.selected {
-    background: #dff2e1;
+      &.selected {
+        background: #dff2e1;
+      }
+    }
+  }
 }
