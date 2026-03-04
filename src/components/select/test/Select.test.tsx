@@ -1,5 +1,6 @@
 import React from 'react';
 import {fireEvent, render, screen} from '@testing-library/react';
+import { vi } from 'vitest';
 import Select from '../Select';
 
 let value = 'vue';
@@ -25,7 +26,7 @@ describe('Select Component', () => {
   });
 
   test('calls onChange when a single option is selected', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     render(<Select options={options} value={value} onChange={onChange} />);
     const control = screen.getByTestId('select-trigger');
     fireEvent.click(control);
@@ -34,7 +35,7 @@ describe('Select Component', () => {
   });
 
   test('calls onChange with array when multi option is selected', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     render(<Select options={options} value={['vue']} onChange={onChange} isMulti />);
     const control = screen.getByTestId('select-trigger');
     fireEvent.click(control);
