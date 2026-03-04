@@ -3,7 +3,7 @@ import { useReducer } from 'react';
 
 import { reducer, initialState } from './reducer/reducer';
 import { ActionType } from './types/types';
-import './styles/styles.css';
+import './styles/styles.scss';
 
 function Calculator() {
     const [state, dispatch] = useReducer(reducer, initialState);

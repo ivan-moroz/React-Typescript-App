@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import './styles/styles.css';
+import './styles/styles.scss';
 import {ActiveStyleProps} from "./types/types";
 
 const activeStyle = ({ isActive }: ActiveStyleProps) => ({

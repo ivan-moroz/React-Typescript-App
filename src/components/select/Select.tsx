@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './styles/styles.css';
+import './styles/styles.scss';
 import {Option, Props} from './types/types';
 
 export default function CustomSelect({ options, value, onChange, isMulti = false }: Props) {
