@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.scss';
 import {Option, Props} from './types/types';
+import SelectTag from './components/SelectTag';
 
 export default function CustomSelect({ options, value, onChange, isMulti = false }: Props) {
     const [isOpen, setIsOpen] = useState(false);
@@ -113,20 +114,11 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
                                 <span className="select-label">Select options</span>
                             ) : (
                                 selectedOptions.map((option) => (
-                                    <span key={option.value} className="select-tag">
-                                        <span>{option.label}</span>
-                                        <button
-                                            type="button"
-                                            className="select-tag-remove"
-                                            aria-label={`Remove ${option.label}`}
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                removeSelectedOption(option.value);
-                                            }}
-                                        >
-                                            close
-                                        </button>
-                                    </span>
+                                    <SelectTag
+                                        key={option.value}
+                                        label={option.label}
+                                        onRemove={() => removeSelectedOption(option.value)}
+                                    />
                                 ))
                             )}
                         </span>
