@@ -3,7 +3,7 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import { vi } from 'vitest';
 import Select from '../Select';
 
-let value = 'vue';
+let value: string | undefined = 'vue';
 
 const options = [
   { value: 'react', label: 'React' },
@@ -13,7 +13,7 @@ const options = [
   { value: 'solid', label: 'Solid' }
 ];
 
-const setValue = (v:string) => {
+const setValue = (v: string | undefined) => {
   value = v;
 }
 
@@ -32,6 +32,15 @@ describe('Select Component', () => {
     fireEvent.click(control);
     fireEvent.click(screen.getByText('React'));
     expect(onChange).toHaveBeenCalledWith('react');
+  });
+
+  test('calls onChange with undefined when none option is selected', () => {
+    const onChange = vi.fn();
+    render(<Select options={options} value={value} onChange={onChange} />);
+    const control = screen.getByTestId('select-trigger');
+    fireEvent.click(control);
+    fireEvent.click(screen.getByText('None'));
+    expect(onChange).toHaveBeenCalledWith(undefined);
   });
 
   test('calls onChange with array when multi option is selected', () => {

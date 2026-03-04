@@ -10,7 +10,7 @@ type BaseProps = {
 export type SingleSelectProps = BaseProps & {
     isMulti?: false;
     value?: string;
-    onChange: (value: string) => void;
+    onChange: (value: string | undefined) => void;
 };
 
 export type MultiSelectProps = BaseProps & {

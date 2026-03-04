@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.scss';
-import {Option, Props} from './types/types';
+import { Option, Props } from './types/types';
 import SelectTag from './components/SelectTag';
+
+type SingleSelectOption = {
+    value?: string;
+    label: string;
+};
 
 export default function CustomSelect({ options, value, onChange, isMulti = false }: Props) {
     const [isOpen, setIsOpen] = useState(false);
@@ -15,19 +20,25 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
         : undefined;
 
     const selectedOptions = options.filter((option) => selectedValues.includes(option.value));
+    const singleSelectOptions: SingleSelectOption[] = [{ value: undefined, label: 'None' }, ...options];
+    const visibleOptions: (Option | SingleSelectOption)[] = isMulti ? options : singleSelectOptions;
 
     const displayLabel = selectedOption?.label ?? 'Select option';
 
-    const isOptionSelected = (optionValue: string): boolean => {
+    const isOptionSelected = (optionValue?: string): boolean => {
         if (isMulti) {
-            return selectedValues.includes(optionValue);
+            return Boolean(optionValue) && selectedValues.includes(optionValue);
         }
 
         return optionValue === value;
     };
 
-    const applySelection = (optionValue: string): void => {
+    const applySelection = (optionValue?: string): void => {
         if (isMulti) {
+            if (!optionValue) {
+                return;
+            }
+
             const nextValues = selectedValues.includes(optionValue)
                 ? selectedValues.filter((selectedValue) => selectedValue !== optionValue)
                 : [...selectedValues, optionValue];
@@ -36,7 +47,7 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
             return;
         }
 
-        (onChange as (value: string) => void)(optionValue);
+        (onChange as (value: string | undefined) => void)(optionValue);
         setIsOpen(false);
     };
 
@@ -49,9 +60,8 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
         (onChange as (value: string[]) => void)(nextValues);
     };
 
-    /* ===== Close on outside click ===== */
     useEffect(() => {
-        const handler = (e: MouseEvent):void => {
+        const handler = (e: MouseEvent): void => {
             if (!containerRef.current?.contains(e.target as Node)) {
                 setIsOpen(false);
             }
@@ -61,8 +71,7 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    /* ===== Keyboard support ===== */
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>):void => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
         if (!isOpen && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             setIsOpen(true);
@@ -72,19 +81,19 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setHighlightedIndex(i => (i + 1) % options.length);
+                setHighlightedIndex(i => (i + 1) % visibleOptions.length);
                 break;
 
             case 'ArrowUp':
                 e.preventDefault();
                 setHighlightedIndex(i =>
-                    i === 0 ? options.length - 1 : i - 1
+                    i === 0 ? visibleOptions.length - 1 : i - 1,
                 );
                 break;
 
             case 'Enter':
                 e.preventDefault();
-                applySelection(options[highlightedIndex].value);
+                applySelection(visibleOptions[highlightedIndex].value);
                 break;
 
             case 'Escape':
@@ -104,7 +113,7 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
                 aria-expanded={isOpen}
             >
                 <div
-                    data-testid='select-trigger'
+                    data-testid="select-trigger"
                     className="select-value"
                     onClick={() => setIsOpen(prev => !prev)}
                 >
@@ -129,10 +138,10 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
                 </div>
 
                 {isOpen && (
-                    <ul data-testid='select-listbox' className="select-options" role="listbox">
-                        {options.map((option: Option, index: number) => (
+                    <ul data-testid="select-listbox" className="select-options" role="listbox">
+                        {visibleOptions.map((option, index: number) => (
                             <li
-                                key={option.value}
+                                key={option.value ?? 'none'}
                                 role="option"
                                 aria-selected={isOptionSelected(option.value)}
                                 className={`option ${

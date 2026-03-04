@@ -10,7 +10,7 @@ const options = [
 ];
 
 export default function SelectPage() {
-    const [singleValue, setSingleValue] = useState('');
+    const [singleValue, setSingleValue] = useState<string | undefined>(undefined);
     const [multiValue, setMultiValue] = useState<string[]>([]);
 
     return (
