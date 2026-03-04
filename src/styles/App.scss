@@ -1,9 +1,9 @@
 .page-wrapper {
   padding: 10px;
-}
 
-.page-wrapper > h1 {
-  text-align: center;
+  > h1 {
+    text-align: center;
+  }
 }
 
 .app {
@@ -18,30 +18,30 @@
     text-align: center;
     margin-bottom: 20px;
   }
-}
 
-.app.wide {
-  max-width: 100%;
-  overflow-x: auto;
+  &.wide {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
 
 .input-group {
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
-}
 
-.input-group input {
-  flex: 1;
-  padding: 8px 10px;
-}
+  input {
+    flex: 1;
+    padding: 8px 10px;
+  }
 
-.input-group button {
-  padding: 8px 14px;
-  background: #4caf50;
-  color: #fff;
-}
+  button {
+    padding: 8px 14px;
+    background: #4caf50;
+    color: #fff;
 
-.input-group button:hover {
-  background: #1e7e34;
+    &:hover {
+      background: #1e7e34;
+    }
+  }
 }
