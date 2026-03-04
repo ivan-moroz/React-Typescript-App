@@ -42,4 +42,13 @@ describe('Select Component', () => {
     fireEvent.click(screen.getByText('React'));
     expect(onChange).toHaveBeenCalledWith(['vue', 'react']);
   });
+
+  test('removes selected value when close button is clicked in multi select', () => {
+    const onChange = vi.fn();
+    render(<Select options={options} value={['vue', 'react']} onChange={onChange} isMulti />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Vue' }));
+
+    expect(onChange).toHaveBeenCalledWith(['react']);
+  });
 });
