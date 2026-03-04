@@ -1,12 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './styles/styles.scss';
-import { Option, Props } from './types/types';
+import { Option, Props, SingleSelectOption } from './types/types';
 import SelectTag from './components/SelectTag';
-
-type SingleSelectOption = {
-    value?: string;
-    label: string;
-};
 
 export default function CustomSelect({ options, value, onChange, isMulti = false }: Props) {
     const [isOpen, setIsOpen] = useState(false);

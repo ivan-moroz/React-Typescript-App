@@ -25,3 +25,8 @@ export type SelectTagProps = {
     label: string;
     onRemove: () => void;
 }
+
+export type SingleSelectOption = {
+    value?: string;
+    label: string;
+};
