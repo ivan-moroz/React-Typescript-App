@@ -20,3 +20,8 @@ export type MultiSelectProps = BaseProps & {
 };
 
 export type Props = SingleSelectProps | MultiSelectProps;
+
+export type SelectTagProps = {
+    label: string;
+    onRemove: () => void;
+}

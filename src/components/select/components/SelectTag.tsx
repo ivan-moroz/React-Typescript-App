@@ -1,11 +1,7 @@
 import React from 'react';
+import {SelectTagProps} from '../types/types';
 
-type Props = {
-    label: string;
-    onRemove: () => void;
-};
-
-export default function SelectTag({ label, onRemove }: Props) {
+export default function SelectTag({ label, onRemove }: SelectTagProps) {
     return (
         <span className="select-tag">
             <span>{label}</span>
