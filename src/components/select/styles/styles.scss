@@ -12,8 +12,35 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     user-select: none;
     padding: 8px;
+  }
+
+  &-multi-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  &-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: #dff2e1;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  &-tag-remove {
+    border: none;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
   }
 
   &-arrow {

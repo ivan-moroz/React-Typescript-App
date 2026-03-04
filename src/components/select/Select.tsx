@@ -13,12 +13,9 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
         ? options.find(opt => opt.value === value)
         : undefined;
 
-    const displayLabel = isMulti
-        ? options
-            .filter(opt => selectedValues.includes(opt.value))
-            .map(opt => opt.label)
-            .join(', ') || 'Select options'
-        : selectedOption?.label ?? 'Select option';
+    const selectedOptions = options.filter((option) => selectedValues.includes(option.value));
+
+    const displayLabel = selectedOption?.label ?? 'Select option';
 
     const isOptionSelected = (optionValue: string): boolean => {
         if (isMulti) {
@@ -40,6 +37,15 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
 
         (onChange as (value: string) => void)(optionValue);
         setIsOpen(false);
+    };
+
+    const removeSelectedOption = (optionValue: string): void => {
+        if (!isMulti) {
+            return;
+        }
+
+        const nextValues = selectedValues.filter((selectedValue) => selectedValue !== optionValue);
+        (onChange as (value: string[]) => void)(nextValues);
     };
 
     /* ===== Close on outside click ===== */
@@ -101,7 +107,32 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
                     className="select-value"
                     onClick={() => setIsOpen(prev => !prev)}
                 >
-                    <span className="select-label">{displayLabel}</span>
+                    {isMulti ? (
+                        <span className="select-multi-values">
+                            {selectedOptions.length === 0 ? (
+                                <span className="select-label">Select options</span>
+                            ) : (
+                                selectedOptions.map((option) => (
+                                    <span key={option.value} className="select-tag">
+                                        <span>{option.label}</span>
+                                        <button
+                                            type="button"
+                                            className="select-tag-remove"
+                                            aria-label={`Remove ${option.label}`}
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                removeSelectedOption(option.value);
+                                            }}
+                                        >
+                                            close
+                                        </button>
+                                    </span>
+                                ))
+                            )}
+                        </span>
+                    ) : (
+                        <span className="select-label">{displayLabel}</span>
+                    )}
                     <span className={`material-icons select-arrow ${isOpen ? 'open' : ''}`}>keyboard_arrow_down</span>
                 </div>
 
