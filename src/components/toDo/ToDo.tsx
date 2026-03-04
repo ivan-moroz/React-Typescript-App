@@ -1,7 +1,7 @@
 import React, { useReducer, useState } from 'react';
 import { reducer, initialState } from './reducer/reducer';
 import { TodoItem } from './components/TodoItem';
-import './styles/styles.css';
+import './styles/styles.scss';
 import { ActionType } from './types/types';
 
 export default function ToDo() {
