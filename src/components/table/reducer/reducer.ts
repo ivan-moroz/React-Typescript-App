@@ -1,18 +1,17 @@
 import {Action, State, User, ActionType} from "../types/types";
 
 export const initialState: State = {
-    users: Array.from({ length: 5 }, (_, i) => ({
-        id: i + 1,
-        name: `User ${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        age: 20 + i,
-        city: `City ${i + 1}`,
-    })),
+    users: [],
     addedColumns:[]
 };
 
 export const reducer = (state: State, action: Action): State => {
     switch (action.type) {
+        case ActionType.SET_USERS:
+            return {
+                ...state,
+                users: action.payload,
+            };
         case ActionType.EDIT_CELL:
             if (action.payload.column === 'id') {
                 return state;
@@ -38,6 +37,9 @@ export const reducer = (state: State, action: Action): State => {
             })
             return { ...state, users: [...state.users, newRow] };
         case ActionType.ADD_COLUMN:
+            if (state.users.length === 0) {
+                return state;
+            }
             const newColumnName = `column${Object.keys(state.users[0]).length}`;
             return {
                 ...state,

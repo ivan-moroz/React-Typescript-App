@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "next dev backend -p 3001",
     "build": "vite build",
+    "build:backend": "next build backend",
+    "start:backend": "next start backend -p 3001",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
+    "next": "^15.5.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
