@@ -1,60 +1,75 @@
-import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import Head from 'next/head';
-import Link from 'next/link';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import type { GetServerSideProps } from 'next';
 
-type FrontendRoute = '/' | '/todo' | '/select' | '/table' | '/calculator';
+type Props = Record<string, never>;
 
-type Props = {
-  route: FrontendRoute;
-  notFound: boolean;
+const DIST_DIR = path.resolve(process.cwd(), 'dist');
+const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
+const STATIC_FILES = new Set(['favicon.ico', 'logo192.png', 'logo512.png', 'manifest.json', 'robots.txt']);
+
+const CONTENT_TYPES: Record<string, string> = {
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.ico': 'image/x-icon',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.txt': 'text/plain; charset=utf-8',
 };
 
-const frontendRoutes: FrontendRoute[] = ['/', '/todo', '/select', '/table', '/calculator'];
+const resolveDistPath = (requestedPath: string) => {
+  const normalizedPath = path.normalize(requestedPath).replace(/^([.][.][/\\])+/, '');
+  const absolutePath = path.join(DIST_DIR, normalizedPath);
+
+  if (!absolutePath.startsWith(DIST_DIR)) {
+    return null;
+  }
+
+  return absolutePath;
+};
+
+const sendDistFile = async (res: Parameters<GetServerSideProps<Props>>[0]['res'], filePath: string) => {
+  const fileContents = await readFile(filePath);
+  const extension = path.extname(filePath).toLowerCase();
+  const contentType = CONTENT_TYPES[extension] ?? 'application/octet-stream';
+
+  res.setHeader('Content-Type', contentType);
+  res.statusCode = 200;
+  res.end(fileContents);
+};
 
 export const getServerSideProps: GetServerSideProps<Props> = async ({ params, res }) => {
   const routeParts = Array.isArray(params?.route) ? params.route : [];
-  const route = (`/${routeParts.join('/')}` || '/') as FrontendRoute;
+  const requestedPath = routeParts.join('/');
 
-  const isSupportedRoute = frontendRoutes.includes(route);
+  try {
+    if (requestedPath.startsWith('assets/') || STATIC_FILES.has(requestedPath)) {
+      const distFilePath = resolveDistPath(requestedPath);
 
-  if (!isSupportedRoute) {
-    res.statusCode = 404;
+      if (!distFilePath) {
+        res.statusCode = 400;
+        res.end('Invalid path');
+        return { props: {} };
+      }
+
+      await sendDistFile(res, distFilePath);
+      return { props: {} };
+    }
+
+    const indexHtml = await readFile(INDEX_HTML_PATH, 'utf-8');
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.statusCode = 200;
+    res.end(indexHtml);
+    return { props: {} };
+  } catch {
+    res.statusCode = 500;
+    res.end('Unable to serve frontend build from dist folder.');
+    return { props: {} };
   }
-
-  return {
-    props: {
-      route: isSupportedRoute ? route : '/',
-      notFound: !isSupportedRoute,
-    },
-  };
 };
 
-export default function FrontendRouteProxyPage({
-  route,
-  notFound,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  return (
-    <>
-      <Head>
-        <title>Frontend route: {route}</title>
-      </Head>
-
-      <main style={{ fontFamily: 'Arial, sans-serif', padding: 24 }}>
-        <h1>Next.js Backend Routes</h1>
-        <p>
-          {notFound
-            ? 'Маршрут не знайдено у фронтенд-роутінгу.'
-            : `Маршрут \"${route}\" підтримується та відповідає фронтенд-роутінгу.`}
-        </p>
-
-        <nav style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
-          {frontendRoutes.map((frontendRoute) => (
-            <Link key={frontendRoute} href={frontendRoute}>
-              {frontendRoute}
-            </Link>
-          ))}
-        </nav>
-      </main>
-    </>
-  );
+export default function FrontendRouteProxyPage() {
+  return null;
 }
