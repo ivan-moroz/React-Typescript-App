@@ -1,12 +1,38 @@
-import React, { useReducer, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { reducer, initialState } from './reducer/reducer';
 import { TodoItem } from './components/TodoItem';
 import './styles/styles.scss';
-import { ActionType } from './types/types';
+import { ActionType, Types } from './types/types';
 
 export default function ToDo() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [input, setInput] = useState('');
+
+    useEffect(() => {
+        const loadInitialTodo = async (): Promise<void> => {
+            try {
+                const response = await fetch('http://localhost:3001/api/todo');
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const initialTodo: Types = await response.json();
+
+                dispatch({
+                    type: ActionType.SET_INITIAL_TODO,
+                    payload: {
+                        ...initialTodo,
+                        id: Date.now()
+                    }
+                });
+            } catch {
+                // keep the list empty when backend is unavailable
+            }
+        };
+
+        loadInitialTodo();
+    }, []);
 
     const addTodo = (): void => {
         if (!input.trim()) return;

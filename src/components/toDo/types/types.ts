@@ -21,6 +21,7 @@ export type State = {
 };
 
 export enum ActionType {
+    SET_INITIAL_TODO = 'SET_INITIAL_TODO',
     ADD_TODO = 'ADD_TODO',
     TOGGLE_TODO = 'TOGGLE_TODO',
     REMOVE_TODO = 'REMOVE_TODO',
@@ -28,6 +29,7 @@ export enum ActionType {
 }
 
 export type Action =
+    | { type: ActionType.SET_INITIAL_TODO; payload: Types }
     | { type: ActionType.ADD_TODO; payload: string }
     | { type: ActionType.TOGGLE_TODO; payload: number }
     | { type: ActionType.REMOVE_TODO; payload: number }
