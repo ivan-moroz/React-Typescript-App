@@ -1,18 +1,18 @@
 import {State, Action, ActionType} from '../types/types';
 
 export const initialState: State = {
-    todos: [
-        {
-            id: Date.now(),
-            text: 'Learn React + TypeScript',
-            completed: false
-        }
-    ],
+    todos: [],
     deletedTodos: []
 };
 
 export function reducer(state: State, action: Action): State {
     switch (action.type) {
+        case ActionType.SET_INITIAL_TODO:
+            return {
+                todos: state.todos.length ? state.todos : [action.payload],
+                deletedTodos: state.deletedTodos
+            };
+
         case ActionType.ADD_TODO:
             return {
                 todos: [
