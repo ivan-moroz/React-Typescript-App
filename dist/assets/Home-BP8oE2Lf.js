@@ -1,1 +1,0 @@
-import{j as e}from"./index-ByTYGBnP.js";function t(){return e.jsxs("div",{className:"app",children:[e.jsx("h1",{children:"React TypeScript application"}),e.jsx("p",{children:"This app features lazy loading of JavaScript, a router, and several simple components written in React and TypeScript, covered by Jest tests. Some parts are generated using AI."})]})}export{t as default};

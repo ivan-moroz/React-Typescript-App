@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ToDo-2skgxDfP.js","assets/index-BqBDiIxX.js","assets/index-_9hppYLF.css","assets/ToDo-BvGD06S8.css"])))=>i.map(i=>d[i]);
+import{j as o,r as s,_ as r}from"./index-BqBDiIxX.js";const t=s.lazy(()=>r(()=>import("./ToDo-2skgxDfP.js"),__vite__mapDeps([0,1,2,3])));function e(){return o.jsxs("div",{className:"app",children:[o.jsx("h1",{children:"ToDo List"}),o.jsx(t,{})]})}export{e as default};
