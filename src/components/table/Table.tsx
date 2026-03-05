@@ -28,12 +28,39 @@ function EditableTable() {
         void loadUsers();
     }, []);
 
+    const refreshUsers = async (): Promise<void> => {
+        const response = await fetch('http://localhost:3001/api/users');
+
+        if (!response.ok) {
+            throw new Error('Unable to fetch users');
+        }
+
+        const users = await response.json();
+        dispatch({ type: ActionType.SET_USERS, payload: users });
+    };
+
     const handleEdit = (id: number, column: string, value: string):void => {
         dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
     };
 
-    const handleAddRow = ():void => {
-        dispatch({ type: ActionType.ADD_ROW });
+    const handleAddRow = async (): Promise<void> => {
+        try {
+            const createResponse = await fetch('http://localhost:3001/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}),
+            });
+
+            if (!createResponse.ok) {
+                throw new Error('Unable to create user');
+            }
+
+            await refreshUsers();
+        } catch {
+            setError('Failed to add user to backend');
+        }
     };
 
     const handleAddColumn = ():void => {

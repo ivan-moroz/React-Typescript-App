@@ -12,10 +12,42 @@ describe('Table Component', () => {
   }));
 
   beforeEach(() => {
-    vi.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => mockUsers,
-    } as Response);
+    const usersAfterCreate = [...mockUsers, {
+      id: 6,
+      name: 'New User',
+      email: 'new.user@example.com',
+      age: 18,
+      city: 'Unknown',
+    }];
+
+    let getUsersCallCount = 0;
+
+    vi.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      const method = init?.method ?? 'GET';
+
+      if (url.includes('/api/users') && method === 'POST') {
+        return {
+          ok: true,
+          json: async () => usersAfterCreate[usersAfterCreate.length - 1],
+        } as Response;
+      }
+
+      if (url.includes('/api/users') && method === 'GET') {
+        getUsersCallCount += 1;
+        const payload = getUsersCallCount > 1 ? usersAfterCreate : mockUsers;
+
+        return {
+          ok: true,
+          json: async () => payload,
+        } as Response;
+      }
+
+      return {
+        ok: false,
+        json: async () => ({}),
+      } as Response;
+    });
   });
 
   afterEach(() => {
@@ -26,8 +58,10 @@ describe('Table Component', () => {
     render(<Table />);
     await screen.findByDisplayValue('User 1');
     fireEvent.click(screen.getByTestId('table-add-row'));
-    const rows = document.querySelectorAll('table tr');
-    expect(rows.length).toBe(7);
+    await waitFor(() => {
+      const rows = document.querySelectorAll('table tr');
+      expect(rows.length).toBe(7);
+    });
   });
 
   test('adds a new column', async () => {

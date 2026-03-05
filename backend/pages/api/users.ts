@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { addUser, getUsers } from '../../utils/postgres';
 
 type User = {
   id: number;
@@ -8,17 +9,11 @@ type User = {
   city: string;
 };
 
-const users: User[] = [
-  { id: 1, name: 'User 1', email: 'user1@example.com', age: 20, city: 'City 1' },
-  { id: 2, name: 'User 2', email: 'user2@example.com', age: 21, city: 'City 2' },
-  { id: 3, name: 'User 3', email: 'user3@example.com', age: 22, city: 'City 3' },
-  { id: 4, name: 'User 4', email: 'user4@example.com', age: 23, city: 'City 4' },
-  { id: 5, name: 'User 5', email: 'user5@example.com', age: 24, city: 'City 5' },
-];
+type ErrorResponse = { message: string };
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<User[] | { message: string }>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<User[] | User | ErrorResponse>) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -26,10 +21,30 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<User[]
     return;
   }
 
-  if (req.method !== 'GET') {
+  if (req.method === 'GET') {
+    try {
+      const users = await getUsers();
+      res.status(200).json(users);
+      return;
+    } catch {
+      res.status(500).json({ message: 'Failed to load users from database' });
+      return;
+    }
+  }
+
+  if (req.method === 'POST') {
+    try {
+      const newUser = await addUser(req.body);
+      res.status(201).json(newUser);
+      return;
+    } catch {
+      res.status(500).json({ message: 'Failed to create user in database' });
+      return;
+    }
+  }
+
+  if (req.method !== 'GET' && req.method !== 'POST') {
     res.status(405).json({ message: 'Method not allowed' });
     return;
   }
-
-  res.status(200).json(users);
 }
