@@ -1,6 +1,6 @@
-# React (TypeScript) SPA
+# React (TypeScript) SPA + Next.js
 
-This project uses **Vite + React + TypeScript**.
+This project uses **Vite + React + TypeScript + Next.js**.
 
 ## Available Scripts
 
