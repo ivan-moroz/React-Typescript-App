@@ -10,14 +10,17 @@
     "build:backend": "next build backend",
     "start:backend": "next start backend -p 3001",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "next": "^15.5.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
-    "sass": "^1.93.2"
+    "sass": "^1.93.2",
+    "@prisma/client": "^6.5.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
@@ -30,6 +33,7 @@
     "jsdom": "^26.1.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "prisma": "^6.5.0"
   }
 }

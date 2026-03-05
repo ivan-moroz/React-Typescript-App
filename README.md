@@ -28,6 +28,22 @@ Builds the app for production into the `dist` folder.
 
 Previews the production build locally.
 
+## PostgreSQL + Prisma setup
+
+1. Copy `.env.example` to `.env`.
+2. Set `DATABASE_URL` to your PostgreSQL connection string.
+3. Install dependencies: `npm install`.
+4. Generate Prisma client: `npm run prisma:generate`.
+5. Create/update DB schema: `npm run prisma:migrate -- --name init_users`.
+6. Start backend: `npm run dev:backend`.
+
+The users table endpoint now supports:
+
+- `GET /api/users`
+- `POST /api/users`
+- `PUT /api/users?id=<id>`
+- `DELETE /api/users?id=<id>`
+
 ## Notes
 
-The editable table now loads its initial rows from the Next.js API endpoint instead of local static data.
+The editable table loads its initial rows from the Next.js API endpoint, now backed by PostgreSQL via Prisma.
