@@ -37,6 +37,43 @@ describe('Table Component', () => {
     expect(screen.getByText('column5')).toBeInTheDocument();
   });
 
+  test('opens add user form and creates a user', async () => {
+    const fetchMock = vi.spyOn(global, 'fetch');
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockUsers,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 6, name: 'New User', email: 'new@example.com', age: 30, city: 'Paris' }],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [...mockUsers, { id: 6, name: 'New User', email: 'new@example.com', age: 30, city: 'Paris' }],
+      } as Response);
+
+    render(<Table />);
+    await screen.findByDisplayValue('User 1');
+
+    fireEvent.click(screen.getByTestId('table-add-user'));
+
+    fireEvent.change(screen.getByPlaceholderText('Name'), { target: { value: 'New User' } });
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'new@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Age'), { target: { value: '30' } });
+    fireEvent.change(screen.getByPlaceholderText('City'), { target: { value: 'Paris' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save User' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:3001/api/users', expect.objectContaining({
+        method: 'POST',
+      }));
+    });
+
+    expect(await screen.findByDisplayValue('New User')).toBeInTheDocument();
+  });
 
   test('renders id column as non-editable text', async () => {
     render(<Table />);
