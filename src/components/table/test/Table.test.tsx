@@ -40,6 +40,38 @@ describe('Table Component', () => {
     expect(idCell).toHaveTextContent('1');
   });
 
+
+  test('deletes a user from the table', async () => {
+    const usersAfterDelete = mockUsers.slice(1);
+
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockUsers,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ message: 'User deleted' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => usersAfterDelete,
+      } as Response);
+
+    render(<Table />);
+
+    await screen.findByDisplayValue('User 1');
+
+    fireEvent.click(screen.getByLabelText('Delete user User 1'));
+
+    await waitFor(() => {
+      expect(screen.queryByDisplayValue('User 1')).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByDisplayValue('User 2')).toBeInTheDocument();
+  });
+
   test('creates a user and refreshes the table', async () => {
     const updatedUsers = [
       ...mockUsers,
