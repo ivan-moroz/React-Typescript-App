@@ -7,24 +7,34 @@ function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
+    const [isAddUserFormOpen, setIsAddUserFormOpen] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [formError, setFormError] = useState<string>("");
+    const [newUser, setNewUser] = useState({
+        name: "",
+        email: "",
+        age: "",
+        city: ""
+    });
+
+    const loadUsers = async (): Promise<void> => {
+        setError("");
+        try {
+            const response = await fetch('http://localhost:3001/api/users');
+            if (!response.ok) {
+                throw new Error('Unable to fetch users');
+            }
+
+            const users = await response.json();
+            dispatch({type: ActionType.SET_USERS, payload: users});
+        } catch {
+            setError('Failed to load users from backend');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadUsers = async (): Promise<void> => {
-            try {
-                const response = await fetch('http://localhost:3001/api/users');
-                if (!response.ok) {
-                    throw new Error('Unable to fetch users');
-                }
-
-                const users = await response.json();
-                dispatch({ type: ActionType.SET_USERS, payload: users });
-            } catch {
-                setError('Failed to load users from backend');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         void loadUsers();
     }, []);
 
@@ -40,14 +50,97 @@ function EditableTable() {
         dispatch({ type: ActionType.ADD_COLUMN });
     };
 
+    const handleInputChange = (field: 'name' | 'email' | 'age' | 'city', value: string): void => {
+        setNewUser((prevState) => ({...prevState, [field]: value}));
+    };
+
+    const handleCreateUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        setFormError("");
+
+        if (!newUser.name.trim() || !newUser.email.trim() || !newUser.age.trim() || !newUser.city.trim()) {
+            setFormError('All fields are required');
+            return;
+        }
+
+        const parsedAge = Number(newUser.age);
+        if (!Number.isInteger(parsedAge) || parsedAge <= 0) {
+            setFormError('Age must be a positive number');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const response = await fetch('http://localhost:3001/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: newUser.name.trim(),
+                    email: newUser.email.trim(),
+                    age: parsedAge,
+                    city: newUser.city.trim()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to create user');
+            }
+
+            await loadUsers();
+            setIsAddUserFormOpen(false);
+            setNewUser({name: '', email: '', age: '', city: ''});
+        } catch {
+            setFormError('Failed to add user');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div>
             {isLoading && <p>Loading table data...</p>}
             {error && <p>{error}</p>}
             <div className='input-group'>
+                <button data-testid='table-add-user' onClick={() => setIsAddUserFormOpen((prevState) => !prevState)}>
+                    {isAddUserFormOpen ? 'Close Form' : 'Add User'}
+                </button>
                 <button data-testid='table-add-row' onClick={handleAddRow}>Add Row</button>
                 <button data-testid='table-add-column' onClick={handleAddColumn}>Add Column</button>
             </div>
+            {isAddUserFormOpen && (
+                <form onSubmit={(event) => void handleCreateUser(event)} style={{marginTop: '10px'}}>
+                    <input
+                        type='text'
+                        placeholder='Name'
+                        value={newUser.name}
+                        onChange={(event) => handleInputChange('name', event.target.value)}
+                    />
+                    <input
+                        type='email'
+                        placeholder='Email'
+                        value={newUser.email}
+                        onChange={(event) => handleInputChange('email', event.target.value)}
+                    />
+                    <input
+                        type='number'
+                        placeholder='Age'
+                        value={newUser.age}
+                        onChange={(event) => handleInputChange('age', event.target.value)}
+                    />
+                    <input
+                        type='text'
+                        placeholder='City'
+                        value={newUser.city}
+                        onChange={(event) => handleInputChange('city', event.target.value)}
+                    />
+                    <button type='submit' disabled={isSubmitting}>
+                        {isSubmitting ? 'Saving...' : 'Save User'}
+                    </button>
+                    {formError && <p>{formError}</p>}
+                </form>
+            )}
             {state.users.length === 0 ? (
                 !isLoading && !error ? <p>No users found.</p> : null
             ) : (

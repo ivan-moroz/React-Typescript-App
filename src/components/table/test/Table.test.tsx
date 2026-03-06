@@ -37,7 +37,6 @@ describe('Table Component', () => {
     expect(screen.getByText('column5')).toBeInTheDocument();
   });
 
-
   test('renders id column as non-editable text', async () => {
     render(<Table />);
     await waitFor(() => expect(screen.getByDisplayValue('User 1')).toBeInTheDocument());
@@ -46,5 +45,43 @@ describe('Table Component', () => {
 
     expect(idCell.querySelector('input')).toBeNull();
     expect(idCell).toHaveTextContent('1');
+  });
+
+  test('creates a user and refreshes the table', async () => {
+    const updatedUsers = [
+      ...mockUsers,
+      { id: 6, name: 'John', email: 'john@example.com', age: 31, city: 'Warsaw' },
+    ];
+
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockUsers,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 6, name: 'John', email: 'john@example.com', age: 31, city: 'Warsaw' }],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => updatedUsers,
+      } as Response);
+
+    render(<Table />);
+
+    await screen.findByDisplayValue('User 1');
+    fireEvent.click(screen.getByTestId('table-add-user'));
+
+    fireEvent.change(screen.getByPlaceholderText('Name'), { target: { value: 'John' } });
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Age'), { target: { value: '31' } });
+    fireEvent.change(screen.getByPlaceholderText('City'), { target: { value: 'Warsaw' } });
+
+    fireEvent.click(screen.getByText('Save User'));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('John')).toBeInTheDocument();
+    });
   });
 });
