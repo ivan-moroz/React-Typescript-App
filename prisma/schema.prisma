@@ -13,8 +13,6 @@ model User {
   email     String   @unique
   age       Int
   city      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
