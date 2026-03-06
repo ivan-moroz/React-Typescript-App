@@ -1,6 +1,6 @@
 # React (TypeScript) SPA + Next.js + PostgreSQL + Prisma
 
-This project uses **Vite + React + TypeScript + Next.js** for the app layer and **PostgreSQL + Prisma** for user management.
+This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer and **PostgreSQL + Prisma** for user management.
 
 ## PostgreSQL + Prisma setup
 
