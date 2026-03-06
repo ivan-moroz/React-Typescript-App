@@ -91,6 +91,24 @@ function EditableTable() {
         }
     };
 
+    const handleDeleteUser = async (id: number): Promise<void> => {
+        setError('');
+
+        try {
+            const response = await fetch(`http://localhost:3001/api/users/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to delete user');
+            }
+
+            await loadUsers();
+        } catch {
+            setError('Failed to delete user');
+        }
+    };
+
     return (
         <div>
             {isLoading && <p>Loading table data...</p>}
@@ -143,6 +161,7 @@ function EditableTable() {
                     {Object.keys(state.users[0]).map((key) => (
                         <th key={key}>{key}</th>
                     ))}
+                    <th>actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -163,6 +182,15 @@ function EditableTable() {
                                 )}
                             </td>
                         ))}
+                        <td>
+                            <button
+                                type='button'
+                                aria-label={`Delete user ${user.name}`}
+                                onClick={() => void handleDeleteUser(user.id)}
+                            >
+                                ✕
+                            </button>
+                        </td>
                     </tr>
                 ))}
                 </tbody>
