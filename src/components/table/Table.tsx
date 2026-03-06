@@ -43,14 +43,6 @@ function EditableTable() {
         dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
     };
 
-    const handleAddRow = ():void => {
-        dispatch({ type: ActionType.ADD_ROW });
-    };
-
-    const handleAddColumn = ():void => {
-        dispatch({ type: ActionType.ADD_COLUMN });
-    };
-
     const handleInputChange = (field: 'name' | 'email' | 'age' | 'city', value: string): void => {
         setNewUser((prevState) => ({...prevState, [field]: value}));
     };
@@ -107,8 +99,6 @@ function EditableTable() {
                 <button data-testid='table-add-user' onClick={() => setIsAddUserFormOpen((prevState) => !prevState)}>
                     {isAddUserFormOpen ? 'Close Form' : 'Add User'}
                 </button>
-                <button data-testid='table-add-row' onClick={handleAddRow}>Add Row</button>
-                <button data-testid='table-add-column' onClick={handleAddColumn}>Add Column</button>
             </div>
             {isAddUserFormOpen && (
                 <form className='add-user-form' onSubmit={(event) => void handleCreateUser(event)} style={{marginTop: '10px'}}>

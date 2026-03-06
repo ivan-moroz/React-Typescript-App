@@ -22,19 +22,12 @@ describe('Table Component', () => {
     vi.restoreAllMocks();
   });
 
-  test('adds a new row', async () => {
+  test('does not render add row and add column actions', async () => {
     render(<Table />);
     await screen.findByDisplayValue('User 1');
-    fireEvent.click(screen.getByTestId('table-add-row'));
-    const rows = document.querySelectorAll('table tr');
-    expect(rows.length).toBe(7);
-  });
 
-  test('adds a new column', async () => {
-    render(<Table />);
-    await screen.findByDisplayValue('User 1');
-    fireEvent.click(screen.getByTestId('table-add-column'));
-    expect(screen.getByText('column5')).toBeInTheDocument();
+    expect(screen.queryByTestId('table-add-row')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('table-add-column')).not.toBeInTheDocument();
   });
 
   test('renders id column as non-editable text', async () => {
