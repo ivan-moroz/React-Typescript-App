@@ -2,6 +2,7 @@ import React, {useEffect, useReducer, useState} from "react";
 
 import {initialState, reducer} from "./reducer/reducer";
 import {ActionType} from "./types/types";
+import './styles/styles.scss';
 
 function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
@@ -110,7 +111,7 @@ function EditableTable() {
                 <button data-testid='table-add-column' onClick={handleAddColumn}>Add Column</button>
             </div>
             {isAddUserFormOpen && (
-                <form onSubmit={(event) => void handleCreateUser(event)} style={{marginTop: '10px'}}>
+                <form className='add-user-form' onSubmit={(event) => void handleCreateUser(event)} style={{marginTop: '10px'}}>
                     <input
                         type='text'
                         placeholder='Name'
@@ -135,9 +136,11 @@ function EditableTable() {
                         value={newUser.city}
                         onChange={(event) => handleInputChange('city', event.target.value)}
                     />
-                    <button type='submit' disabled={isSubmitting}>
-                        {isSubmitting ? 'Saving...' : 'Save User'}
-                    </button>
+                    <div className='input-group'>
+                        <button type='submit' disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : 'Save User'}
+                        </button>
+                    </div>
                     {formError && <p>{formError}</p>}
                 </form>
             )}
