@@ -21,7 +21,7 @@ type UsersResponse =
     }>
   | ErrorResponse;
 
-function setCors(res: NextApiResponse<unknown>) {
+function setCors(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
