@@ -12,22 +12,42 @@ describe('Table Component', () => {
   }));
 
   beforeEach(() => {
-    vi.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => mockUsers,
-    } as Response);
+    vi.spyOn(global, 'fetch').mockImplementation(async (_input, init) => {
+      if (!init?.method || init.method === 'GET') {
+        return {
+          ok: true,
+          json: async () => mockUsers,
+        } as Response;
+      }
+
+      if (init.method === 'POST') {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 6,
+            name: 'User 6',
+            email: 'user6@example.com',
+            age: 20,
+            city: 'Unknown',
+          }),
+        } as Response;
+      }
+
+      throw new Error(`Unsupported method in test mock: ${init.method}`);
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  test('adds a new row', async () => {
+  test('adds a new row by posting to backend', async () => {
     render(<Table />);
     await screen.findByDisplayValue('User 1');
     fireEvent.click(screen.getByTestId('table-add-row'));
-    const rows = document.querySelectorAll('table tr');
-    expect(rows.length).toBe(7);
+
+    await waitFor(() => expect(screen.getByDisplayValue('User 6')).toBeInTheDocument());
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/users', expect.objectContaining({ method: 'POST' }));
   });
 
   test('adds a new column', async () => {

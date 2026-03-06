@@ -24,18 +24,14 @@ export const reducer = (state: State, action: Action): State => {
                         : user
                 ),
             };
-        case ActionType.ADD_ROW:
-            const newRow: User = {
-                id: state.users.length + 1,
-                name: `User ${state.users.length + 1}`,
-                email: "",
-                age: "",
-                city: ""
-            };
+        case ActionType.ADD_USER:
+            const newUser: User = { ...action.payload };
             state.addedColumns.forEach((col) => {
-                newRow[col] = ""
-            })
-            return { ...state, users: [...state.users, newRow] };
+                if (!(col in newUser)) {
+                    newUser[col] = "";
+                }
+            });
+            return { ...state, users: [...state.users, newUser] };
         case ActionType.ADD_COLUMN:
             if (state.users.length === 0) {
                 return state;

@@ -32,8 +32,34 @@ function EditableTable() {
         dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
     };
 
-    const handleAddRow = ():void => {
-        dispatch({ type: ActionType.ADD_ROW });
+    const handleAddRow = async (): Promise<void> => {
+        setError('');
+        const nextId = state.users.length === 0 ? 1 : Math.max(...state.users.map((user) => user.id)) + 1;
+        const userPayload = {
+            name: `User ${nextId}`,
+            email: `user${nextId}@example.com`,
+            age: 20,
+            city: 'Unknown',
+        };
+
+        try {
+            const response = await fetch('http://localhost:3001/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userPayload),
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to add user');
+            }
+
+            const createdUser = await response.json();
+            dispatch({ type: ActionType.ADD_USER, payload: createdUser });
+        } catch {
+            setError('Failed to add user to backend');
+        }
     };
 
     const handleAddColumn = ():void => {
@@ -45,7 +71,7 @@ function EditableTable() {
             {isLoading && <p>Loading table data...</p>}
             {error && <p>{error}</p>}
             <div className='input-group'>
-                <button data-testid='table-add-row' onClick={handleAddRow}>Add Row</button>
+                <button data-testid='table-add-row' onClick={() => void handleAddRow()}>Add Row</button>
                 <button data-testid='table-add-column' onClick={handleAddColumn}>Add Column</button>
             </div>
             {state.users.length === 0 ? (
