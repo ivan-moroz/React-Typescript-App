@@ -3,7 +3,7 @@ import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import Table from '../Table';
 
 describe('Table Component', () => {
-  const mockUsers = Array.from({ length: 5 }, (_, i) => ({
+  const mockUsers = Array.from({ length: 2 }, (_, i) => ({
     id: i + 1,
     name: `User ${i + 1}`,
     email: `user${i + 1}@example.com`,
@@ -12,31 +12,24 @@ describe('Table Component', () => {
   }));
 
   beforeEach(() => {
-    vi.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => mockUsers,
-    } as Response);
+    vi.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
+      if (init?.method === 'POST') {
+        return {
+          ok: true,
+          json: async () => [{ id: 3, name: 'New User', email: 'new@example.com', age: 30, city: 'Berlin' }],
+        } as Response;
+      }
+
+      return {
+        ok: true,
+        json: async () => mockUsers,
+      } as Response;
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
-
-  test('adds a new row', async () => {
-    render(<Table />);
-    await screen.findByDisplayValue('User 1');
-    fireEvent.click(screen.getByTestId('table-add-row'));
-    const rows = document.querySelectorAll('table tr');
-    expect(rows.length).toBe(7);
-  });
-
-  test('adds a new column', async () => {
-    render(<Table />);
-    await screen.findByDisplayValue('User 1');
-    fireEvent.click(screen.getByTestId('table-add-column'));
-    expect(screen.getByText('column5')).toBeInTheDocument();
-  });
-
 
   test('renders id column as non-editable text', async () => {
     render(<Table />);
@@ -46,5 +39,39 @@ describe('Table Component', () => {
 
     expect(idCell.querySelector('input')).toBeNull();
     expect(idCell).toHaveTextContent('1');
+  });
+
+  test('shows add user form', async () => {
+    render(<Table />);
+    await screen.findByDisplayValue('User 1');
+
+    fireEvent.click(screen.getByTestId('table-add-user'));
+
+    expect(screen.getByPlaceholderText('Name')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Age')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('City')).toBeInTheDocument();
+  });
+
+  test('submits new user and refreshes users list', async () => {
+    render(<Table />);
+    await screen.findByDisplayValue('User 1');
+
+    fireEvent.click(screen.getByTestId('table-add-user'));
+
+    fireEvent.change(screen.getByPlaceholderText('Name'), { target: { value: 'New User' } });
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'new@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Age'), { target: { value: '30' } });
+    fireEvent.change(screen.getByPlaceholderText('City'), { target: { value: 'Berlin' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save User' }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/users', expect.objectContaining({ method: 'POST' }));
+    });
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/users');
+    });
   });
 });
