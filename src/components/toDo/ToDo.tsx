@@ -11,7 +11,7 @@ export default function ToDo() {
     useEffect(() => {
         const loadInitialTodo = async (): Promise<void> => {
             try {
-                const response = await fetch('http://localhost:3001/api/todo');
+                const response = await fetch('/api/todo');
 
                 if (!response.ok) {
                     return;

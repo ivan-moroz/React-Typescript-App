@@ -21,7 +21,7 @@ function EditableTable() {
     const loadUsers = async (): Promise<void> => {
         setError("");
         try {
-            const response = await fetch('http://localhost:3001/api/users');
+            const response = await fetch('/api/users');
             if (!response.ok) {
                 throw new Error('Unable to fetch users');
             }
@@ -64,7 +64,7 @@ function EditableTable() {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('http://localhost:3001/api/users', {
+            const response = await fetch('/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -95,7 +95,7 @@ function EditableTable() {
         setError('');
 
         try {
-            const response = await fetch(`http://localhost:3001/api/users/${id}`, {
+            const response = await fetch(`/api/users/${id}`, {
                 method: 'DELETE',
             });
 
