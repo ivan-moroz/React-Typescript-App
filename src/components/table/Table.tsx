@@ -188,7 +188,7 @@ function EditableTable() {
                                 aria-label={`Delete user ${user.name}`}
                                 onClick={() => void handleDeleteUser(user.id)}
                             >
-                                ✕
+                                <span className="material-icons">delete</span>
                             </button>
                         </td>
                     </tr>
