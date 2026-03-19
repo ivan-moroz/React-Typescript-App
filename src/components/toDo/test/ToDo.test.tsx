@@ -29,7 +29,7 @@ describe('ToDo Component', () => {
 
     expect(screen.getByText('New Todo')).toBeInTheDocument();
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/todo');
+      expect(global.fetch).toHaveBeenCalledWith('/api/todo');
     });
   });
 
