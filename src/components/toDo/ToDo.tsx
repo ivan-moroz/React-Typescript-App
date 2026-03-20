@@ -40,7 +40,7 @@ export default function ToDo() {
         setInput('');
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>): void => {
         e.preventDefault();
         addTodo();
     };
