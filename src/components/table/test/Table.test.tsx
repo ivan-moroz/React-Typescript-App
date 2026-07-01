@@ -109,4 +109,58 @@ describe('Table Component', () => {
       expect(screen.getByDisplayValue('John')).toBeInTheDocument();
     });
   });
+
+  test('edits a user through the user form and refreshes the table', async () => {
+    const updatedUsers = mockUsers.map((user) =>
+      user.id === 1
+        ? { ...user, name: 'Jane', email: 'jane@example.com', age: 34, city: 'Berlin' }
+        : user
+    );
+
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockUsers,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 1, name: 'Jane', email: 'jane@example.com', age: 34, city: 'Berlin' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => updatedUsers,
+      } as Response);
+
+    render(<Table />);
+
+    await screen.findByDisplayValue('User 1');
+    fireEvent.click(screen.getByLabelText('Edit user User 1'));
+
+    fireEvent.change(screen.getAllByDisplayValue('User 1')[0], { target: { value: 'Jane' } });
+    fireEvent.change(screen.getAllByDisplayValue('user1@example.com')[0], { target: { value: 'jane@example.com' } });
+    fireEvent.change(screen.getAllByDisplayValue('20')[0], { target: { value: '34' } });
+    fireEvent.change(screen.getAllByDisplayValue('City 1')[0], { target: { value: 'Berlin' } });
+
+    fireEvent.click(screen.getByText('Update User'));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/users/1', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: 'Jane',
+          email: 'jane@example.com',
+          age: 34,
+          city: 'Berlin',
+        }),
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Jane')).toBeInTheDocument();
+    });
+  });
 });

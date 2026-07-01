@@ -14,4 +14,13 @@ export enum ActionType {
 
 export type Action =
     | { type: ActionType.SET_USERS; payload: User[] }
-    | { type: ActionType.EDIT_CELL; payload: { id: number; column: string; value: string } };
+    | { type: ActionType.EDIT_CELL; payload: { id: number; column: string; value: string } 
+
+};
+
+export type UserFormState = {
+    name: string;
+    email: string;
+    age: string;
+    city: string;
+};
