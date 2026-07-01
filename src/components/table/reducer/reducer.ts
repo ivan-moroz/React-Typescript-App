@@ -11,18 +11,6 @@ export const reducer = (state: State, action: Action): State => {
                 ...state,
                 users: action.payload,
             };
-        case ActionType.EDIT_CELL:
-            if (action.payload.column === 'id') {
-                return state;
-            }
-            return {
-                ...state,
-                users: state.users.map((user) =>
-                    user.id === action.payload.id
-                        ? { ...user, [action.payload.column]: action.payload.value }
-                        : user
-                ),
-            };
         default:
             return state;
     }

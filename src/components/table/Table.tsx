@@ -44,10 +44,6 @@ function EditableTable() {
         void loadUsers();
     }, []);
 
-    const handleEdit = (id: number, column: string, value: string):void => {
-        dispatch({ type: ActionType.EDIT_CELL, payload: { id, column, value } });
-    };
-
     const resetUserForm = (): void => {
         setUserForm(emptyUserForm);
         setEditingUserId(null);
@@ -206,7 +202,7 @@ function EditableTable() {
             {state.users.length === 0 ? (
                 !isLoading && !error ? <p>No users found.</p> : null
             ) : (
-            <table border={1} style={{ marginTop: "10px", borderCollapse: "collapse" }}>
+            <table className="user-table" border={1} style={{ marginTop: "10px", borderCollapse: "collapse" }}>
                 <thead>
                 <tr>
                     {Object.keys(state.users[0]).map((key) => (
@@ -220,17 +216,7 @@ function EditableTable() {
                     <tr key={user.id}>
                         {Object.entries(user).map(([key, value]) => (
                             <td key={key}>
-                                {key === 'id' ? (
-                                    <span>{value}</span>
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={value}
-                                        onChange={(e) =>
-                                            handleEdit(user.id, key, e.target.value)
-                                        }
-                                    />
-                                )}
+                                <span>{value}</span>
                             </td>
                         ))}
                         <td>

@@ -9,14 +9,10 @@ export type State = {
 
 export enum ActionType {
     SET_USERS = 'SET_USERS',
-    EDIT_CELL = 'EDIT_CELL',
 }
 
 export type Action =
-    | { type: ActionType.SET_USERS; payload: User[] }
-    | { type: ActionType.EDIT_CELL; payload: { id: number; column: string; value: string } 
-
-};
+    | { type: ActionType.SET_USERS; payload: User[] };
 
 export type UserFormState = {
     name: string;

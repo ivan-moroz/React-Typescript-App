@@ -24,20 +24,22 @@ describe('Table Component', () => {
 
   test('does not render add row and add column actions', async () => {
     render(<Table />);
-    await screen.findByDisplayValue('User 1');
+    await screen.findByText('User 1');
 
     expect(screen.queryByTestId('table-add-row')).not.toBeInTheDocument();
     expect(screen.queryByTestId('table-add-column')).not.toBeInTheDocument();
   });
 
-  test('renders id column as non-editable text', async () => {
+  test('renders table cells as non-editable text', async () => {
     render(<Table />);
-    await waitFor(() => expect(screen.getByDisplayValue('User 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('User 1')).toBeInTheDocument());
     const firstBodyRow = document.querySelectorAll('tbody tr')[0];
-    const idCell = firstBodyRow.querySelectorAll('td')[0];
-
-    expect(idCell.querySelector('input')).toBeNull();
-    expect(idCell).toHaveTextContent('1');
+    expect(firstBodyRow.querySelector('input')).toBeNull();
+    expect(firstBodyRow).toHaveTextContent('1');
+    expect(firstBodyRow).toHaveTextContent('User 1');
+    expect(firstBodyRow).toHaveTextContent('user1@example.com');
+    expect(firstBodyRow).toHaveTextContent('20');
+    expect(firstBodyRow).toHaveTextContent('City 1');
   });
 
 
@@ -61,15 +63,15 @@ describe('Table Component', () => {
 
     render(<Table />);
 
-    await screen.findByDisplayValue('User 1');
+    await screen.findByText('User 1');
 
     fireEvent.click(screen.getByLabelText('Delete user User 1'));
 
     await waitFor(() => {
-      expect(screen.queryByDisplayValue('User 1')).not.toBeInTheDocument();
+      expect(screen.queryByText('User 1')).not.toBeInTheDocument();
     });
 
-    expect(screen.getByDisplayValue('User 2')).toBeInTheDocument();
+    expect(screen.getByText('User 2')).toBeInTheDocument();
   });
 
   test('creates a user and refreshes the table', async () => {
@@ -95,7 +97,7 @@ describe('Table Component', () => {
 
     render(<Table />);
 
-    await screen.findByDisplayValue('User 1');
+    await screen.findByText('User 1');
     fireEvent.click(screen.getByTestId('table-add-user'));
 
     fireEvent.change(screen.getByPlaceholderText('Name'), { target: { value: 'John' } });
@@ -106,7 +108,7 @@ describe('Table Component', () => {
     fireEvent.click(screen.getByText('Save User'));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('John')).toBeInTheDocument();
+      expect(screen.getByText('John')).toBeInTheDocument();
     });
   });
 
@@ -134,7 +136,7 @@ describe('Table Component', () => {
 
     render(<Table />);
 
-    await screen.findByDisplayValue('User 1');
+    await screen.findByText('User 1');
     fireEvent.click(screen.getByLabelText('Edit user User 1'));
 
     fireEvent.change(screen.getAllByDisplayValue('User 1')[0], { target: { value: 'Jane' } });
@@ -160,7 +162,7 @@ describe('Table Component', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Jane')).toBeInTheDocument();
+      expect(screen.getByText('Jane')).toBeInTheDocument();
     });
   });
 });
