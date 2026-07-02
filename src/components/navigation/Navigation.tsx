@@ -32,7 +32,7 @@ export default function Navigation() {
                 to="/table"
                 style={activeStyle}
             >
-                Table
+                Users
             </NavLink>
             <NavLink
                 to="/calculator"
