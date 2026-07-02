@@ -52,15 +52,14 @@ function EditableTable() {
         setFormError("");
     };
 
-    const handleToggleCreateUserForm = (): void => {
-        if (isUserFormOpen && !isEditingUser) {
-            setIsUserFormOpen(false);
-            resetUserForm();
-            return;
-        }
-
+    const handleStartCreateUser = (): void => {
         resetUserForm();
         setIsUserFormOpen(true);
+    };
+
+    const handleCloseUserForm = (): void => {
+        setIsUserFormOpen(false);
+        resetUserForm();
     };
 
     const handleStartEditUser = (userId: number): void => {
@@ -165,55 +164,10 @@ function EditableTable() {
             {isLoading && <p>Loading table data...</p>}
             {error && <p>{error}</p>}
             <div className='input-group'>
-                <button data-testid='table-add-user' onClick={handleToggleCreateUserForm}>
-                    {isUserFormOpen && !isEditingUser ? 'Close Form' : 'Add User'}
+                <button data-testid='table-add-user' onClick={handleStartCreateUser}>
+                    Add User
                 </button>
             </div>
-            {isUserFormOpen && (
-                <form className='add-user-form' onSubmit={(event) => void handleSubmitUser(event)} style={{marginTop: '10px'}}>
-                    <input
-                        type='text'
-                        placeholder='Name'
-                        value={userForm.name}
-                        onChange={(event) => handleInputChange('name', event.target.value)}
-                    />
-                    <input
-                        type='email'
-                        placeholder='Email'
-                        value={userForm.email}
-                        onChange={(event) => handleInputChange('email', event.target.value)}
-                    />
-                    <input
-                        type='number'
-                        placeholder='Age'
-                        value={userForm.age}
-                        onChange={(event) => handleInputChange('age', event.target.value)}
-                    />
-                    <input
-                        type='text'
-                        placeholder='City'
-                        value={userForm.city}
-                        onChange={(event) => handleInputChange('city', event.target.value)}
-                    />
-                    <div className='input-group'>
-                        <button type='submit' disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : isEditingUser ? 'Update User' : 'Save User'}
-                        </button>
-                        {isEditingUser && (
-                            <button
-                                type='button'
-                                onClick={() => {
-                                    setIsUserFormOpen(false);
-                                    resetUserForm();
-                                }}
-                            >
-                                Cancel
-                            </button>
-                        )}
-                    </div>
-                    {formError && <p>{formError}</p>}
-                </form>
-            )}
             {state.users.length === 0 ? (
                 !isLoading && !error ? <p>No users found.</p> : null
             ) : (
@@ -255,6 +209,49 @@ function EditableTable() {
                 </tbody>
             </table>
             )}
+            <Modal
+                isOpen={isUserFormOpen}
+                title={isEditingUser ? 'Edit user' : 'Create user'}
+                onClose={handleCloseUserForm}
+                footer={(
+                    <>
+                        <button type='button' onClick={handleCloseUserForm}>
+                            Cancel
+                        </button>
+                        <button type='submit' form='user-form' disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : isEditingUser ? 'Update User' : 'Save User'}
+                        </button>
+                    </>
+                )}
+            >
+                <form id='user-form' className='add-user-form' onSubmit={(event) => void handleSubmitUser(event)}>
+                    <input
+                        type='text'
+                        placeholder='Name'
+                        value={userForm.name}
+                        onChange={(event) => handleInputChange('name', event.target.value)}
+                    />
+                    <input
+                        type='email'
+                        placeholder='Email'
+                        value={userForm.email}
+                        onChange={(event) => handleInputChange('email', event.target.value)}
+                    />
+                    <input
+                        type='number'
+                        placeholder='Age'
+                        value={userForm.age}
+                        onChange={(event) => handleInputChange('age', event.target.value)}
+                    />
+                    <input
+                        type='text'
+                        placeholder='City'
+                        value={userForm.city}
+                        onChange={(event) => handleInputChange('city', event.target.value)}
+                    />
+                    {formError && <p>{formError}</p>}
+                </form>
+            </Modal>
             <Modal
                 isOpen={userToDelete !== null}
                 title='Delete user'

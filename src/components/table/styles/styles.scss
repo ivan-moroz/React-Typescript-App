@@ -9,8 +9,16 @@
 }
 
 .add-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
   input {
-    margin-right: 10px;
-    margin-bottom: 10px;
+    padding: 8px;
+    width: 100%;
+  }
+
+  p {
+    margin: 0;
   }
 }
