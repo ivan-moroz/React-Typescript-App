@@ -1,7 +1,8 @@
 import React, {useEffect, useReducer, useState} from "react";
 
+import Modal from "../modal/Modal";
 import {initialState, reducer} from "./reducer/reducer";
-import {ActionType, UserFormState} from "./types/types";
+import {ActionType, User, UserFormState} from "./types/types";
 import './styles/styles.scss';
 
 const emptyUserForm: UserFormState = {
@@ -20,6 +21,7 @@ function EditableTable() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [formError, setFormError] = useState<string>("");
     const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
     const isEditingUser = editingUserId !== null;
 
@@ -127,11 +129,23 @@ function EditableTable() {
         }
     };
 
-    const handleDeleteUser = async (id: number): Promise<void> => {
+    const handleRequestDeleteUser = (user: User): void => {
+        setUserToDelete(user);
+    };
+
+    const handleCloseDeleteModal = (): void => {
+        setUserToDelete(null);
+    };
+
+    const handleDeleteUser = async (): Promise<void> => {
+        if (!userToDelete) {
+            return;
+        }
+
         setError('');
 
         try {
-            const response = await fetch(`/api/users/${id}`, {
+            const response = await fetch(`/api/users/${userToDelete.id}`, {
                 method: 'DELETE',
             });
 
@@ -140,6 +154,7 @@ function EditableTable() {
             }
 
             await loadUsers();
+            setUserToDelete(null);
         } catch {
             setError('Failed to delete user');
         }
@@ -230,7 +245,7 @@ function EditableTable() {
                             <button
                                 type='button'
                                 aria-label={`Delete user ${user.name}`}
-                                onClick={() => void handleDeleteUser(user.id)}
+                                onClick={() => handleRequestDeleteUser(user)}
                             >
                                 <span className="material-icons">delete</span>
                             </button>
@@ -240,6 +255,23 @@ function EditableTable() {
                 </tbody>
             </table>
             )}
+            <Modal
+                isOpen={userToDelete !== null}
+                title='Delete user'
+                onClose={handleCloseDeleteModal}
+                footer={(
+                    <>
+                        <button type='button' onClick={handleCloseDeleteModal}>
+                            Cancel
+                        </button>
+                        <button type='button' onClick={() => void handleDeleteUser()}>
+                            Delete
+                        </button>
+                    </>
+                )}
+            >
+                <p>Are you sure to delete user {userToDelete?.name}</p>
+            </Modal>
         </div>
     );
 };

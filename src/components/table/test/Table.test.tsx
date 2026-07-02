@@ -66,6 +66,9 @@ describe('Table Component', () => {
     await screen.findByText('User 1');
 
     fireEvent.click(screen.getByLabelText('Delete user User 1'));
+    expect(screen.getByRole('dialog')).toHaveTextContent('Are you sure to delete user User 1');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
 
     await waitFor(() => {
       expect(screen.queryByText('User 1')).not.toBeInTheDocument();
