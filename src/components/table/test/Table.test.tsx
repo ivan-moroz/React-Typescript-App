@@ -115,6 +115,33 @@ describe('Table Component', () => {
     });
   });
 
+  test('reorders users by drag and drop and saves the new order', async () => {
+    const reorderedUsers = [mockUsers[1], mockUsers[0], ...mockUsers.slice(2)];
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => mockUsers } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => reorderedUsers } as Response);
+
+    render(<Table />);
+
+    await screen.findByText('User 1');
+    fireEvent.dragStart(screen.getByTestId('user-row-2'));
+    fireEvent.dragOver(screen.getByTestId('user-row-1'));
+    fireEvent.drop(screen.getByTestId('user-row-1'));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/users/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: reorderedUsers.map((user) => user.id) }),
+      });
+    });
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('tbody tr')[0]).toHaveTextContent('User 2');
+    });
+  });
+
   test('edits a user through the user form and refreshes the table', async () => {
     const updatedUsers = mockUsers.map((user) =>
       user.id === 1

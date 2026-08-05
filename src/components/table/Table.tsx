@@ -22,6 +22,8 @@ function EditableTable() {
     const [formError, setFormError] = useState<string>("");
     const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
+    const [draggedUserId, setDraggedUserId] = useState<number | null>(null);
+    const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
 
     const isEditingUser = editingUserId !== null;
 
@@ -159,6 +161,54 @@ function EditableTable() {
         }
     };
 
+    const handleDragStart = (userId: number): void => {
+        setDraggedUserId(userId);
+    };
+
+    const handleDrop = async (targetUserId: number): Promise<void> => {
+        if (draggedUserId === null || draggedUserId === targetUserId || isSavingOrder) {
+            setDraggedUserId(null);
+            return;
+        }
+
+        const previousUsers = state.users;
+        const sourceIndex = previousUsers.findIndex((user) => user.id === draggedUserId);
+        const targetIndex = previousUsers.findIndex((user) => user.id === targetUserId);
+        if (sourceIndex === -1 || targetIndex === -1) {
+            setDraggedUserId(null);
+            return;
+        }
+
+        const reorderedUsers = [...previousUsers];
+        const [movedUser] = reorderedUsers.splice(sourceIndex, 1);
+        reorderedUsers.splice(targetIndex, 0, movedUser);
+
+        dispatch({type: ActionType.SET_USERS, payload: reorderedUsers});
+        setDraggedUserId(null);
+        setIsSavingOrder(true);
+        setError('');
+
+        try {
+            const response = await fetch('/api/users/reorder', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userIds: reorderedUsers.map((user) => user.id) }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to save user order');
+            }
+
+            const users = await response.json();
+            dispatch({type: ActionType.SET_USERS, payload: users});
+        } catch {
+            dispatch({type: ActionType.SET_USERS, payload: previousUsers});
+            setError('Failed to save user order');
+        } finally {
+            setIsSavingOrder(false);
+        }
+    };
+
     return (
         <div>
             {isLoading && <p>Loading table data...</p>}
@@ -182,7 +232,17 @@ function EditableTable() {
                 </thead>
                 <tbody>
                 {state.users.map((user) => (
-                    <tr key={user.id}>
+                    <tr
+                        key={user.id}
+                        data-testid={`user-row-${user.id}`}
+                        draggable={!isSavingOrder}
+                        aria-grabbed={draggedUserId === user.id}
+                        className={draggedUserId === user.id ? 'is-dragging' : undefined}
+                        onDragStart={() => handleDragStart(user.id)}
+                        onDragEnd={() => setDraggedUserId(null)}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={() => void handleDrop(user.id)}
+                    >
                         {Object.entries(user).map(([key, value]) => (
                             <td key={key}>
                                 <span>{value}</span>

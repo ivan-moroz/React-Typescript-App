@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method === 'GET') {
     try {
       const users = await prisma.user.findMany({
-        orderBy: { id: 'asc' },
+        orderBy: [{ position: 'asc' }, { id: 'asc' }],
         select: { id: true, name: true, email: true, age: true, city: true },
       });
 
@@ -66,8 +66,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     try {
+      const lastUser = await prisma.user.findFirst({
+        orderBy: { position: 'desc' },
+        select: { position: true },
+      });
       const createdUser = await prisma.user.create({
-        data: req.body,
+        data: { ...req.body, position: (lastUser?.position ?? -1) + 1 },
         select: { id: true, name: true, email: true, age: true, city: true },
       });
 

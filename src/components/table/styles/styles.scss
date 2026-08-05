@@ -1,4 +1,13 @@
 .user-table {
+  tbody tr[draggable='true'] {
+    cursor: grab;
+  }
+
+  tbody tr.is-dragging {
+    cursor: grabbing;
+    opacity: 0.5;
+  }
+
   td {
     padding: 5px;
     

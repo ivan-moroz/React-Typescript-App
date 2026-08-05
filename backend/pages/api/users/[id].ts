@@ -12,7 +12,7 @@ type UserResponse =
     }
   | { message: string };
 
-function setCors(res: NextApiResponse<unknown>) {
+function setCors<T>(res: NextApiResponse<T>) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
