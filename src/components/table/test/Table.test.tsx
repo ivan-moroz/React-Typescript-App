@@ -260,4 +260,25 @@ describe('Table Component', () => {
       expect(screen.getByText('Jane')).toBeInTheDocument();
     });
   });
+
+  test('shows a clear error when editing a user to an email address already in use', async () => {
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => mockUsers } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({ message: 'Email address is already in use' }),
+      } as Response);
+
+    render(<Table />);
+
+    await screen.findByText('User 1');
+    fireEvent.click(screen.getByLabelText('Edit user User 1'));
+    fireEvent.change(screen.getAllByDisplayValue('user1@example.com')[0], { target: { value: 'user2@example.com' } });
+    fireEvent.click(screen.getByText('Update User'));
+
+    expect(await screen.findByText('Email address is already in use')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
 });

@@ -76,6 +76,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       res.status(200).json(updatedUser);
       return;
     } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+        res.status(409).json({ message: 'Email address is already in use' });
+        return;
+      }
+
       res.status(500).json({ message: `Unable to update user: ${String(error)}` });
       return;
     }
