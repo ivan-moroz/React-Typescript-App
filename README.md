@@ -2,6 +2,8 @@
 
 This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer and **PostgreSQL + Prisma** for user management.
 
+Already implemented infinite scrolling, modals, drag-and-drop reordering of users, as well as adding and editing users.
+
 ## PostgreSQL + Prisma setup
 
 1. Ensure PostgreSQL is running.

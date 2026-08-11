@@ -162,14 +162,18 @@ function EditableTable() {
             });
 
             if (!response.ok) {
-                throw new Error(isEditingUser ? 'Unable to update user' : 'Unable to create user');
+                const responseBody = await response.json().catch(() => null);
+                const message = typeof responseBody?.message === 'string'
+                    ? responseBody.message
+                    : isEditingUser ? 'Failed to update user' : 'Failed to add user';
+                throw new Error(message);
             }
 
             await loadUsers(true);
             setIsUserFormOpen(false);
             resetUserForm();
-        } catch {
-            setFormError(isEditingUser ? 'Failed to update user' : 'Failed to add user');
+        } catch (error) {
+            setFormError(error instanceof Error ? error.message : isEditingUser ? 'Failed to update user' : 'Failed to add user');
         } finally {
             setIsSubmitting(false);
         }

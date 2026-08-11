@@ -115,6 +115,30 @@ describe('Table Component', () => {
     });
   });
 
+  test('shows a clear error when adding a user with an email address already in use', async () => {
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => mockUsers } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({ message: 'Email address is already in use' }),
+      } as Response);
+
+    render(<Table />);
+
+    await screen.findByText('User 1');
+    fireEvent.click(screen.getByTestId('table-add-user'));
+    fireEvent.change(screen.getByPlaceholderText('Name'), { target: { value: 'Another User' } });
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user1@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Age'), { target: { value: '31' } });
+    fireEvent.change(screen.getByPlaceholderText('City'), { target: { value: 'Warsaw' } });
+    fireEvent.click(screen.getByText('Save User'));
+
+    expect(await screen.findByText('Email address is already in use')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
   test('loads the next page when the table scroll reaches the bottom', async () => {
     const firstPage = Array.from({ length: 10 }, (_, i) => ({
       id: i + 1,
