@@ -21,6 +21,9 @@ type UsersResponse =
     }>
   | ErrorResponse;
 
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 100;
+
 function setCors(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -46,8 +49,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   if (req.method === 'GET') {
     try {
+      const offset = Number(req.query.offset ?? 0);
+      const requestedLimit = Number(req.query.limit ?? DEFAULT_PAGE_SIZE);
+      const limit = Math.min(requestedLimit, MAX_PAGE_SIZE);
+
+      if (!Number.isInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 1) {
+        res.status(400).json({ message: 'offset must be a non-negative integer and limit must be a positive integer' });
+        return;
+      }
+
       const users = await prisma.user.findMany({
         orderBy: [{ position: 'asc' }, { id: 'asc' }],
+        skip: offset,
+        take: limit,
         select: { id: true, name: true, email: true, age: true, city: true },
       });
 

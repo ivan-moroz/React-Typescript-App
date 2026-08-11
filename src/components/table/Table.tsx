@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer, useState} from "react";
+import React, {useEffect, useReducer, useRef, useState} from "react";
 
 import Modal from "../modal/Modal";
 import {initialState, reducer} from "./reducer/reducer";
@@ -12,9 +12,13 @@ const emptyUserForm: UserFormState = {
     city: ""
 };
 
+const PAGE_SIZE = 10;
+
 function EditableTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+    const [hasMoreUsers, setHasMoreUsers] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const [isUserFormOpen, setIsUserFormOpen] = useState<boolean>(false);
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
@@ -24,29 +28,70 @@ function EditableTable() {
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [draggedUserId, setDraggedUserId] = useState<number | null>(null);
     const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
+    const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
+    const tableScrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const usersRef = useRef<User[]>([]);
+    const isFetchingUsersRef = useRef<boolean>(false);
 
     const isEditingUser = editingUserId !== null;
 
-    const loadUsers = async (): Promise<void> => {
+    useEffect(() => {
+        usersRef.current = state.users;
+    }, [state.users]);
+
+    const loadUsers = async (reset = false): Promise<void> => {
+        if (isFetchingUsersRef.current || (!reset && !hasMoreUsers)) {
+            return;
+        }
+
+        isFetchingUsersRef.current = true;
+        if (reset) {
+            setIsLoading(true);
+        } else {
+            setIsLoadingMore(true);
+        }
         setError("");
         try {
-            const response = await fetch('/api/users');
+            const offset = reset ? 0 : usersRef.current.length;
+            const response = await fetch(`/api/users?offset=${offset}&limit=${PAGE_SIZE}`);
             if (!response.ok) {
                 throw new Error('Unable to fetch users');
             }
 
-            const users = await response.json();
-            dispatch({type: ActionType.SET_USERS, payload: users});
+            const users: User[] = await response.json();
+            const nextUsers = reset ? users : [...usersRef.current, ...users];
+            usersRef.current = nextUsers;
+            dispatch({type: reset ? ActionType.SET_USERS : ActionType.APPEND_USERS, payload: users});
+            setHasMoreUsers(users.length === PAGE_SIZE);
         } catch {
             setError('Failed to load users from backend');
         } finally {
+            isFetchingUsersRef.current = false;
             setIsLoading(false);
+            setIsLoadingMore(false);
         }
     };
 
     useEffect(() => {
-        void loadUsers();
+        void loadUsers(true);
     }, []);
+
+    useEffect(() => {
+        const trigger = loadMoreTriggerRef.current;
+        const scrollContainer = tableScrollContainerRef.current;
+        if (!trigger || !scrollContainer || !hasMoreUsers || typeof IntersectionObserver === 'undefined') {
+            return;
+        }
+
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                void loadUsers();
+            }
+        }, { root: scrollContainer, rootMargin: '100px' });
+
+        observer.observe(trigger);
+        return () => observer.disconnect();
+    }, [hasMoreUsers, state.users.length]);
 
     const resetUserForm = (): void => {
         setUserForm(emptyUserForm);
@@ -120,7 +165,7 @@ function EditableTable() {
                 throw new Error(isEditingUser ? 'Unable to update user' : 'Unable to create user');
             }
 
-            await loadUsers();
+            await loadUsers(true);
             setIsUserFormOpen(false);
             resetUserForm();
         } catch {
@@ -154,7 +199,7 @@ function EditableTable() {
                 throw new Error('Unable to delete user');
             }
 
-            await loadUsers();
+            await loadUsers(true);
             setUserToDelete(null);
         } catch {
             setError('Failed to delete user');
@@ -221,7 +266,8 @@ function EditableTable() {
             {state.users.length === 0 ? (
                 !isLoading && !error ? <p>No users found.</p> : null
             ) : (
-            <table className="user-table" border={1} style={{ marginTop: "10px", borderCollapse: "collapse" }}>
+            <div className='user-table-container' ref={tableScrollContainerRef}>
+            <table className="user-table" border={1} style={{ borderCollapse: "collapse" }}>
                 <thead>
                 <tr>
                     {Object.keys(state.users[0]).map((key) => (
@@ -235,7 +281,7 @@ function EditableTable() {
                     <tr
                         key={user.id}
                         data-testid={`user-row-${user.id}`}
-                        draggable={!isSavingOrder}
+                        draggable={!isSavingOrder && !hasMoreUsers}
                         aria-grabbed={draggedUserId === user.id}
                         className={draggedUserId === user.id ? 'is-dragging' : undefined}
                         onDragStart={() => handleDragStart(user.id)}
@@ -268,6 +314,12 @@ function EditableTable() {
                 ))}
                 </tbody>
             </table>
+            {hasMoreUsers && (
+                <div ref={loadMoreTriggerRef} data-testid='users-load-more-trigger' className='users-load-more-trigger'>
+                    {isLoadingMore && 'Loading more users...'}
+                </div>
+            )}
+            </div>
             )}
             <Modal
                 isOpen={isUserFormOpen}

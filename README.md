@@ -40,7 +40,7 @@ By default it runs at [http://localhost:5173](http://localhost:5173).
 Starts the Next.js backend API at [http://localhost:3001](http://localhost:3001).
 
 User API routes:
-- `GET /api/users`
+- `GET /api/users?offset=0&limit=10` (returns a page of users; defaults to 10)
 - `POST /api/users`
 - `GET /api/users/:id`
 - `PUT /api/users/:id`

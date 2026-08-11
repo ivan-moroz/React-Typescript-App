@@ -11,6 +11,11 @@ export const reducer = (state: State, action: Action): State => {
                 ...state,
                 users: action.payload,
             };
+        case ActionType.APPEND_USERS:
+            return {
+                ...state,
+                users: [...state.users, ...action.payload],
+            };
         default:
             return state;
     }

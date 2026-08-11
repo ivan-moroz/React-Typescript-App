@@ -1,4 +1,12 @@
 .user-table {
+  width: 100%;
+
+  th,
+  td {
+    box-sizing: border-box;
+    height: 40px;
+  }
+
   tbody tr[draggable='true'] {
     cursor: grab;
   }
@@ -30,4 +38,17 @@
   p {
     margin: 0;
   }
+}
+
+.user-table-container {
+  // One 40px header plus five 40px user rows.
+  height: 240px;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+.users-load-more-trigger {
+  min-height: 1px;
+  padding: 12px 0;
+  text-align: center;
 }

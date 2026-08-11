@@ -115,6 +115,47 @@ describe('Table Component', () => {
     });
   });
 
+  test('loads the next page when the table scroll reaches the bottom', async () => {
+    const firstPage = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@example.com`,
+      age: 20 + i,
+      city: `City ${i + 1}`,
+    }));
+    const secondPage = [{ id: 11, name: 'User 11', email: 'user11@example.com', age: 30, city: 'City 11' }];
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => firstPage } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => secondPage } as Response);
+
+    let observeCallback: IntersectionObserverCallback | undefined;
+    const originalIntersectionObserver = window.IntersectionObserver;
+    class MockIntersectionObserver {
+      constructor(callback: IntersectionObserverCallback) {
+        observeCallback = callback;
+      }
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+      takeRecords = vi.fn(() => []);
+    }
+    window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
+    try {
+      render(<Table />);
+      await screen.findByText('User 10');
+
+      expect(fetchMock).toHaveBeenCalledWith('/api/users?offset=0&limit=10');
+      observeCallback?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+
+      await screen.findByText('User 11');
+      expect(fetchMock).toHaveBeenCalledWith('/api/users?offset=10&limit=10');
+    } finally {
+      window.IntersectionObserver = originalIntersectionObserver;
+    }
+  });
+
   test('reorders users by drag and drop and saves the new order', async () => {
     const reorderedUsers = [mockUsers[1], mockUsers[0], ...mockUsers.slice(2)];
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
