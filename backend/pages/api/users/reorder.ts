@@ -45,17 +45,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   try {
     const users = await prisma.$transaction(async (transaction) => {
       const existingUsers = await transaction.user.findMany({
-        where: { id: { in: userIds } },
+        orderBy: [{ position: 'asc' }, { id: 'asc' }],
         select: { id: true },
       });
-      const userCount = await transaction.user.count();
 
-      if (existingUsers.length !== userIds.length || userCount !== userIds.length) {
-        throw new Error('The order must include every existing user exactly once');
+      const existingUserIds = new Set(existingUsers.map((user) => user.id));
+      if (userIds.some((id) => !existingUserIds.has(id))) {
+        throw new Error('The order contains a user that does not exist');
       }
 
+      const reorderedUserIds = [
+        ...userIds,
+        ...existingUsers.map((user) => user.id).filter((id) => !userIds.includes(id)),
+      ];
+
       await Promise.all(
-        userIds.map((id, position) => transaction.user.update({ where: { id }, data: { position } }))
+        reorderedUserIds.map((id, position) => transaction.user.update({ where: { id }, data: { position } }))
       );
 
       return transaction.user.findMany({

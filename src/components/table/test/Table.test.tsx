@@ -207,6 +207,39 @@ describe('Table Component', () => {
     });
   });
 
+  test('allows reordering before all user pages have loaded', async () => {
+    const firstPage = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@example.com`,
+      age: 20 + i,
+      city: `City ${i + 1}`,
+    }));
+    const reorderedFirstPage = [firstPage[1], firstPage[0], ...firstPage.slice(2)];
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => firstPage } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => reorderedFirstPage } as Response);
+
+    render(<Table />);
+
+    await screen.findByText('User 10');
+    expect(screen.getByTestId('user-row-2')).toHaveAttribute('draggable', 'true');
+
+    fireEvent.dragStart(screen.getByTestId('user-row-2'));
+    fireEvent.drop(screen.getByTestId('user-row-1'));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/users/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: reorderedFirstPage.map((user) => user.id) }),
+      });
+    });
+
+    expect(document.querySelectorAll('tbody tr')[0]).toHaveTextContent('User 2');
+  });
+
   test('edits a user through the user form and refreshes the table', async () => {
     const updatedUsers = mockUsers.map((user) =>
       user.id === 1

@@ -232,6 +232,7 @@ function EditableTable() {
         const [movedUser] = reorderedUsers.splice(sourceIndex, 1);
         reorderedUsers.splice(targetIndex, 0, movedUser);
 
+        usersRef.current = reorderedUsers;
         dispatch({type: ActionType.SET_USERS, payload: reorderedUsers});
         setDraggedUserId(null);
         setIsSavingOrder(true);
@@ -248,8 +249,7 @@ function EditableTable() {
                 throw new Error('Unable to save user order');
             }
 
-            const users = await response.json();
-            dispatch({type: ActionType.SET_USERS, payload: users});
+            await response.json();
         } catch {
             dispatch({type: ActionType.SET_USERS, payload: previousUsers});
             setError('Failed to save user order');
@@ -285,7 +285,7 @@ function EditableTable() {
                     <tr
                         key={user.id}
                         data-testid={`user-row-${user.id}`}
-                        draggable={!isSavingOrder && !hasMoreUsers}
+                        draggable={!isSavingOrder}
                         aria-grabbed={draggedUserId === user.id}
                         className={draggedUserId === user.id ? 'is-dragging' : undefined}
                         onDragStart={() => handleDragStart(user.id)}
