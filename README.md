@@ -2,7 +2,7 @@
 
 This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer. The User Management page is the main page of the application.
 
-Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature will be added soon, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets, and Public Assets — where all assets are visible by date. For local use only — download it and continue working with AI. Good luck!
+Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature will be added soon, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets, and Public Assets — where all assets are visible by date. For local use only — clone it and lets continue working with AI. Good luck!
 
 ## PostgreSQL + Prisma setup
 
