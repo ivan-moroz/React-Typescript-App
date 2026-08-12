@@ -10,6 +10,7 @@ const SelectPage = lazy(() => import('./pages/Select'));
 const TablePage = lazy(() => import('./pages/Table'));
 const CalculatorPage = lazy(() => import('./pages/Calculator'));
 const LoginPage = lazy(() => import('./pages/Login'));
+const AssetsPage = lazy(() => import('./pages/Assets'));
 
 export default function App() {
     return (
@@ -23,6 +24,7 @@ export default function App() {
                     <Route path="/select" element={<SelectPage />} />
                     <Route path="/table" element={<TablePage />} />
                     <Route path="/calculator" element={<CalculatorPage />} />
+                    <Route path="/assets" element={<AssetsPage />} />
                     <Route path="/login" element={<LoginPage />} />
                 </Routes>
             </div>

@@ -48,6 +48,12 @@ export default function Navigation() {
             >
                 Calculator
             </NavLink>
+            <NavLink
+                to="/assets"
+                style={activeStyle}
+            >
+                Assets
+            </NavLink>
             {authenticatedUser ? (
                 <div className='authenticated-user'>
                     <span><b>{authenticatedUser.name}</b></span>
