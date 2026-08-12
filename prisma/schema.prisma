@@ -13,6 +13,7 @@ model User {
   email     String   @unique
   age       Int
   city      String
+  passwordHash String   @map("password_hash")
   position  Int      @default(0)
 
   @@map("users")

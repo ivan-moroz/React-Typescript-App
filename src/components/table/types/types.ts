@@ -21,4 +21,5 @@ export type UserFormState = {
     email: string;
     age: string;
     city: string;
+    password: string;
 };

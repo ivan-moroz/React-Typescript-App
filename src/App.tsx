@@ -9,6 +9,7 @@ const TodoPage = lazy(() => import('./pages/TodoPage'));
 const SelectPage = lazy(() => import('./pages/Select'));
 const TablePage = lazy(() => import('./pages/Table'));
 const CalculatorPage = lazy(() => import('./pages/Calculator'));
+const LoginPage = lazy(() => import('./pages/Login'));
 
 export default function App() {
     return (
@@ -22,6 +23,7 @@ export default function App() {
                     <Route path="/select" element={<SelectPage />} />
                     <Route path="/table" element={<TablePage />} />
                     <Route path="/calculator" element={<CalculatorPage />} />
+                    <Route path="/login" element={<LoginPage />} />
                 </Routes>
             </div>
         </BrowserRouter>

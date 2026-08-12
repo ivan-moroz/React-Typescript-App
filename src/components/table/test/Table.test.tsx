@@ -108,6 +108,7 @@ describe('Table Component', () => {
     fireEvent.change(screen.getByPlaceholderText('Age'), { target: { value: '31' } });
     fireEvent.change(screen.getByPlaceholderText('City'), { target: { value: 'Warsaw' } });
 
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: '12345' } });
     fireEvent.click(screen.getByText('Save User'));
 
     await waitFor(() => {
@@ -133,6 +134,7 @@ describe('Table Component', () => {
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user1@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Age'), { target: { value: '31' } });
     fireEvent.change(screen.getByPlaceholderText('City'), { target: { value: 'Warsaw' } });
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: '12345' } });
     fireEvent.click(screen.getByText('Save User'));
 
     expect(await screen.findByText('Email address is already in use')).toBeInTheDocument();

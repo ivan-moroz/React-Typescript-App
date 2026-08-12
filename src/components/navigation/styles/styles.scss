@@ -12,4 +12,17 @@ nav {
       color: #0056b3;
     }
   }
+
+  .authenticated-user {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    margin-top: -5px;
+
+    button {
+      background: #dc3545;
+      color: #ffffff;
+      padding: 6px 10px;
+    }
+  }
 }

@@ -9,7 +9,8 @@ const emptyUserForm: UserFormState = {
     name: "",
     email: "",
     age: "",
-    city: ""
+    city: "",
+    password: ""
 };
 
 const PAGE_SIZE = 10;
@@ -120,7 +121,8 @@ function EditableTable() {
             name: String(user.name),
             email: String(user.email),
             age: String(user.age),
-            city: String(user.city)
+            city: String(user.city),
+            password: ""
         });
         setEditingUserId(userId);
         setFormError("");
@@ -135,7 +137,7 @@ function EditableTable() {
         event.preventDefault();
         setFormError("");
 
-        if (!userForm.name.trim() || !userForm.email.trim() || !userForm.age.trim() || !userForm.city.trim()) {
+        if (!userForm.name.trim() || !userForm.email.trim() || !userForm.age.trim() || !userForm.city.trim() || (!isEditingUser && !userForm.password)) {
             setFormError('All fields are required');
             return;
         }
@@ -157,7 +159,8 @@ function EditableTable() {
                     name: userForm.name.trim(),
                     email: userForm.email.trim(),
                     age: parsedAge,
-                    city: userForm.city.trim()
+                    city: userForm.city.trim(),
+                    ...(userForm.password ? { password: userForm.password } : {})
                 })
             });
 
@@ -364,6 +367,12 @@ function EditableTable() {
                         placeholder='City'
                         value={userForm.city}
                         onChange={(event) => handleInputChange('city', event.target.value)}
+                    />
+                    <input
+                        type='password'
+                        placeholder={isEditingUser ? 'Password (leave blank to keep current)' : 'Password'}
+                        value={userForm.password}
+                        onChange={(event) => handleInputChange('password', event.target.value)}
                     />
                     {formError && <p>{formError}</p>}
                 </form>

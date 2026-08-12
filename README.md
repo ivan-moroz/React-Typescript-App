@@ -2,7 +2,7 @@
 
 This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer. The User Management page is the main page of the application.
 
-Already implemented infinite scrolling, modals, drag-and-drop reordering of users, as well as adding and editing users.
+Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management.
 
 ## PostgreSQL + Prisma setup
 
@@ -47,6 +47,9 @@ User API routes:
 - `GET /api/users/:id`
 - `PUT /api/users/:id`
 - `DELETE /api/users/:id`
+- `POST /api/auth/login`
+
+After applying the password migration, every existing user can log in with their email address and the initial password `12345`. Passwords are stored as salted hashes. New users must provide a password; when editing a user, leave the password field blank to retain the current password.
 
 ### `npm test`
 

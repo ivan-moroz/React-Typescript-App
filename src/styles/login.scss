@@ -1,0 +1,24 @@
+.login-page form {
+  display: grid;
+  gap: 16px;
+
+  label {
+    display: grid;
+    gap: 6px;
+  }
+
+  input,
+  button {
+    padding: 8px 10px;
+  }
+
+  button {
+    background: #4caf50;
+    color: #ffffff;
+  }
+
+  [role='alert'] {
+    color: #b00020;
+    margin: 0;
+  }
+}

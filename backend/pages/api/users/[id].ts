@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../lib/prisma';
+import { hashPassword } from '../../../lib/password';
 
 type UserResponse =
   | {
@@ -54,13 +55,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (req.method === 'PUT') {
-    const { name, email, age, city } = req.body ?? {};
+    const { name, email, age, city, password } = req.body ?? {};
 
     if (
       typeof name !== 'string' ||
       typeof email !== 'string' ||
       typeof age !== 'number' ||
       typeof city !== 'string'
+      || (password !== undefined && typeof password !== 'string')
     ) {
       res.status(400).json({ message: 'Invalid payload' });
       return;
@@ -69,7 +71,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     try {
       const updatedUser = await prisma.user.update({
         where: { id },
-        data: { name, email, age, city },
+        data: {
+          name,
+          email,
+          age,
+          city,
+          ...(password ? { passwordHash: await hashPassword(password) } : {}),
+        },
         select: { id: true, name: true, email: true, age: true, city: true },
       });
 

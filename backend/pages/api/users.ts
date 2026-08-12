@@ -1,12 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../lib/prisma';
+import { hashPassword } from '../../lib/password';
 
 type UserPayload = {
   name: string;
   email: string;
   age: number;
   city: string;
+  password: string;
 };
 
 type ErrorResponse = { message: string };
@@ -85,7 +87,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         select: { position: true },
       });
       const createdUser = await prisma.user.create({
-        data: { ...req.body, position: (lastUser?.position ?? -1) + 1 },
+        data: {
+          name: req.body.name,
+          email: req.body.email,
+          age: req.body.age,
+          city: req.body.city,
+          passwordHash: await hashPassword(req.body.password),
+          position: (lastUser?.position ?? -1) + 1,
+        },
         select: { id: true, name: true, email: true, age: true, city: true },
       });
 
