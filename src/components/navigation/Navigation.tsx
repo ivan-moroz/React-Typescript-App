@@ -37,16 +37,16 @@ export default function Navigation() {
                 Select
             </NavLink>
             <NavLink
-                to="/table"
-                style={activeStyle}
-            >
-                Users
-            </NavLink>
-            <NavLink
                 to="/calculator"
                 style={activeStyle}
             >
                 Calculator
+            </NavLink>
+            <NavLink
+                to="/table"
+                style={activeStyle}
+            >
+                Users
             </NavLink>
             <NavLink
                 to="/assets"
