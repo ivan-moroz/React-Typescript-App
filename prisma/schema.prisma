@@ -15,6 +15,21 @@ model User {
   city      String
   passwordHash String   @map("password_hash")
   position  Int      @default(0)
+  assets    Asset[]
 
   @@map("users")
+}
+
+model Asset {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  mimeType  String   @map("mime_type")
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("assets")
 }

@@ -103,7 +103,8 @@
   justify-content: center;
   overflow: hidden;
 
-  img { height: 100%; object-fit: cover; width: 100%; }
+  button { background: none; border: 0; cursor: pointer; height: 100%; padding: 0; width: 100%; }
+  img { max-height: 100%; max-width: 100%; object-fit: contain; }
 }
 
 .asset-details { padding: 14px; }
@@ -117,6 +118,16 @@
 
   a, button { background: none; color: #6d28d9; font-size: 0.82rem; font-weight: 700; padding: 0; text-decoration: none; }
   button { color: #b42318; }
+  .asset-open-button { color: #6d28d9; }
+}
+
+.asset-modal-image {
+  display: block;
+  height: auto;
+  max-height: 70vh;
+  max-width: 100%;
+  object-fit: contain;
+  width: 100%;
 }
 
 .asset-empty {

@@ -18,7 +18,7 @@ Already implemented infinite scrolling, modals, drag-and-drop reordering of user
 4. Generate Prisma client and run migration:
    ```bash
    npm run prisma:generate
-   npm run prisma:migrate -- --name init_users
+   npm run prisma:migrate -- --name add_assets
    ```
 
 Default connection string in `.env.example` uses:
@@ -48,6 +48,14 @@ User API routes:
 - `PUT /api/users/:id`
 - `DELETE /api/users/:id`
 - `POST /api/auth/login`
+
+Asset API routes (assets are stored in PostgreSQL and scoped to the logged-in user's ID):
+- `GET /api/assets?userId=:userId`
+- `POST /api/assets`
+- `GET /api/assets/:id?userId=:userId` (streams the stored file)
+- `DELETE /api/assets/:id`
+
+The asset API accepts files up to 10 MB and stores their binary data in the `assets` table. Run `npm run prisma:generate` and apply the included migration before starting the backend.
 
 After applying the password migration, every existing user can log in with their email address and the initial password `12345`. Passwords are stored as salted hashes. New users must provide a password; when editing a user, leave the password field blank to retain the current password.
 
