@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { extname } from 'node:path';
 
 import prisma from '../../../lib/prisma';
 
@@ -19,6 +20,11 @@ function userIdFrom(value: unknown): number | null {
 
 function isAuthorization(value: unknown): value is Authorization {
   return value === 'INTERNAL' || value === 'PUBLIC';
+}
+
+function downloadName(asset: { name: string; fileExtension: string }): string {
+  const extension = asset.fileExtension || extname(asset.name);
+  return extension && !asset.name.toLowerCase().endsWith(extension.toLowerCase()) ? `${asset.name}${extension}` : asset.name;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -46,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', asset.mimeType);
       res.setHeader('Content-Length', asset.size);
       const disposition = req.query.download === '1' ? 'attachment' : 'inline';
-      res.setHeader('Content-Disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(asset.name)}`);
+      res.setHeader('Content-Disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(downloadName(asset))}`);
       res.setHeader('X-Content-Type-Options', 'nosniff');
       // Prisma returns Bytes as a Uint8Array. Next serializes a Uint8Array as JSON,
       // so convert it to a Buffer to send the original binary file bytes.
@@ -72,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'PUT') {
-    const { name, description, authorization, type, size, data } = req.body ?? {};
+    const { name, description, authorization, originalFileName, type, size, data } = req.body ?? {};
     if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization)) {
       res.status(400).json({ message: 'Invalid asset payload' });
       return;
@@ -90,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(400).json({ message: 'Asset data is invalid or exceeds the 10 MB limit' });
         return;
       }
-      fileUpdate = { mimeType: type || 'application/octet-stream', size, data: fileData };
+      fileUpdate = { mimeType: type || 'application/octet-stream', fileExtension: typeof originalFileName === 'string' ? extname(originalFileName).slice(0, 32) : '', size, data: fileData };
     }
 
     try {

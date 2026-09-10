@@ -1,0 +1,2 @@
+ALTER TABLE assets
+  ADD COLUMN file_extension TEXT NOT NULL DEFAULT '';

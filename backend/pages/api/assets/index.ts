@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { extname } from 'node:path';
 
 import prisma from '../../../lib/prisma';
 
@@ -36,6 +37,10 @@ function userIdFrom(value: unknown): number | null {
 
 function isAuthorization(value: unknown): value is AssetSummary['authorization'] {
   return value === 'INTERNAL' || value === 'PUBLIC';
+}
+
+function fileExtension(fileName: unknown): string {
+  return typeof fileName === 'string' ? extname(fileName).slice(0, 32) : '';
 }
 
 function toSummary(asset: { id: string; name: string; description: string; authorization: string; mimeType: string; size: number; createdAt: Date; userId: number }): AssetSummary {
@@ -80,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (req.method === 'POST') {
-    const { name, description, authorization, type, size, data } = req.body ?? {};
+    const { name, description, authorization, originalFileName, type, size, data } = req.body ?? {};
     if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization) || typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || typeof data !== 'string') {
       res.status(400).json({ message: 'Invalid asset payload' });
       return;
@@ -94,7 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     try {
       const asset = await prisma.asset.create({
-        data: { userId, name: name.trim(), description, authorization, mimeType: type || 'application/octet-stream', size, data: fileData },
+        data: { userId, name: name.trim(), description, authorization, fileExtension: fileExtension(originalFileName), mimeType: type || 'application/octet-stream', size, data: fileData },
         select: { id: true, name: true, description: true, authorization: true, mimeType: true, size: true, createdAt: true, userId: true },
       });
       res.status(201).json(toSummary(asset));

@@ -34,7 +34,7 @@ async function readFileAsBase64(file: File): Promise<string> {
 }
 
 async function saveAsset(userId: number, form: AssetForm, asset?: Asset): Promise<Asset | undefined> {
-    const replacement = form.file ? { type: form.file.type || 'application/octet-stream', size: form.file.size, data: await readFileAsBase64(form.file) } : {};
+    const replacement = form.file ? { originalFileName: form.file.name, type: form.file.type || 'application/octet-stream', size: form.file.size, data: await readFileAsBase64(form.file) } : {};
     const response = await fetch(asset ? `/api/assets/${asset.id}` : '/api/assets', {
         method: asset ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
