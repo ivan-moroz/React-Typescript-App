@@ -6,6 +6,7 @@ import prisma from '../../../lib/prisma';
 type ErrorResponse = { message: string };
 type Authorization = 'INTERNAL' | 'PUBLIC';
 const MAX_FILE_SIZE = 1024 * 1024 * 1024;
+const CHUNK_SIZE = 8 * 1024 * 1024;
 
 function setCors(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,6 +26,16 @@ function isAuthorization(value: unknown): value is Authorization {
 function downloadName(asset: { name: string; fileExtension: string }): string {
   const extension = asset.fileExtension || extname(asset.name);
   return extension && !asset.name.toLowerCase().endsWith(extension.toLowerCase()) ? `${asset.name}${extension}` : asset.name;
+}
+
+function requestedRange(rangeHeader: string | undefined, size: number): { start: number; end: number } | null {
+  if (!rangeHeader) return { start: 0, end: size - 1 };
+  const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader);
+  if (!match) return null;
+  const [, startValue, endValue] = match;
+  const start = startValue ? Number(startValue) : Math.max(0, size - Number(endValue));
+  const end = endValue ? Math.min(Number(endValue), size - 1) : size - 1;
+  return Number.isInteger(start) && Number.isInteger(end) && start >= 0 && start <= end && end < size ? { start, end } : null;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -49,25 +60,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(404).json({ message: 'Asset not found' });
         return;
       }
+      const range = requestedRange(req.headers.range, asset.size);
+      if (!range) {
+        res.setHeader('Content-Range', `bytes */${asset.size}`);
+        res.status(416).end();
+        return;
+      }
+      const rangeLength = range.end - range.start + 1;
       res.setHeader('Content-Type', asset.mimeType);
-      res.setHeader('Content-Length', asset.size);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Content-Length', rangeLength);
+      if (req.headers.range) res.setHeader('Content-Range', `bytes ${range.start}-${range.end}/${asset.size}`);
       const disposition = req.query.download === '1' ? 'attachment' : 'inline';
       res.setHeader('Content-Disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(downloadName(asset))}`);
       res.setHeader('X-Content-Type-Options', 'nosniff');
+      const status = req.headers.range ? 206 : 200;
       if (asset.storageMode === 'INLINE' && asset.data) {
         // Prisma returns Bytes as a Uint8Array. Next serializes a Uint8Array as JSON,
         // so convert it to a Buffer to send the original binary file bytes.
-        res.status(200).send(Buffer.from(asset.data));
+        res.status(status).send(Buffer.from(asset.data).subarray(range.start, range.end + 1));
         return;
       }
 
-      res.status(200);
-      for (let position = 0, sent = 0; sent < asset.size; position += 1) {
+      res.status(status);
+      let remaining = rangeLength;
+      for (let position = Math.floor(range.start / CHUNK_SIZE); remaining > 0; position += 1) {
         const chunk = await prisma.assetChunk.findUnique({ where: { assetId_position: { assetId: id, position } } });
         if (!chunk) throw new Error('Asset chunk is missing');
         const bytes = Buffer.from(chunk.data);
-        sent += bytes.length;
-        res.write(bytes);
+        const offset = position === Math.floor(range.start / CHUNK_SIZE) ? range.start % CHUNK_SIZE : 0;
+        const part = bytes.subarray(offset, offset + remaining);
+        remaining -= part.length;
+        res.write(part);
       }
       res.end();
     } catch {
