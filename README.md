@@ -2,7 +2,7 @@
 
 This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer.
 
-Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature added, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets, sood will be added Public Assets — where all assets are visible by date. For local use only — clone it and lets continue working with AI. Good luck!
+Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature added, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets and Public assets, added metadata for assets like Asset Name, Description, Authorization(Internal, Public). For local use only — clone it and lets continue working with AI. Good luck!
 
 ## PostgreSQL + Prisma setup
 
@@ -18,7 +18,7 @@ Already implemented infinite scrolling, modals, drag-and-drop reordering of user
 4. Generate Prisma client and run migration:
    ```bash
    npm run prisma:generate
-   npm run prisma:migrate -- --name add_assets
+   npm run prisma:migrate -- --name add_asset_metadata
    ```
 
 Default connection string in `.env.example` uses:

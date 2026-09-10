@@ -7,9 +7,12 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 type AssetSummary = {
   id: string;
   name: string;
+  description: string;
+  authorization: 'INTERNAL' | 'PUBLIC';
   type: string;
   size: number;
   createdAt: string;
+  userId: number;
 };
 
 type ErrorResponse = { message: string };
@@ -31,8 +34,21 @@ function userIdFrom(value: unknown): number | null {
   return typeof userId === 'number' && Number.isInteger(userId) && userId > 0 ? userId : null;
 }
 
-function toSummary(asset: { id: string; name: string; mimeType: string; size: number; createdAt: Date }): AssetSummary {
-  return { id: asset.id, name: asset.name, type: asset.mimeType, size: asset.size, createdAt: asset.createdAt.toISOString() };
+function isAuthorization(value: unknown): value is AssetSummary['authorization'] {
+  return value === 'INTERNAL' || value === 'PUBLIC';
+}
+
+function toSummary(asset: { id: string; name: string; description: string; authorization: string; mimeType: string; size: number; createdAt: Date; userId: number }): AssetSummary {
+  return {
+    id: asset.id,
+    name: asset.name,
+    description: asset.description,
+    authorization: asset.authorization as AssetSummary['authorization'],
+    type: asset.mimeType,
+    size: asset.size,
+    createdAt: asset.createdAt.toISOString(),
+    userId: asset.userId,
+  };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AssetSummary[] | AssetSummary | ErrorResponse>) {
@@ -52,9 +68,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method === 'GET') {
     try {
       const assets = await prisma.asset.findMany({
-        where: { userId },
+        where: { OR: [{ userId }, { authorization: 'PUBLIC' }] },
         orderBy: { createdAt: 'desc' },
-        select: { id: true, name: true, mimeType: true, size: true, createdAt: true },
+        select: { id: true, name: true, description: true, authorization: true, mimeType: true, size: true, createdAt: true, userId: true },
       });
       res.status(200).json(assets.map(toSummary));
     } catch {
@@ -64,8 +80,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (req.method === 'POST') {
-    const { name, type, size, data } = req.body ?? {};
-    if (typeof name !== 'string' || !name.trim() || typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || typeof data !== 'string') {
+    const { name, description, authorization, type, size, data } = req.body ?? {};
+    if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization) || typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || typeof data !== 'string') {
       res.status(400).json({ message: 'Invalid asset payload' });
       return;
     }
@@ -78,8 +94,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     try {
       const asset = await prisma.asset.create({
-        data: { userId, name: name.trim(), mimeType: type || 'application/octet-stream', size, data: fileData },
-        select: { id: true, name: true, mimeType: true, size: true, createdAt: true },
+        data: { userId, name: name.trim(), description, authorization, mimeType: type || 'application/octet-stream', size, data: fileData },
+        select: { id: true, name: true, description: true, authorization: true, mimeType: true, size: true, createdAt: true, userId: true },
       });
       res.status(201).json(toSummary(asset));
     } catch {

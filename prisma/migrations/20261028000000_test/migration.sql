@@ -2,6 +2,9 @@
 ALTER TABLE "assets" DROP CONSTRAINT "assets_user_id_fkey";
 
 -- DropIndex
+DROP INDEX "assets_authorization_created_at_idx";
+
+-- DropIndex
 DROP INDEX "assets_user_id_created_at_idx";
 
 -- AlterTable

@@ -130,6 +130,50 @@
   width: 100%;
 }
 
+.asset-editor {
+  display: grid;
+  gap: 14px;
+
+  label {
+    color: #344054;
+    display: grid;
+    font-size: 0.88rem;
+    font-weight: 700;
+    gap: 6px;
+  }
+
+  input, textarea, select {
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 400;
+    padding: 9px 10px;
+  }
+
+  textarea { min-height: 84px; resize: vertical; }
+}
+
+.asset-file-dropzone {
+  margin: 0;
+  padding: 20px;
+
+  strong { font-size: 0.9rem; }
+}
+
+.asset-preview-details {
+  display: grid;
+  gap: 5px 14px;
+  grid-template-columns: max-content 1fr;
+  margin: 18px 0 0;
+
+  dt { color: #667085; font-weight: 700; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+}
+
+.asset-authorization { font-weight: 700; }
+.asset-authorization.is-public { color: #047857; }
+.asset-authorization.is-internal { color: #667085; }
+
 .asset-empty {
   align-items: center;
   background: #fff;
