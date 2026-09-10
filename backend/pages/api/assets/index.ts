@@ -3,7 +3,7 @@ import { extname } from 'node:path';
 
 import prisma from '../../../lib/prisma';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 
 type AssetSummary = {
   id: string;
@@ -86,20 +86,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   if (req.method === 'POST') {
     const { name, description, authorization, originalFileName, type, size, data } = req.body ?? {};
-    if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization) || typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || typeof data !== 'string') {
+    if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization) || typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || size > MAX_FILE_SIZE || (data !== undefined && typeof data !== 'string')) {
       res.status(400).json({ message: 'Invalid asset payload' });
       return;
     }
 
-    const fileData = Buffer.from(data, 'base64');
-    if (fileData.length !== size || size > MAX_FILE_SIZE) {
+    const fileData = typeof data === 'string' ? Buffer.from(data, 'base64') : null;
+    if (fileData && fileData.length !== size) {
       res.status(400).json({ message: 'Asset data is invalid or exceeds the 10 MB limit' });
       return;
     }
 
     try {
       const asset = await prisma.asset.create({
-        data: { userId, name: name.trim(), description, authorization, fileExtension: fileExtension(originalFileName), mimeType: type || 'application/octet-stream', size, data: fileData },
+        data: { userId, name: name.trim(), description, authorization, fileExtension: fileExtension(originalFileName), mimeType: type || 'application/octet-stream', size, data: fileData, storageMode: fileData ? 'INLINE' : 'CHUNKED' },
         select: { id: true, name: true, description: true, authorization: true, mimeType: true, size: true, createdAt: true, userId: true },
       });
       res.status(201).json(toSummary(asset));

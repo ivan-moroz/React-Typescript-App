@@ -5,7 +5,7 @@ import prisma from '../../../lib/prisma';
 
 type ErrorResponse = { message: string };
 type Authorization = 'INTERNAL' | 'PUBLIC';
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 
 function setCors(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -54,9 +54,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const disposition = req.query.download === '1' ? 'attachment' : 'inline';
       res.setHeader('Content-Disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(downloadName(asset))}`);
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      // Prisma returns Bytes as a Uint8Array. Next serializes a Uint8Array as JSON,
-      // so convert it to a Buffer to send the original binary file bytes.
-      res.status(200).send(Buffer.from(asset.data));
+      if (asset.storageMode === 'INLINE' && asset.data) {
+        // Prisma returns Bytes as a Uint8Array. Next serializes a Uint8Array as JSON,
+        // so convert it to a Buffer to send the original binary file bytes.
+        res.status(200).send(Buffer.from(asset.data));
+        return;
+      }
+
+      res.status(200);
+      for (let position = 0, sent = 0; sent < asset.size; position += 1) {
+        const chunk = await prisma.assetChunk.findUnique({ where: { assetId_position: { assetId: id, position } } });
+        if (!chunk) throw new Error('Asset chunk is missing');
+        const bytes = Buffer.from(chunk.data);
+        sent += bytes.length;
+        res.write(bytes);
+      }
+      res.end();
     } catch {
       res.status(500).json({ message: 'Unable to download asset' });
     }
@@ -78,25 +91,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'PUT') {
-    const { name, description, authorization, originalFileName, type, size, data } = req.body ?? {};
+    const { name, description, authorization, originalFileName, type, size } = req.body ?? {};
     if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization)) {
       res.status(400).json({ message: 'Invalid asset payload' });
       return;
     }
 
-    const hasReplacementFile = data !== undefined || type !== undefined || size !== undefined;
+    const hasReplacementFile = type !== undefined || size !== undefined;
     let fileUpdate = {};
     if (hasReplacementFile) {
-      if (typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || typeof data !== 'string') {
+      if (typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || size > MAX_FILE_SIZE) {
         res.status(400).json({ message: 'Invalid replacement file' });
         return;
       }
-      const fileData = Buffer.from(data, 'base64');
-      if (fileData.length !== size || size > MAX_FILE_SIZE) {
-        res.status(400).json({ message: 'Asset data is invalid or exceeds the 10 MB limit' });
-        return;
-      }
-      fileUpdate = { mimeType: type || 'application/octet-stream', fileExtension: typeof originalFileName === 'string' ? extname(originalFileName).slice(0, 32) : '', size, data: fileData };
+      fileUpdate = { mimeType: type || 'application/octet-stream', fileExtension: typeof originalFileName === 'string' ? extname(originalFileName).slice(0, 32) : '', size };
     }
 
     try {

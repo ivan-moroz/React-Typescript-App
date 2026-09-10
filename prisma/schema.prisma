@@ -28,11 +28,24 @@ model Asset {
   fileExtension String @default("") @map("file_extension")
   mimeType  String   @map("mime_type")
   size      Int
-  data      Bytes
+  data      Bytes?
+  storageMode String @default("INLINE") @map("storage_mode")
   createdAt DateTime @default(now()) @map("created_at")
   userId    Int      @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks    AssetChunk[]
 
   @@index([userId, createdAt])
   @@map("assets")
+}
+
+model AssetChunk {
+  id       Int    @id @default(autoincrement())
+  assetId  String @map("asset_id") @db.Uuid
+  position Int
+  data     Bytes
+  asset    Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, position])
+  @@map("asset_chunks")
 }

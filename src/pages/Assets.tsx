@@ -8,7 +8,7 @@ type Asset = { id: string; name: string; description: string; authorization: Aut
 type AuthenticatedUser = { id: number; name: string };
 type AssetForm = { name: string; description: string; authorization: Authorization; file: File | null };
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 const EMPTY_FORM: AssetForm = { name: '', description: '', authorization: 'INTERNAL', file: null };
 
 function getCurrentUser(): AuthenticatedUser | null {
@@ -23,25 +23,20 @@ async function responseError(response: Response, fallback: string): Promise<Erro
     return new Error(typeof payload?.message === 'string' ? payload.message : fallback);
 }
 
-async function readFileAsBase64(file: File): Promise<string> {
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(reader.error ?? new Error('Could not read file'));
-        reader.readAsDataURL(file);
-    });
-    return dataUrl.slice(dataUrl.indexOf(',') + 1);
-}
-
 async function saveAsset(userId: number, form: AssetForm, asset?: Asset): Promise<Asset | undefined> {
-    const replacement = form.file ? { originalFileName: form.file.name, type: form.file.type || 'application/octet-stream', size: form.file.size, data: await readFileAsBase64(form.file) } : {};
+    const replacement = form.file ? { originalFileName: form.file.name, type: form.file.type || 'application/octet-stream', size: form.file.size } : {};
     const response = await fetch(asset ? `/api/assets/${asset.id}` : '/api/assets', {
         method: asset ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, name: form.name, description: form.description, authorization: form.authorization, ...replacement }),
     });
-    if (!response.ok) throw await responseError(response, asset ? 'Could not update asset' : 'Could not upload asset');
-    return asset ? undefined : response.json() as Promise<Asset>;
+    if (!response.ok) throw await responseError(response, asset ? 'Could not update asset' : 'Could not create asset');
+    const saved = asset ? asset : await response.json() as Asset;
+    if (form.file) {
+        const upload = await fetch(`/api/assets/${saved.id}/file?userId=${userId}`, { method: 'PUT', headers: { 'Content-Type': form.file.type || 'application/octet-stream' }, body: form.file });
+        if (!upload.ok) throw await responseError(upload, 'Could not upload file');
+    }
+    return asset ? undefined : saved;
 }
 
 function formatSize(size: number): string {
@@ -140,12 +135,12 @@ export default function AssetsPage() {
                 <label>Authorization<select value={form.authorization} onChange={(event) => setForm((current) => ({ ...current, authorization: event.target.value as Authorization }))}><option value="INTERNAL">Internal</option><option value="PUBLIC">Public</option></select></label>
                 <input ref={fileInputRef} className="file-input" type="file" onChange={handleFileChange} />
                 <div className={`upload-dropzone asset-file-dropzone${isDragging ? ' is-dragging' : ''}`} onDragEnter={(event) => { event.preventDefault(); setIsDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop}>
-                    <strong>{form.file ? form.file.name : editingAsset ? 'Replace file (optional)' : 'Choose a file'}</strong><span>Drag a file here or <button type="button" onClick={() => fileInputRef.current?.click()}>browse</button> · up to 10 MB</span>
+                    <strong>{form.file ? form.file.name : editingAsset ? 'Replace file (optional)' : 'Choose a file'}</strong><span>Drag a file here or <button type="button" onClick={() => fileInputRef.current?.click()}>browse</button> · up to 1 GB</span>
                 </div>
             </form>
         </Modal>
         <Modal isOpen={previewAsset !== null} title={previewAsset?.name ?? 'Asset preview'} onClose={() => setPreviewAsset(null)} footer={previewAsset && <><a href={downloadUrl(previewAsset.id)} download={previewAsset.name}>Download</a>{previewAsset.userId === user?.id && <button type="button" onClick={() => openEdit(previewAsset)}>Edit</button>}<button type="button" onClick={() => setPreviewAsset(null)}>Close</button></>}>
-            {previewAsset && <div className="asset-modal-content">{previewAsset.type.startsWith('image/') ? <img className="asset-modal-image" src={previewUrl(previewAsset.id)} alt={previewAsset.name} /> : <p>Preview is unavailable for this file type.</p>}<dl className="asset-preview-details"><dt>Asset Name</dt><dd>{previewAsset.name}</dd><dt>Description</dt><dd>{previewAsset.description || '—'}</dd><dt>Authorization</dt><dd>{previewAsset.authorization === 'PUBLIC' ? 'Public' : 'Internal'}</dd></dl></div>}
+            {previewAsset && <div className="asset-modal-content">{previewAsset.type.startsWith('image/') ? <img className="asset-modal-image" src={previewUrl(previewAsset.id)} alt={previewAsset.name} /> : previewAsset.type.startsWith('video/') ? <video className="asset-modal-video" controls src={previewUrl(previewAsset.id)}>Your browser cannot play this video.</video> : <p>Preview is unavailable for this file type.</p>}<dl className="asset-preview-details"><dt>Asset Name</dt><dd>{previewAsset.name}</dd><dt>Description</dt><dd>{previewAsset.description || '—'}</dd><dt>Authorization</dt><dd>{previewAsset.authorization === 'PUBLIC' ? 'Public' : 'Internal'}</dd></dl></div>}
         </Modal>
     </main>;
 }
