@@ -127,12 +127,12 @@ export default function AssetsPage() {
     const downloadUrl = (id: string) => user ? `/api/assets/${id}?userId=${user.id}&download=1` : '';
 
     return <main className="assets-page">
-        <section className="assets-heading"><div><p className="eyebrow">Asset Management</p><h1>Your assets</h1><p>Upload, preview, download, and manage every file you add.</p></div>
-            <button className="upload-button" type="button" disabled={!user} onClick={openUpload}>Upload assets</button></section>
+        <section className="assets-heading"><div><p className="eyebrow">Asset Management</p><h1>Your assets</h1>{!user ? null : <p>Upload, preview, download, and manage every file you add.</p>}</div>
+            {!user ? null : <button className="upload-button" type="button" disabled={!user} onClick={openUpload}>Upload assets</button>}</section>
         {message && <p className="asset-message" role="status">{message}</p>}
-        <section className="asset-library" aria-labelledby="asset-library-title"><div className="library-heading"><div><h2 id="asset-library-title">Asset library</h2><p>{assets.length} asset{assets.length === 1 ? '' : 's'} available to {user?.name ?? 'your account'}</p></div></div>
+        {!user ? null : <section className="asset-library" aria-labelledby="asset-library-title"><div className="library-heading"><div><h2 id="asset-library-title">Asset library</h2><p>{assets.length} asset{assets.length === 1 ? '' : 's'} available to {user?.name ?? 'your account'}</p></div></div>
             {isLoading ? <p className="asset-empty">Loading assets…</p> : assets.length === 0 ? <div className="asset-empty"><strong>No assets yet</strong><span>Upload a file to build your library.</span></div> : <div className="asset-grid">{assets.map((asset) => <AssetCard key={asset.id} asset={asset} previewUrl={previewUrl(asset.id)} downloadUrl={downloadUrl(asset.id)} isOwner={asset.userId === user?.id} onOpen={() => setPreviewAsset(asset)} onEdit={() => openEdit(asset)} onDelete={handleDelete} />)}</div>}
-        </section>
+        </section>}
         <Modal isOpen={isEditorOpen} title={editingAsset ? 'Edit asset' : 'Upload asset'} onClose={closeEditor} footer={<><button type="button" onClick={closeEditor}>Cancel</button><button type="submit" form="asset-form" disabled={isSaving}>{isSaving ? 'Saving…' : editingAsset ? 'Save changes' : 'Upload asset'}</button></>}>
             <form id="asset-form" className="asset-editor" onSubmit={(event) => void handleSubmit(event)}>
                 <label>Asset Name<input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} required /></label>
