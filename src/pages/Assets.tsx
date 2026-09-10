@@ -122,25 +122,66 @@ export default function AssetsPage() {
     const downloadUrl = (id: string) => user ? `/api/assets/${id}?userId=${user.id}&download=1` : '';
 
     return <main className="assets-page">
-        <section className="assets-heading"><div><p className="eyebrow">Asset Management</p><h1>Your assets</h1>{!user ? null : <p>Upload, preview, download, and manage every file you add.</p>}</div>
-            {!user ? null : <button className="upload-button" type="button" disabled={!user} onClick={openUpload}>Upload assets</button>}</section>
+        <section className="assets-heading">
+            <div>
+                <p className="eyebrow">Asset Management</p>
+                <h1>Your assets</h1>
+                {!user ? null : <p>Upload, preview, download, and manage every file you add.</p>}
+            </div>
+            {!user ? null : <button className="upload-button" type="button" disabled={!user} onClick={openUpload}>Upload assets</button>}
+        </section>
         {message && <p className="asset-message" role="status">{message}</p>}
-        {!user ? null : <section className="asset-library" aria-labelledby="asset-library-title"><div className="library-heading"><div><h2 id="asset-library-title">Asset library</h2><p>{assets.length} asset{assets.length === 1 ? '' : 's'} available to {user?.name ?? 'your account'}</p></div></div>
+        {!user ? null : 
+        <section className="asset-library" aria-labelledby="asset-library-title"><div className="library-heading"><div><h2 id="asset-library-title">Asset library</h2><p>{assets.length} asset{assets.length === 1 ? '' : 's'} available to {user?.name ?? 'your account'}</p></div></div>
             {isLoading ? <p className="asset-empty">Loading assets…</p> : assets.length === 0 ? <div className="asset-empty"><strong>No assets yet</strong><span>Upload a file to build your library.</span></div> : <div className="asset-grid">{assets.map((asset) => <AssetCard key={asset.id} asset={asset} previewUrl={previewUrl(asset.id)} downloadUrl={downloadUrl(asset.id)} isOwner={asset.userId === user?.id} onOpen={() => setPreviewAsset(asset)} onEdit={() => openEdit(asset)} onDelete={handleDelete} />)}</div>}
-        </section>}
-        <Modal isOpen={isEditorOpen} title={editingAsset ? 'Edit asset' : 'Upload asset'} onClose={closeEditor} footer={<><button type="button" onClick={closeEditor}>Cancel</button><button type="submit" form="asset-form" disabled={isSaving}>{isSaving ? 'Saving…' : editingAsset ? 'Save changes' : 'Upload asset'}</button></>}>
+        </section>
+        }
+        <Modal 
+            isOpen={isEditorOpen} 
+            title={editingAsset ? 'Edit asset' : 'Upload asset'} 
+            onClose={closeEditor} 
+            footer={<>
+                <button type="button" onClick={closeEditor}>Cancel</button>
+                <button type="submit" form="asset-form" disabled={isSaving}>{isSaving ? 'Saving…' : editingAsset ? 'Save changes' : 'Upload asset'}</button>
+            </>}>
             <form id="asset-form" className="asset-editor" onSubmit={(event) => void handleSubmit(event)}>
                 <label>Asset Name<input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} required /></label>
-                <label>Description<textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} /></label>
-                <label>Authorization<select value={form.authorization} onChange={(event) => setForm((current) => ({ ...current, authorization: event.target.value as Authorization }))}><option value="INTERNAL">Internal</option><option value="PUBLIC">Public</option></select></label>
+                <label>Description
+                    <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} />                        
+                </label>
+                <label>Authorization
+                    <select 
+                        value={form.authorization} 
+                        onChange={(event) => setForm((current) => ({ ...current, authorization: event.target.value as Authorization }))}>
+                            <option value="INTERNAL">Internal</option>
+                            <option value="PUBLIC">Public</option>
+                    </select>
+                </label>
                 <input ref={fileInputRef} className="file-input" type="file" onChange={handleFileChange} />
                 <div className={`upload-dropzone asset-file-dropzone${isDragging ? ' is-dragging' : ''}`} onDragEnter={(event) => { event.preventDefault(); setIsDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop}>
-                    <strong>{form.file ? form.file.name : editingAsset ? 'Replace file (optional)' : 'Choose a file'}</strong><span>Drag a file here or <button type="button" onClick={() => fileInputRef.current?.click()}>browse</button> · up to 1 GB</span>
+                    <strong>{form.file ? form.file.name : editingAsset ? 'Replace file (optional)' : 'Choose a file'}</strong>
+                    <span>Drag a file here or 
+                        <button type="button" onClick={() => fileInputRef.current?.click()}>browse</button>
+                         · up to 1 GB
+                    </span>
                 </div>
             </form>
         </Modal>
         <Modal isOpen={previewAsset !== null} title={previewAsset?.name ?? 'Asset preview'} onClose={() => setPreviewAsset(null)} footer={previewAsset && <><a href={downloadUrl(previewAsset.id)} download={previewAsset.name}>Download</a>{previewAsset.userId === user?.id && <button type="button" onClick={() => openEdit(previewAsset)}>Edit</button>}<button type="button" onClick={() => setPreviewAsset(null)}>Close</button></>}>
-            {previewAsset && <div className="asset-modal-content">{previewAsset.type.startsWith('image/') ? <img className="asset-modal-image" src={previewUrl(previewAsset.id)} alt={previewAsset.name} /> : previewAsset.type.startsWith('video/') ? <video className="asset-modal-video" controls src={previewUrl(previewAsset.id)}>Your browser cannot play this video.</video> : <p>Preview is unavailable for this file type.</p>}<dl className="asset-preview-details"><dt>Asset Name</dt><dd>{previewAsset.name}</dd><dt>Description</dt><dd>{previewAsset.description || '—'}</dd><dt>Authorization</dt><dd>{previewAsset.authorization === 'PUBLIC' ? 'Public' : 'Internal'}</dd></dl></div>}
+            {previewAsset && <div className="asset-modal-content">{previewAsset.type.startsWith('image/') ? 
+                <img className="asset-modal-image" src={previewUrl(previewAsset.id)} alt={previewAsset.name} /> : 
+                previewAsset.type.startsWith('video/') ? 
+                <video className="asset-modal-video" controls src={previewUrl(previewAsset.id)}>Your browser cannot play this video.</video> : 
+                <p>Preview is unavailable for this file type.</p>}
+                <dl className="asset-preview-details">
+                    <dt>Asset Name</dt>
+                    <dd>{previewAsset.name}</dd>
+                    <dt>Description</dt>
+                    <dd>{previewAsset.description || '—'}</dd>
+                    <dt>Authorization</dt>
+                    <dd>{previewAsset.authorization === 'PUBLIC' ? 'Public' : 'Internal'}</dd>
+                </dl>
+            </div>}
         </Modal>
     </main>;
 }
