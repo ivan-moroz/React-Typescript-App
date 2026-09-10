@@ -2,7 +2,7 @@
 
 This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer.
 
-Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature added, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets and Public assets, added metadata for assets like Asset Name, Description, Authorization(Internal, Public). For local use only — clone it and lets continue working with AI. Good luck!
+Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature added, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets and Public assets, added metadata for assets like Asset Name, Description, Authorization(Internal, Public). Assets content files can be up to 1 GB in size, including videos, images, and other file types. For local use only — clone it and lets continue working with AI. Good luck!
 
 ## PostgreSQL + Prisma setup
 
