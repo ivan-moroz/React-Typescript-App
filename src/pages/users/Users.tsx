@@ -1,6 +1,6 @@
 import React, {useEffect, useReducer, useRef, useState} from "react";
 
-import Modal from "../modal/Modal";
+import Modal from "../../components/modal/Modal";
 import {initialState, reducer} from "./reducer/reducer";
 import {ActionType, User, UserFormState} from "./types/types";
 import './styles/styles.scss';
@@ -15,7 +15,7 @@ const emptyUserForm: UserFormState = {
 
 const PAGE_SIZE = 10;
 
-function EditableTable() {
+function UsersTable() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
@@ -398,4 +398,4 @@ function EditableTable() {
     );
 };
 
-export default EditableTable;
+export default UsersTable;

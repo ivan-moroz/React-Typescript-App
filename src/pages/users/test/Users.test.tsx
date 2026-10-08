@@ -1,8 +1,8 @@
 import React from 'react';
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import Table from '../Table';
+import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import Users from '../Users';
 
-describe('Table Component', () => {
+describe('Users Component', () => {
   const mockUsers = Array.from({ length: 5 }, (_, i) => ({
     id: i + 1,
     name: `User ${i + 1}`,
@@ -23,7 +23,7 @@ describe('Table Component', () => {
   });
 
   test('does not render add row and add column actions', async () => {
-    render(<Table />);
+    render(<Users />);
     await screen.findByText('User 1');
 
     expect(screen.queryByTestId('table-add-row')).not.toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('Table Component', () => {
   });
 
   test('renders table cells as non-editable text', async () => {
-    render(<Table />);
+    render(<Users />);
     await waitFor(() => expect(screen.getByText('User 1')).toBeInTheDocument());
     const firstBodyRow = document.querySelectorAll('tbody tr')[0];
     expect(firstBodyRow.querySelector('input')).toBeNull();
@@ -61,7 +61,7 @@ describe('Table Component', () => {
         json: async () => usersAfterDelete,
       } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 1');
 
@@ -98,7 +98,7 @@ describe('Table Component', () => {
         json: async () => updatedUsers,
       } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 1');
     fireEvent.click(screen.getByTestId('table-add-user'));
@@ -126,7 +126,7 @@ describe('Table Component', () => {
         json: async () => ({ message: 'Email address is already in use' }),
       } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 1');
     fireEvent.click(screen.getByTestId('table-add-user'));
@@ -169,11 +169,13 @@ describe('Table Component', () => {
     window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
     try {
-      render(<Table />);
+      render(<Users />);
       await screen.findByText('User 10');
 
       expect(fetchMock).toHaveBeenCalledWith('/api/users?offset=0&limit=10');
-      observeCallback?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+      await act(async () => {
+        observeCallback?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+      });
 
       await screen.findByText('User 11');
       expect(fetchMock).toHaveBeenCalledWith('/api/users?offset=10&limit=10');
@@ -189,7 +191,7 @@ describe('Table Component', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => mockUsers } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => reorderedUsers } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 1');
     fireEvent.dragStart(screen.getByTestId('user-row-2'));
@@ -223,7 +225,7 @@ describe('Table Component', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => firstPage } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => reorderedFirstPage } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 10');
     expect(screen.getByTestId('user-row-2')).toHaveAttribute('draggable', 'true');
@@ -264,7 +266,7 @@ describe('Table Component', () => {
         json: async () => updatedUsers,
       } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 1');
     fireEvent.click(screen.getByLabelText('Edit user User 1'));
@@ -306,7 +308,7 @@ describe('Table Component', () => {
         json: async () => ({ message: 'Email address is already in use' }),
       } as Response);
 
-    render(<Table />);
+    render(<Users />);
 
     await screen.findByText('User 1');
     fireEvent.click(screen.getByLabelText('Edit user User 1'));
