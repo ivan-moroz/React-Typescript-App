@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import './styles/styles.scss';
 import {ActiveStyleProps} from "./types/types";
 
@@ -8,11 +8,15 @@ const activeStyle = ({ isActive }: ActiveStyleProps) => ({
 
 export default function Navigation() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const loginState = location.pathname === '/login'
+        ? location.state
+        : { from: `${location.pathname}${location.search}${location.hash}` };
     const authenticatedUser = getAuthenticatedUser();
 
     const handleLogout = (): void => {
         sessionStorage.removeItem('authenticatedUser');
-        navigate('/login');
+        navigate('/login', { state: loginState });
     };
 
     return (
@@ -62,6 +66,7 @@ export default function Navigation() {
             ) : (
                 <NavLink
                     to="/login"
+                    state={loginState}
                     style={activeStyle}
                 >
                     Login

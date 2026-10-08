@@ -1,10 +1,16 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import '../styles/login.scss';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from;
+  const returnTo = typeof from === 'string' && from.startsWith('/') &&
+    !from.startsWith('//') && !from.includes('\\') && from.split(/[?#]/)[0] !== '/login'
+    ? from
+    : '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +34,7 @@ export default function LoginPage() {
       }
 
       sessionStorage.setItem('authenticatedUser', JSON.stringify(payload));
-      navigate('/table');
+      navigate(returnTo, { replace: true });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Unable to log in');
     } finally {

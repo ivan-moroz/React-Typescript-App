@@ -14,7 +14,7 @@ describe('Navigation', () => {
 
     render(<MemoryRouter><Navigation /></MemoryRouter>);
 
-    expect(screen.getByText('Signed in as Jane')).toBeInTheDocument();
+    expect(screen.getByText('Jane')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
