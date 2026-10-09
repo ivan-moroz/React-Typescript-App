@@ -2,7 +2,7 @@ import React, {useEffect, useReducer, useRef, useState} from "react";
 
 import {useModal} from '../../components/modal/ModalProvider';
 import UserFormModal from './modals/UserFormModal';
-import DeleteUserModal from './modals/DeleteUserModal';
+import ConfirmationModal from '../../components/modal/ConfirmationModal';
 import {initialState, reducer} from "./reducer/reducer";
 import {ActionType, User} from "./types/types";
 import './styles/styles.scss';
@@ -87,8 +87,16 @@ function UsersTable() {
         const user = state.users.find((current) => current.id === userId);
         if (user) openModal(UserFormModal, {user, onSaved: () => loadUsers(true)});
     };
-    const handleRequestDeleteUser = (user: User) => openModal(DeleteUserModal, {
-        user, onDeleted: () => loadUsers(true), onError: setError
+    const handleRequestDeleteUser = (user: User) => openModal(ConfirmationModal, {
+        title: 'Delete user',
+        message: `Are you sure to delete user ${user.name}?`,
+        confirmLabel: 'Delete',
+        onConfirm: async () => {
+            setError('');
+            const response = await fetch(`/api/users/${user.id}`, {method: 'DELETE'});
+            if (!response.ok) throw new Error('Failed to delete user');
+            await loadUsers(true);
+        },
     });
 
     const handleDragStart = (userId: number): void => {

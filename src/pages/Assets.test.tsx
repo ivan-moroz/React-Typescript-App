@@ -43,3 +43,41 @@ test('uploads a file and resets the editor after cancellation', async () => {
     expect(screen.getByText('Photo')).toBeInTheDocument();
     expect(fetchMock).toHaveBeenLastCalledWith('/api/assets/a1/file?userId=1', expect.objectContaining({method: 'PUT', body: file}));
 });
+
+test('requires confirmation before deleting an asset and supports cancellation', async () => {
+    const fetchMock = vi.spyOn(global, 'fetch')
+        .mockResolvedValueOnce({ok: true, json: async () => [asset]} as Response)
+        .mockResolvedValueOnce({ok: true} as Response);
+    render(<ModalProvider><AssetsPage /></ModalProvider>);
+    await screen.findByText('Photo');
+    fireEvent.click(screen.getByRole('button', {name: 'Delete'}));
+    expect(screen.getByRole('dialog')).toHaveAccessibleName('Delete asset');
+    expect(screen.getByRole('dialog')).toHaveTextContent('Photo');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', {name: 'Cancel'}));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', {name: 'Delete'}));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', {name: 'Delete'}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText('No assets yet')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/assets/a1', {
+        method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({userId: 1}),
+    });
+});
+
+test('keeps the asset confirmation open after a failed deletion and allows retry', async () => {
+    vi.spyOn(global, 'fetch')
+        .mockResolvedValueOnce({ok: true, json: async () => [asset]} as Response)
+        .mockRejectedValueOnce(new Error('Connection failed'))
+        .mockResolvedValueOnce({ok: true} as Response);
+    render(<ModalProvider><AssetsPage /></ModalProvider>);
+    await screen.findByText('Photo');
+    fireEvent.click(screen.getByRole('button', {name: 'Delete'}));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', {name: 'Delete'}));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Connection failed');
+    expect(screen.getByText('Photo')).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', {name: 'Delete'}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText('No assets yet')).toBeInTheDocument();
+});

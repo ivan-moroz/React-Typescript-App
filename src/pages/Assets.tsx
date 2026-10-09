@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useState} from 'react';
 
+import ConfirmationModal from '../components/modal/ConfirmationModal';
 import {useModal} from '../components/modal/ModalProvider';
 import AssetEditorModal from './assets/modals/AssetEditorModal';
 import AssetPreviewModal from './assets/modals/AssetPreviewModal';
@@ -23,7 +24,7 @@ export default function AssetsPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState('');
-    const {openModal, closeModal} = useModal();
+    const {openModal} = useModal();
     const user = useMemo(getCurrentUser, []);
 
     useEffect(() => {
@@ -43,12 +44,18 @@ export default function AssetsPage() {
     const openPreview = (asset: Asset) => { if (user) openModal(AssetPreviewModal, {previewAsset: asset, user, openEdit}); };
     const handleDelete = async (id: string) => {
         if (!user) return;
-        try {
-            const response = await fetch(`/api/assets/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id }) });
-            if (!response.ok) throw await responseError(response, 'Could not remove asset');
-            setAssets((current) => current.filter((asset) => asset.id !== id)); closeModal(); setMessage('Asset removed.');
-        } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not remove asset.'); }
+        setMessage('');
+        const response = await fetch(`/api/assets/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id }) });
+        if (!response.ok) throw await responseError(response, 'Could not remove asset');
+        setAssets((current) => current.filter((asset) => asset.id !== id));
+        setMessage('Asset removed.');
     };
+    const openDelete = (asset: Asset) => openModal(ConfirmationModal, {
+        title: 'Delete asset',
+        message: `Are you sure you want to delete asset ${asset.name}?`,
+        confirmLabel: 'Delete',
+        onConfirm: () => handleDelete(asset.id),
+    });
     const previewUrl = (id: string) => user ? `/api/assets/${id}?userId=${user.id}` : '';
     const downloadUrl = (id: string) => user ? `/api/assets/${id}?userId=${user.id}&download=1` : '';
 
@@ -64,12 +71,12 @@ export default function AssetsPage() {
         {message && <p className="asset-message" role="status">{message}</p>}
         {!user ? null : 
         <section className="asset-library" aria-labelledby="asset-library-title"><div className="library-heading"><div><h2 id="asset-library-title">Asset library</h2><p>{assets.length} asset{assets.length === 1 ? '' : 's'} available to {user?.name ?? 'your account'}</p></div></div>
-            {isLoading ? <p className="asset-empty">Loading assets…</p> : assets.length === 0 ? <div className="asset-empty"><strong>No assets yet</strong><span>Upload a file to build your library.</span></div> : <div className="asset-grid">{assets.map((asset) => <AssetCard key={asset.id} asset={asset} previewUrl={previewUrl(asset.id)} downloadUrl={downloadUrl(asset.id)} isOwner={asset.userId === user?.id} onOpen={() => openPreview(asset)} onEdit={() => openEdit(asset)} onDelete={handleDelete} />)}</div>}
+            {isLoading ? <p className="asset-empty">Loading assets…</p> : assets.length === 0 ? <div className="asset-empty"><strong>No assets yet</strong><span>Upload a file to build your library.</span></div> : <div className="asset-grid">{assets.map((asset) => <AssetCard key={asset.id} asset={asset} previewUrl={previewUrl(asset.id)} downloadUrl={downloadUrl(asset.id)} isOwner={asset.userId === user?.id} onOpen={() => openPreview(asset)} onEdit={() => openEdit(asset)} onDelete={() => openDelete(asset)} />)}</div>}
         </section>
         }
     </main>;
 }
 
-function AssetCard({ asset, previewUrl, downloadUrl, isOwner, onOpen, onEdit, onDelete }: { asset: Asset; previewUrl: string; downloadUrl: string; isOwner: boolean; onOpen: () => void; onEdit: () => void; onDelete: (id: string) => void }) {
-    return <article className="asset-card"><div className="asset-preview"><button type="button" onClick={onOpen} aria-label={`Open ${asset.name}`}>{asset.type.startsWith('image/') ? <img src={previewUrl} alt={asset.name} /> : <span>{assetKind(asset.type)}</span>}</button></div><div className="asset-details"><h3 title={asset.name}>{asset.name}</h3><p>{assetKind(asset.type)} · {formatSize(asset.size)}</p><p className={`asset-authorization is-${asset.authorization.toLowerCase()}`}>{asset.authorization === 'PUBLIC' ? 'Public' : 'Internal'}</p><time dateTime={asset.createdAt}>Added {new Date(asset.createdAt).toLocaleDateString()}</time><div className="asset-actions"><button type="button" className="asset-open-button" onClick={onOpen}>Open</button><a href={downloadUrl} download={asset.name}>Download</a>{isOwner && <><button type="button" className="asset-open-button" onClick={onEdit}>Edit</button><button type="button" onClick={() => void onDelete(asset.id)}>Delete</button></>}</div></div></article>;
+function AssetCard({ asset, previewUrl, downloadUrl, isOwner, onOpen, onEdit, onDelete }: { asset: Asset; previewUrl: string; downloadUrl: string; isOwner: boolean; onOpen: () => void; onEdit: () => void; onDelete: () => void }) {
+    return <article className="asset-card"><div className="asset-preview"><button type="button" onClick={onOpen} aria-label={`Open ${asset.name}`}>{asset.type.startsWith('image/') ? <img src={previewUrl} alt={asset.name} /> : <span>{assetKind(asset.type)}</span>}</button></div><div className="asset-details"><h3 title={asset.name}>{asset.name}</h3><p>{assetKind(asset.type)} · {formatSize(asset.size)}</p><p className={`asset-authorization is-${asset.authorization.toLowerCase()}`}>{asset.authorization === 'PUBLIC' ? 'Public' : 'Internal'}</p><time dateTime={asset.createdAt}>Added {new Date(asset.createdAt).toLocaleDateString()}</time><div className="asset-actions"><button type="button" className="asset-open-button" onClick={onOpen}>Open</button><a href={downloadUrl} download={asset.name}>Download</a>{isOwner && <><button type="button" className="asset-open-button" onClick={onEdit}>Edit</button><button type="button" onClick={onDelete}>Delete</button></>}</div></div></article>;
 }
