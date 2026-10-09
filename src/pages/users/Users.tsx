@@ -1,17 +1,11 @@
 import React, {useEffect, useReducer, useRef, useState} from "react";
 
-import Modal from "../../components/modal/Modal";
+import {useModal} from '../../components/modal/ModalProvider';
+import UserFormModal from './modals/UserFormModal';
+import DeleteUserModal from './modals/DeleteUserModal';
 import {initialState, reducer} from "./reducer/reducer";
-import {ActionType, User, UserFormState} from "./types/types";
+import {ActionType, User} from "./types/types";
 import './styles/styles.scss';
-
-const emptyUserForm: UserFormState = {
-    name: "",
-    email: "",
-    age: "",
-    city: "",
-    password: ""
-};
 
 const PAGE_SIZE = 10;
 
@@ -21,12 +15,7 @@ function UsersTable() {
     const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
     const [hasMoreUsers, setHasMoreUsers] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
-    const [isUserFormOpen, setIsUserFormOpen] = useState<boolean>(false);
-    const [editingUserId, setEditingUserId] = useState<number | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [formError, setFormError] = useState<string>("");
-    const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
-    const [userToDelete, setUserToDelete] = useState<User | null>(null);
+    const {openModal} = useModal();
     const [draggedUserId, setDraggedUserId] = useState<number | null>(null);
     const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
     const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +23,6 @@ function UsersTable() {
     const usersRef = useRef<User[]>([]);
     const isFetchingUsersRef = useRef<boolean>(false);
 
-    const isEditingUser = editingUserId !== null;
 
     useEffect(() => {
         usersRef.current = state.users;
@@ -94,124 +82,14 @@ function UsersTable() {
         return () => observer.disconnect();
     }, [hasMoreUsers, state.users.length]);
 
-    const resetUserForm = (): void => {
-        setUserForm(emptyUserForm);
-        setEditingUserId(null);
-        setFormError("");
+    const handleStartCreateUser = () => openModal(UserFormModal, {onSaved: () => loadUsers(true)});
+    const handleStartEditUser = (userId: number) => {
+        const user = state.users.find((current) => current.id === userId);
+        if (user) openModal(UserFormModal, {user, onSaved: () => loadUsers(true)});
     };
-
-    const handleStartCreateUser = (): void => {
-        resetUserForm();
-        setIsUserFormOpen(true);
-    };
-
-    const handleCloseUserForm = (): void => {
-        setIsUserFormOpen(false);
-        resetUserForm();
-    };
-
-    const handleStartEditUser = (userId: number): void => {
-        const user = state.users.find((currentUser) => currentUser.id === userId);
-
-        if (!user) {
-            return;
-        }
-
-        setUserForm({
-            name: String(user.name),
-            email: String(user.email),
-            age: String(user.age),
-            city: String(user.city),
-            password: ""
-        });
-        setEditingUserId(userId);
-        setFormError("");
-        setIsUserFormOpen(true);
-    };
-
-    const handleInputChange = (field: keyof UserFormState, value: string): void => {
-        setUserForm((prevState) => ({...prevState, [field]: value}));
-    };
-
-    const handleSubmitUser = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-        event.preventDefault();
-        setFormError("");
-
-        if (!userForm.name.trim() || !userForm.email.trim() || !userForm.age.trim() || !userForm.city.trim() || (!isEditingUser && !userForm.password)) {
-            setFormError('All fields are required');
-            return;
-        }
-
-        const parsedAge = Number(userForm.age);
-        if (!Number.isInteger(parsedAge) || parsedAge <= 0) {
-            setFormError('Age must be a positive number');
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            const response = await fetch(isEditingUser ? `/api/users/${editingUserId}` : '/api/users', {
-                method: isEditingUser ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: userForm.name.trim(),
-                    email: userForm.email.trim(),
-                    age: parsedAge,
-                    city: userForm.city.trim(),
-                    ...(userForm.password ? { password: userForm.password } : {})
-                })
-            });
-
-            if (!response.ok) {
-                const responseBody = await response.json().catch(() => null);
-                const message = typeof responseBody?.message === 'string'
-                    ? responseBody.message
-                    : isEditingUser ? 'Failed to update user' : 'Failed to add user';
-                throw new Error(message);
-            }
-
-            await loadUsers(true);
-            setIsUserFormOpen(false);
-            resetUserForm();
-        } catch (error) {
-            setFormError(error instanceof Error ? error.message : isEditingUser ? 'Failed to update user' : 'Failed to add user');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleRequestDeleteUser = (user: User): void => {
-        setUserToDelete(user);
-    };
-
-    const handleCloseDeleteModal = (): void => {
-        setUserToDelete(null);
-    };
-
-    const handleDeleteUser = async (): Promise<void> => {
-        if (!userToDelete) {
-            return;
-        }
-
-        setError('');
-
-        try {
-            const response = await fetch(`/api/users/${userToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Unable to delete user');
-            }
-
-            await loadUsers(true);
-            setUserToDelete(null);
-        } catch {
-            setError('Failed to delete user');
-        }
-    };
+    const handleRequestDeleteUser = (user: User) => openModal(DeleteUserModal, {
+        user, onDeleted: () => loadUsers(true), onError: setError
+    });
 
     const handleDragStart = (userId: number): void => {
         setDraggedUserId(userId);
@@ -328,72 +206,6 @@ function UsersTable() {
             )}
             </div>
             )}
-            <Modal
-                isOpen={isUserFormOpen}
-                title={isEditingUser ? 'Edit user' : 'Create user'}
-                onClose={handleCloseUserForm}
-                footer={(
-                    <>
-                        <button type='button' onClick={handleCloseUserForm}>
-                            Cancel
-                        </button>
-                        <button type='submit' form='user-form' disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : isEditingUser ? 'Update User' : 'Save User'}
-                        </button>
-                    </>
-                )}
-            >
-                <form id='user-form' className='add-user-form' onSubmit={(event) => void handleSubmitUser(event)}>
-                    <input
-                        type='text'
-                        placeholder='Name'
-                        value={userForm.name}
-                        onChange={(event) => handleInputChange('name', event.target.value)}
-                    />
-                    <input
-                        type='email'
-                        placeholder='Email'
-                        value={userForm.email}
-                        onChange={(event) => handleInputChange('email', event.target.value)}
-                    />
-                    <input
-                        type='number'
-                        placeholder='Age'
-                        value={userForm.age}
-                        onChange={(event) => handleInputChange('age', event.target.value)}
-                    />
-                    <input
-                        type='text'
-                        placeholder='City'
-                        value={userForm.city}
-                        onChange={(event) => handleInputChange('city', event.target.value)}
-                    />
-                    <input
-                        type='password'
-                        placeholder={isEditingUser ? 'Password (leave blank to keep current)' : 'Password'}
-                        value={userForm.password}
-                        onChange={(event) => handleInputChange('password', event.target.value)}
-                    />
-                    {formError && <p>{formError}</p>}
-                </form>
-            </Modal>
-            <Modal
-                isOpen={userToDelete !== null}
-                title='Delete user'
-                onClose={handleCloseDeleteModal}
-                footer={(
-                    <>
-                        <button type='button' onClick={handleCloseDeleteModal}>
-                            Cancel
-                        </button>
-                        <button type='button' onClick={() => void handleDeleteUser()}>
-                            Delete
-                        </button>
-                    </>
-                )}
-            >
-                <p>Are you sure to delete user {userToDelete?.name}</p>
-            </Modal>
         </div>
     );
 };

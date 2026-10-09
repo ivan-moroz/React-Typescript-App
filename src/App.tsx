@@ -2,6 +2,7 @@ import {lazy} from "react";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Navigation from './components/navigation/Navigation';
+import {ModalProvider} from './components/modal/ModalProvider';
 import './styles/App.scss';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -15,6 +16,7 @@ const AssetsPage = lazy(() => import('./pages/Assets'));
 export default function App() {
     return (
         <BrowserRouter>
+            <ModalProvider>
             <Navigation />
 
             <div className='page-wrapper'>
@@ -28,6 +30,7 @@ export default function App() {
                     <Route path="/login" element={<LoginPage />} />
                 </Routes>
             </div>
+            </ModalProvider>
         </BrowserRouter>
     );
 }

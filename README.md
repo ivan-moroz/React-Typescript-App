@@ -70,3 +70,9 @@ Builds the app for production into the `dist` folder.
 ### `npm run preview`
 
 Previews the production build locally.
+
+Storybook
+
+### `npm run storybook`
+
+http://localhost:6006/

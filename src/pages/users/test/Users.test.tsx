@@ -1,6 +1,9 @@
 import React from 'react';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {act, fireEvent, render as renderBase, screen, waitFor} from '@testing-library/react';
 import Users from '../Users';
+import {ModalProvider} from '../../../components/modal/ModalProvider';
+
+const render = (ui: React.ReactNode) => renderBase(<ModalProvider>{ui}</ModalProvider>);
 
 describe('Users Component', () => {
   const mockUsers = Array.from({ length: 5 }, (_, i) => ({
