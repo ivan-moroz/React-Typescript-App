@@ -22,7 +22,7 @@ export default function CustomSelect({ options, value, onChange, isMulti = false
 
     const isOptionSelected = (optionValue?: string): boolean => {
         if (isMulti) {
-            return Boolean(optionValue) && selectedValues.includes(optionValue);
+            return optionValue !== undefined && selectedValues.includes(optionValue);
         }
 
         return optionValue === value;
