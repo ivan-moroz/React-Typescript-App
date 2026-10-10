@@ -5,6 +5,7 @@ import UserFormModal from './modals/UserFormModal';
 import ConfirmationModal from '../../components/modal/ConfirmationModal';
 import {initialState, reducer} from "./reducer/reducer";
 import {ActionType, User} from "./types/types";
+import Table, {type TableColumn} from '../../components/table/Table';
 import './styles/styles.scss';
 
 const PAGE_SIZE = 10;
@@ -147,6 +148,35 @@ function UsersTable() {
         }
     };
 
+    const columns: TableColumn<User>[] = [
+        ...Object.keys(state.users[0] ?? {}).map((key) => ({
+            key,
+            header: key,
+            render: (user: User) => <span>{user[key]}</span>,
+        })),
+        {
+            key: 'user-actions',
+            header: 'actions',
+            render: (user) => (
+                <>
+                    <button
+                        type='button'
+                        aria-label={`Edit user ${user.name}`}
+                        onClick={() => handleStartEditUser(user.id)}
+                    >
+                        <span className="material-icons">edit</span>
+                    </button>
+                    <button
+                        type='button'
+                        aria-label={`Delete user ${user.name}`}
+                        onClick={() => handleRequestDeleteUser(user)}
+                    >
+                        <span className="material-icons">delete</span>
+                    </button>
+                </>
+            ),
+        },
+    ];
     return (
         <div>
             {isLoading && <p>Loading table data...</p>}
@@ -160,53 +190,24 @@ function UsersTable() {
                 !isLoading && !error ? <p>No users found.</p> : null
             ) : (
             <div className='user-table-container' ref={tableScrollContainerRef}>
-            <table className="user-table" border={1} style={{ borderCollapse: "collapse" }}>
-                <thead>
-                <tr>
-                    {Object.keys(state.users[0]).map((key) => (
-                        <th key={key}>{key}</th>
-                    ))}
-                    <th>actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {state.users.map((user) => (
-                    <tr
-                        key={user.id}
-                        data-testid={`user-row-${user.id}`}
-                        draggable={!isSavingOrder}
-                        aria-grabbed={draggedUserId === user.id}
-                        className={draggedUserId === user.id ? 'is-dragging' : undefined}
-                        onDragStart={() => handleDragStart(user.id)}
-                        onDragEnd={() => setDraggedUserId(null)}
-                        onDragOver={(event) => event.preventDefault()}
-                        onDrop={() => void handleDrop(user.id)}
-                    >
-                        {Object.entries(user).map(([key, value]) => (
-                            <td key={key}>
-                                <span>{value}</span>
-                            </td>
-                        ))}
-                        <td>
-                            <button
-                                type='button'
-                                aria-label={`Edit user ${user.name}`}
-                                onClick={() => handleStartEditUser(user.id)}
-                            >
-                                <span className="material-icons">edit</span>
-                            </button>
-                            <button
-                                type='button'
-                                aria-label={`Delete user ${user.name}`}
-                                onClick={() => handleRequestDeleteUser(user)}
-                            >
-                                <span className="material-icons">delete</span>
-                            </button>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+            <Table
+                className="user-table"
+                border={1}
+                style={{borderCollapse: "collapse"}}
+                columns={columns}
+                data={state.users}
+                getRowKey={(user) => user.id}
+                getRowProps={(user) => ({
+                    'data-testid': `user-row-${user.id}`,
+                    draggable: !isSavingOrder,
+                    'aria-grabbed': draggedUserId === user.id,
+                    className: draggedUserId === user.id ? 'is-dragging' : undefined,
+                    onDragStart: () => handleDragStart(user.id),
+                    onDragEnd: () => setDraggedUserId(null),
+                    onDragOver: (event) => event.preventDefault(),
+                    onDrop: () => void handleDrop(user.id),
+                })}
+            />
             {hasMoreUsers && (
                 <div ref={loadMoreTriggerRef} data-testid='users-load-more-trigger' className='users-load-more-trigger'>
                     {isLoadingMore && 'Loading more users...'}
