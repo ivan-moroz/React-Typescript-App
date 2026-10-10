@@ -5,14 +5,14 @@ import ToDo from '../ToDo';
 
 describe('ToDo Component', () => {
   beforeEach(() => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
+    global.fetch = vi.fn<typeof fetch>().mockImplementation(async () => new Response(
+      JSON.stringify({
         id: 1,
         text: 'Learn React + TypeScript',
         completed: false,
       }),
-    } as Response);
+      {status: 200, headers: {'Content-Type': 'application/json'}},
+    ));
   });
 
   afterEach(() => {
