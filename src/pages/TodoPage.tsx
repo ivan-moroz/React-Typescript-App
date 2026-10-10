@@ -1,12 +1,12 @@
-import React, {lazy} from "react";
+import React, { lazy } from "react";
 
-const ToDo = lazy(() => import('../components/toDo/ToDo'));
+const ToDo = lazy(() => import("../components/toDo/ToDo"));
 
 export default function ToDoPage() {
-    return (
-        <div className="app">
-            <h1>ToDo List</h1>
-            <ToDo />
-        </div>
-    )
+	return (
+		<div className="app">
+			<h1>ToDo List</h1>
+			<ToDo />
+		</div>
+	);
 }
