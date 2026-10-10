@@ -1,51 +1,50 @@
-import React from 'react';
-import {fireEvent, render, screen} from '@testing-library/react';
-import Calculator from '../Calculator';
+import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import Calculator from "../Calculator";
 
-describe('Calculator Component', () => {
-  test('handles number button clicks', () => {
-    render(<Calculator />);
-    const button1 = screen.getByText('1');
-    const button2 = screen.getByText('2');
+describe("Calculator Component", () => {
+	test("handles number button clicks", () => {
+		render(<Calculator />);
+		const button1 = screen.getByText("1");
+		const button2 = screen.getByText("2");
 
-    fireEvent.click(button1);
-    fireEvent.click(button2);
+		fireEvent.click(button1);
+		fireEvent.click(button2);
 
-    expect(screen.getByText('12')).toBeInTheDocument();
-  });
+		expect(screen.getByText("12")).toBeInTheDocument();
+	});
 
+	test("handles percentage calculations", () => {
+		render(<Calculator />);
+		const button2 = screen.getByText("2");
+		const button0 = screen.getByText("0");
+		const buttonPercent = screen.getByText("%");
+		const button1 = screen.getByText("1");
+		const equalsButton = screen.getByText("=");
 
-  test('handles percentage calculations', () => {
-    render(<Calculator />);
-    const button2 = screen.getByText('2');
-    const button0 = screen.getByText('0');
-    const buttonPercent = screen.getByText('%');
-    const button1 = screen.getByText('1');
-    const equalsButton = screen.getByText('=');
+		fireEvent.click(button2);
+		fireEvent.click(button0);
+		fireEvent.click(button0);
+		fireEvent.click(buttonPercent);
+		fireEvent.click(button1);
+		fireEvent.click(button0);
+		fireEvent.click(equalsButton);
 
-    fireEvent.click(button2);
-    fireEvent.click(button0);
-    fireEvent.click(button0);
-    fireEvent.click(buttonPercent);
-    fireEvent.click(button1);
-    fireEvent.click(button0);
-    fireEvent.click(equalsButton);
+		expect(screen.getByText("20")).toBeInTheDocument();
+	});
 
-    expect(screen.getByText('20')).toBeInTheDocument();
-  });
+	test("handles operation button clicks", () => {
+		render(<Calculator />);
+		const button1 = screen.getByText("6");
+		const buttonPlus = screen.getByText("+");
+		const button2 = screen.getByText("7");
+		const equalsButton = screen.getByText("=");
 
-  test('handles operation button clicks', () => {
-    render(<Calculator />);
-    const button1 = screen.getByText('6');
-    const buttonPlus = screen.getByText('+');
-    const button2 = screen.getByText('7');
-    const equalsButton = screen.getByText('=');
+		fireEvent.click(button1);
+		fireEvent.click(buttonPlus);
+		fireEvent.click(button2);
+		fireEvent.click(equalsButton);
 
-    fireEvent.click(button1);
-    fireEvent.click(buttonPlus);
-    fireEvent.click(button2);
-    fireEvent.click(equalsButton);
-
-    expect(screen.getByText('13')).toBeInTheDocument();
-  });
+		expect(screen.getByText("13")).toBeInTheDocument();
+	});
 });
