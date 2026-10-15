@@ -13,6 +13,7 @@ const UsersPage = lazy(() => import('./pages/Users'));
 const CalculatorPage = lazy(() => import('./pages/Calculator'));
 const LoginPage = lazy(() => import('./pages/Login'));
 const AssetsPage = lazy(() => import('./pages/Assets'));
+const PuzzlePage = lazy(() => import('./pages/Puzzle'));
 
 export default function App() {
     return (
@@ -29,6 +30,7 @@ export default function App() {
                             <Route path="/table" element={<UsersPage />} />
                             <Route path="/calculator" element={<CalculatorPage />} />
                             <Route path="/assets" element={<AssetsPage />} />
+                            <Route path="/puzzle" element={<PuzzlePage />} />
                             <Route path="/login" element={<LoginPage />} />
                         </Routes>
                     </RouteBoundary>

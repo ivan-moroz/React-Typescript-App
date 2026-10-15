@@ -1,0 +1,17 @@
+.app.puzzle-page {
+  max-width: 850px;
+  label { display: block; font-weight: 600; margin-bottom: 10px; }
+  input[type="file"] { max-width: 100%; }
+  .puzzle-help { color: #555; line-height: 1.6; }
+  .puzzle-example { padding: 14px; background: #f2f6f2; border-radius: 6px; }
+  .puzzle-row {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 16px;
+    background: #f2f6f2;
+    border: 1px solid #ccdccc;
+    border-radius: 6px;
+    code { font-size: 1.15rem; }
+  }
+  [role="alert"] { color: #a52222; }
+}

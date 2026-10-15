@@ -37,6 +37,9 @@ export default function Navigation() {
 			<NavLink to="/calculator" style={activeStyle}>
 				Calculator
 			</NavLink>
+			<NavLink to="/puzzle" style={activeStyle}>
+				Puzzle
+			</NavLink>
 			<NavLink to="/table" style={activeStyle}>
 				Users
 			</NavLink>
