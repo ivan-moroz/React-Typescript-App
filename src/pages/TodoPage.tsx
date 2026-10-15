@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 
-const ToDo = lazy(() => import("../components/toDo/ToDo"));
+const ToDo = lazy(() => import("./toDo/ToDo"));
 
 export default function ToDoPage() {
 	return (
