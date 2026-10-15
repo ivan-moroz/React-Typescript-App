@@ -18,7 +18,7 @@ Already implemented infinite scrolling, modals, drag-and-drop reordering of user
 4. Generate Prisma client and run migration:
    ```bash
    npm run prisma:generate
-   npm run prisma:migrate -- --name add_asset_metadata
+   npm run prisma:migrate
    ```
 
 Default connection string in `.env.example` uses:
