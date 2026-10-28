@@ -1,3 +1,4 @@
+import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import React, { useState } from "react";
 import Modal from "../../../../src/components/modal/Modal";
@@ -46,50 +47,35 @@ export default function UserFormModal({ user, onSaved, onClose }: Props) {
 		}
 
 		setIsSubmitting(true);
-		try {
-			const response = await fetch(
-				isEditingUser ? `/api/users/${user?.id}` : "/api/users",
-				{
-					method: isEditingUser ? "PUT" : "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						name: userForm.name.trim(),
-						email: userForm.email.trim(),
-						age: parsedAge,
-						city: userForm.city.trim(),
-						...(userForm.password
-							? { password: userForm.password }
-							: {}),
-					}),
+		const result = await fetchData(
+			isEditingUser ? `/api/users/${user?.id}` : "/api/users",
+			{
+				method: isEditingUser ? "PUT" : "POST",
+				responseType: "void",
+				errorMessage: isEditingUser ? ERROR_MESSAGES.USER_UPDATE_FAILED : ERROR_MESSAGES.USER_ADD_FAILED,
+				headers: {
+					"Content-Type": "application/json",
 				},
-			);
+				body: JSON.stringify({
+					name: userForm.name.trim(),
+					email: userForm.email.trim(),
+					age: parsedAge,
+					city: userForm.city.trim(),
+					...(userForm.password
+						? { password: userForm.password }
+						: {}),
+				}),
+			},
+		);
 
-			if (!response.ok) {
-				const responseBody = await response.json().catch(() => null);
-				const message =
-					typeof responseBody?.message === "string"
-						? responseBody.message
-						: isEditingUser
-							? ERROR_MESSAGES.USER_UPDATE_FAILED
-							: ERROR_MESSAGES.USER_ADD_FAILED;
-				throw new Error(message);
-			}
-
-			await onSaved();
-			onClose();
-		} catch (error) {
-			setFormError(
-				error instanceof Error
-					? error.message
-					: isEditingUser
-						? ERROR_MESSAGES.USER_UPDATE_FAILED
-						: ERROR_MESSAGES.USER_ADD_FAILED,
-			);
-		} finally {
+		if (!result.success) {
 			setIsSubmitting(false);
+			setFormError(result.error.message);
+			return;
 		}
+		await onSaved();
+		onClose();
+		setIsSubmitting(false);
 	};
 
 	return (

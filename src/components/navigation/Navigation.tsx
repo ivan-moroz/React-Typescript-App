@@ -1,3 +1,4 @@
+import { fetchData } from "../../utils/fetchData";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./styles/styles.scss";
 import { ActiveStyleProps } from "./types/types";
@@ -18,14 +19,10 @@ export default function Navigation() {
 	const authenticatedUser = getAuthenticatedUser();
 
 	const handleLogout = async (): Promise<void> => {
-		try {
-			const response = await fetch("/api/auth/logout", { method: "POST" });
-			if (!response.ok) return;
-			sessionStorage.removeItem("authenticatedUser");
-			navigate("/login", { state: loginState });
-		} catch {
-			// Keep the visible login state consistent if the session cannot be cleared.
-		}
+		const result = await fetchData("/api/auth/logout", { method: "POST", responseType: "void" });
+		if (!result.success) return;
+		sessionStorage.removeItem("authenticatedUser");
+		navigate("/login", { state: loginState });
 	};
 
 	return (

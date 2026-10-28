@@ -70,43 +70,39 @@ export default function AssetEditorModal({
 			return;
 		}
 		setIsSaving(true);
-		try {
-			const created = await saveAsset(
-				user.id,
-				form,
-				editingAsset ?? undefined,
-			);
-			if (editingAsset) {
-				const updated: Asset = {
-					...editingAsset,
-					name: form.name.trim(),
-					description: form.description,
-					authorization: form.authorization,
-					...(form.file
-						? {
-								type:
-									form.file.type ||
-									"application/octet-stream",
-								size: form.file.size,
-							}
-						: {}),
-				};
-				onSaved(updated, true);
-				setMessage("Asset updated.");
-			} else if (created) {
-				onSaved(created, false);
-				setMessage("Asset uploaded.");
-			}
-			onClose();
-		} catch (error) {
-			setMessage(
-				error instanceof Error
-					? error.message
-					: ERROR_MESSAGES.ASSET_SAVE_FAILED,
-			);
-		} finally {
-			setIsSaving(false);
+		const result = await saveAsset(
+			user.id,
+			form,
+			editingAsset ?? undefined,
+		);
+		setIsSaving(false);
+		if (!result.success) {
+			setMessage(result.error.message);
+			return;
 		}
+		const created = result.data;
+		if (editingAsset) {
+			const updated: Asset = {
+				...editingAsset,
+				name: form.name.trim(),
+				description: form.description,
+				authorization: form.authorization,
+				...(form.file
+					? {
+							type:
+								form.file.type ||
+								"application/octet-stream",
+							size: form.file.size,
+						}
+					: {}),
+			};
+			onSaved(updated, true);
+			setMessage("Asset updated.");
+		} else if (created) {
+			onSaved(created, false);
+			setMessage("Asset uploaded.");
+		}
+		onClose();
 	};
 	return (
 		<Modal

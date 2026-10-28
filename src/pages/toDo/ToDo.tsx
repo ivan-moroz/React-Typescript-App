@@ -1,3 +1,4 @@
+import { fetchData } from "../../utils/fetchData";
 import React, { useEffect, useReducer, useState } from "react";
 import { reducer, initialState } from "./reducer/reducer";
 import { TodoItem } from "./components/TodoItem";
@@ -10,25 +11,17 @@ export default function ToDo() {
 
 	useEffect(() => {
 		const loadInitialTodo = async (): Promise<void> => {
-			try {
-				const response = await fetch("/api/todo");
+			const result = await fetchData<Types>("/api/todo");
+			if (!result.success) return;
+			const initialTodo = result.data;
 
-				if (!response.ok) {
-					return;
-				}
-
-				const initialTodo: Types = await response.json();
-
-				dispatch({
-					type: ActionType.SET_INITIAL_TODO,
-					payload: {
-						...initialTodo,
-						id: Date.now(),
-					},
-				});
-			} catch {
-				// keep the list empty when backend is unavailable
-			}
+			dispatch({
+				type: ActionType.SET_INITIAL_TODO,
+				payload: {
+					...initialTodo,
+					id: Date.now(),
+				},
+			});
 		};
 
 		loadInitialTodo();

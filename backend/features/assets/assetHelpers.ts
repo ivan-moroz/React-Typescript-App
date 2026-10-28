@@ -1,3 +1,4 @@
+import { fetchData, type FetchResult } from "../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../src/constants/errors";
 export type Authorization = "INTERNAL" | "PUBLIC";
 export type Asset = {
@@ -42,21 +43,11 @@ export function getCurrentUser(): AuthenticatedUser | null {
 	}
 }
 
-export async function responseError(
-	response: Response,
-	fallback: string,
-): Promise<Error> {
-	const payload = await response.json().catch(() => null);
-	return new Error(
-		typeof payload?.message === "string" ? payload.message : fallback,
-	);
-}
-
 export async function saveAsset(
 	userId: number,
 	form: AssetForm,
 	asset?: Asset,
-): Promise<Asset | undefined> {
+): Promise<FetchResult<Asset | undefined>> {
 	const replacement = form.file
 		? {
 				originalFileName: form.file.name,
@@ -64,31 +55,35 @@ export async function saveAsset(
 				size: form.file.size,
 			}
 		: {};
-	const response = await fetch(
-		asset ? `/api/assets/${asset.id}` : "/api/assets",
-		{
-			method: asset ? "PUT" : "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				userId,
-				name: form.name,
-				description: form.description,
-				authorization: form.authorization,
-				...replacement,
-			}),
-		},
-	);
-	if (!response.ok)
-		throw await responseError(
-			response,
-			asset ? ERROR_MESSAGES.ASSET_UPDATE_FAILED : ERROR_MESSAGES.ASSET_CREATE_FAILED,
-		);
-	const saved = asset ? asset : ((await response.json()) as Asset);
+	const options = {
+		method: asset ? "PUT" : "POST",
+		errorMessage: asset ? ERROR_MESSAGES.ASSET_UPDATE_FAILED : ERROR_MESSAGES.ASSET_CREATE_FAILED,
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			userId,
+			name: form.name,
+			description: form.description,
+			authorization: form.authorization,
+			...replacement,
+		}),
+	};
+	let saved: Asset;
+	if (asset) {
+		const result = await fetchData(`/api/assets/${asset.id}`, { ...options, responseType: "void" });
+		if (!result.success) return result;
+		saved = asset;
+	} else {
+		const result = await fetchData<Asset>("/api/assets", options);
+		if (!result.success) return result;
+		saved = result.data;
+	}
 	if (form.file) {
-		const upload = await fetch(
+		const upload = await fetchData(
 			`/api/assets/${saved.id}/file?userId=${userId}`,
 			{
 				method: "PUT",
+				responseType: "void",
+				errorMessage: ERROR_MESSAGES.ASSET_FILE_UPLOAD_FAILED,
 				headers: {
 					"Content-Type":
 						form.file.type || "application/octet-stream",
@@ -96,8 +91,7 @@ export async function saveAsset(
 				body: form.file,
 			},
 		);
-		if (!upload.ok)
-			throw await responseError(upload, ERROR_MESSAGES.ASSET_FILE_UPLOAD_FAILED);
+		if (!upload.success) return upload;
 	}
-	return asset ? undefined : saved;
+	return { success: true, data: asset ? undefined : saved };
 }

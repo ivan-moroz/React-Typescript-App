@@ -1,3 +1,4 @@
+import { fetchData } from "../utils/fetchData";
 import { ERROR_MESSAGES } from "../constants/errors";
 import { FormEvent, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -34,37 +35,27 @@ export default function LoginPage() {
 		setError("");
 		setIsSubmitting(true);
 
-		try {
-			const response = await fetch("/api/auth/login", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email, password }),
-			});
-			const payload = await response.json();
+		const result = await fetchData<{ id: number; name: string; email: string }>("/api/auth/login", {
+			method: "POST",
+			errorMessage: ERROR_MESSAGES.LOGIN_FAILED,
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ email, password }),
+		});
 
-			if (!response.ok) {
-				throw new Error(
-					typeof payload?.message === "string"
-						? payload.message
-						: ERROR_MESSAGES.LOGIN_FAILED,
-				);
-			}
-
-			sessionStorage.setItem(
-				"authenticatedUser",
-				JSON.stringify(payload),
-			);
-			if (["/assets", "/users"].includes(returnTo.split(/[?#]/)[0])) {
-				window.location.assign(returnTo);
-			} else {
-				navigate(returnTo, { replace: true });
-			}
-		} catch (error) {
-			setError(
-				error instanceof Error ? error.message : ERROR_MESSAGES.LOGIN_FAILED,
-			);
-		} finally {
-			setIsSubmitting(false);
+		setIsSubmitting(false);
+		if (!result.success) {
+			setError(result.error.message);
+			return;
+		}
+		const payload = result.data;
+		sessionStorage.setItem(
+			"authenticatedUser",
+			JSON.stringify(payload),
+		);
+		if (["/assets", "/users"].includes(returnTo.split(/[?#]/)[0])) {
+			window.location.assign(returnTo);
+		} else {
+			navigate(returnTo, { replace: true });
 		}
 	};
 

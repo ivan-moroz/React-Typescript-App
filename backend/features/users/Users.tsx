@@ -1,3 +1,4 @@
+import { fetchData } from "../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../src/constants/errors";
 import React, { useEffect, useReducer, useRef, useState } from "react";
 
@@ -42,30 +43,26 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 			setIsLoadingMore(true);
 		}
 		setError("");
-		try {
-			const offset = reset ? 0 : usersRef.current.length;
-			const response = await fetch(
-				`/api/users?offset=${offset}&limit=${PAGE_SIZE}`,
-			);
-			if (!response.ok) {
-				throw new Error(ERROR_MESSAGES.USERS_FETCH_FAILED);
-			}
-
-			const users: User[] = await response.json();
-			const nextUsers = reset ? users : [...usersRef.current, ...users];
-			usersRef.current = nextUsers;
-			dispatch({
-				type: reset ? ActionType.SET_USERS : ActionType.APPEND_USERS,
-				payload: users,
-			});
-			setHasMoreUsers(users.length === PAGE_SIZE);
-		} catch {
+		const offset = reset ? 0 : usersRef.current.length;
+		const result = await fetchData<User[]>(
+			`/api/users?offset=${offset}&limit=${PAGE_SIZE}`,
+			{ errorMessage: ERROR_MESSAGES.USERS_FETCH_FAILED },
+		);
+		isFetchingUsersRef.current = false;
+		setIsLoading(false);
+		setIsLoadingMore(false);
+		if (!result.success) {
 			setError(ERROR_MESSAGES.USERS_LOAD_FAILED);
-		} finally {
-			isFetchingUsersRef.current = false;
-			setIsLoading(false);
-			setIsLoadingMore(false);
+			return;
 		}
+		const users = result.data;
+		const nextUsers = reset ? users : [...usersRef.current, ...users];
+		usersRef.current = nextUsers;
+		dispatch({
+			type: reset ? ActionType.SET_USERS : ActionType.APPEND_USERS,
+			payload: users,
+		});
+		setHasMoreUsers(users.length === PAGE_SIZE);
 	};
 
 	useEffect(() => {
@@ -111,10 +108,12 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 			confirmLabel: "Delete",
 			onConfirm: async () => {
 				setError("");
-				const response = await fetch(`/api/users/${user.id}`, {
+				const result = await fetchData(`/api/users/${user.id}`, {
+					responseType: "void",
+					errorMessage: ERROR_MESSAGES.USER_DELETE_FAILED,
 					method: "DELETE",
 				});
-				if (!response.ok) throw new Error(ERROR_MESSAGES.USER_DELETE_FAILED);
+				if (!result.success) throw result.error;
 				await loadUsers(true);
 			},
 		});
@@ -155,26 +154,22 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 		setIsSavingOrder(true);
 		setError("");
 
-		try {
-			const response = await fetch("/api/users/reorder", {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					userIds: reorderedUsers.map((user) => user.id),
-				}),
-			});
+		const result = await fetchData("/api/users/reorder", {
+			responseType: "void",
+			errorMessage: ERROR_MESSAGES.USER_ORDER_SAVE_FAILED,
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				userIds: reorderedUsers.map((user) => user.id),
+			}),
+		});
 
-			if (!response.ok) {
-				throw new Error(ERROR_MESSAGES.USER_ORDER_SAVE_FAILED);
-			}
-
-			await response.json();
-		} catch {
+		if (!result.success) {
+			usersRef.current = previousUsers;
 			dispatch({ type: ActionType.SET_USERS, payload: previousUsers });
 			setError(ERROR_MESSAGES.USER_ORDER_FAILED);
-		} finally {
-			setIsSavingOrder(false);
 		}
+		setIsSavingOrder(false);
 	};
 
 	const columns: TableColumn<User>[] = [

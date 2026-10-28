@@ -1,3 +1,4 @@
+import { fetchData } from "../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../src/constants/errors";
 import { useEffect, useMemo, useState } from "react";
 
@@ -6,7 +7,7 @@ import { useModal } from "../../src/components/modal/useModal";
 import AssetCard from "./assets/components/AssetCard";
 import AssetEditorModal from "./assets/components/modals/AssetEditorModal";
 import AssetPreviewModal from "./assets/components/modals/AssetPreviewModal";
-import { Asset, AuthenticatedUser, getCurrentUser, responseError } from "./assets/assetHelpers";
+import { Asset, AuthenticatedUser, getCurrentUser } from "./assets/assetHelpers";
 
 export type AssetsPageProps = { initialAssets?: Asset[]; initialUser?: AuthenticatedUser | null; initialError?: string };
 
@@ -25,24 +26,12 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 			return;
 		}
 		const loadAssets = async () => {
-			try {
-				const response = await fetch(`/api/assets?userId=${user.id}`);
-				if (!response.ok)
-					throw await responseError(
-						response,
-						ERROR_MESSAGES.ASSETS_FETCH_FAILED,
-					);
-				const loadedAssets: Asset[] = await response.json();
-				setAssets(loadedAssets);
-			} catch (error: unknown) {
-				setMessage(
-					error instanceof Error
-						? error.message
-						: ERROR_MESSAGES.ASSETS_LOAD_FAILED,
-				);
-			} finally {
-				setIsLoading(false);
-			}
+			const result = await fetchData<Asset[]>(`/api/assets?userId=${user.id}`, {
+				errorMessage: ERROR_MESSAGES.ASSETS_FETCH_FAILED,
+			});
+			setIsLoading(false);
+			if (result.success) setAssets(result.data);
+			else setMessage(result.error.message);
 		};
 		void loadAssets();
 	}, [user, initialAssets]);
@@ -79,13 +68,14 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 	const handleDelete = async (id: string) => {
 		if (!user) return;
 		setMessage("");
-		const response = await fetch(`/api/assets/${id}`, {
+		const result = await fetchData(`/api/assets/${id}`, {
+			responseType: "void",
+			errorMessage: ERROR_MESSAGES.ASSET_REMOVE_FAILED,
 			method: "DELETE",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId: user.id }),
 		});
-		if (!response.ok)
-			throw await responseError(response, ERROR_MESSAGES.ASSET_REMOVE_FAILED);
+		if (!result.success) throw result.error;
 		setAssets((current) => current.filter((asset) => asset.id !== id));
 		setMessage("Asset removed.");
 	};

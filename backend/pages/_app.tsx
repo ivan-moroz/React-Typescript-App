@@ -1,3 +1,4 @@
+import { fetchData } from "../../src/utils/fetchData";
 import type { AppProps } from 'next/app';
 import { ModalProvider } from '../../src/components/modal/ModalProvider';
 import '../../src/styles/index.scss';
@@ -17,8 +18,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
       {Object.entries({ '/': 'Home', '/todo': 'ToDo', '/select': 'Select', '/calculator': 'Calculator', '/puzzle': 'Puzzle', '/users': 'Users', '/assets': 'Assets' }).map(([href, label]) =>
         <a key={href} href={href} aria-current={router.pathname === href ? 'page' : undefined} style={{ fontWeight: router.pathname === href ? 'bold' : 'normal' }}>{label}</a>)}
       {pageProps.initialUser ? <div className="authenticated-user"><b>{pageProps.initialUser.name}</b><button type="button" onClick={async () => {
-        const response = await fetch('/api/auth/logout', { method: 'POST' });
-        if (!response.ok) return;
+        const result = await fetchData('/api/auth/logout', { method: 'POST', responseType: 'void' });
+        if (!result.success) return;
         sessionStorage.removeItem('authenticatedUser');
         window.location.assign(`/login?from=${from}`);
       }}>Log out</button></div> : <a href={`/login?from=${from}`}>Login</a>}

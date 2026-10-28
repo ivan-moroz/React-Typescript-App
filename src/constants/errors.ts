@@ -1,5 +1,10 @@
 // Shared application errors for browser components, workers, SSR, and API routes.
 export const ERROR_MESSAGES = {
+  REQUEST_FAILED: "Unable to complete the request",
+  UNAUTHORIZED: "Please log in to continue.",
+  FORBIDDEN: "You do not have permission to perform this action.",
+  NOT_FOUND: "The requested resource was not found.",
+  INTERNAL_SERVER_ERROR: "An unexpected server error occurred. Please try again later.",
   METHOD_NOT_ALLOWED: "Method not allowed",
   INVALID_PAYLOAD: "Invalid payload",
   INVALID_PATH: "Invalid path",
@@ -71,3 +76,17 @@ export const ERROR_MESSAGES = {
   USER_DELETE_DETAILS: (error: unknown): string => `Unable to delete user: ${String(error)}`,
   USER_ORDER_SAVE_DETAILS: (error: unknown): string => `Unable to save user order: ${String(error)}`,
 } as const;
+
+export const HTTP_ERROR_MESSAGES: Partial<Record<number, string>> = {
+  401: ERROR_MESSAGES.UNAUTHORIZED,
+  403: ERROR_MESSAGES.FORBIDDEN,
+  404: ERROR_MESSAGES.NOT_FOUND,
+  500: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
+};
+
+export class HttpError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
