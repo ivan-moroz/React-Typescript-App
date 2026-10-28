@@ -131,6 +131,7 @@ describe("LoginPage", () => {
 				<CurrentLocation />
 				<Routes>
 					<Route path="/login" element={<LoginPage />} />
+					<Route path="*" element={null} />
 				</Routes>
 			</MemoryRouter>,
 		);
@@ -169,6 +170,7 @@ describe("LoginPage", () => {
 					<CurrentLocation />
 					<Routes>
 						<Route path="/login" element={<LoginPage />} />
+						<Route path="*" element={null} />
 					</Routes>
 				</MemoryRouter>,
 			);

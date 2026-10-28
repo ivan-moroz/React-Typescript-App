@@ -64,6 +64,8 @@ export const ERROR_MESSAGES = {
   ASSET_SERVER_UPLOAD_FAILED: "Unable to upload asset",
   ASSET_UPLOAD_REQUIRED: "A file up to 1 GB and a valid userId are required",
   ASSET_FILE_CHANGED: "Asset not found or file size changed",
+  TODO_TEXT_INVALID: "Enter a task between 1 and 500 characters.",
+  TODO_REQUEST_FAILED: "Unable to load or save your tasks. Please try again.",
   FILE_SIZE_LIMIT_EXCEEDED: "File exceeds limit",
   UPLOAD_INCOMPLETE: "Upload was incomplete",
   ASSET_STORAGE_FAILED: "Unable to store uploaded file",

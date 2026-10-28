@@ -2,28 +2,18 @@ import { State, Action, ActionType } from "../types/types";
 
 export const initialState: State = {
 	todos: [],
-	deletedTodos: [],
 };
 
 export function reducer(state: State, action: Action): State {
 	switch (action.type) {
-		case ActionType.SET_INITIAL_TODO:
+		case ActionType.SET_INITIAL_TODOS:
 			return {
-				todos: state.todos.length ? state.todos : [action.payload],
-				deletedTodos: state.deletedTodos,
+				todos: state.todos.length ? state.todos : action.payload,
 			};
 
 		case ActionType.ADD_TODO:
 			return {
-				todos: [
-					...state.todos,
-					{
-						id: Date.now(),
-						text: action.payload,
-						completed: false,
-					},
-				],
-				deletedTodos: state.deletedTodos,
+				todos: [...state.todos, action.payload],
 			};
 
 		case ActionType.TOGGLE_TODO:
@@ -33,33 +23,11 @@ export function reducer(state: State, action: Action): State {
 						? { ...todo, completed: !todo.completed }
 						: todo,
 				),
-				deletedTodos: state.deletedTodos,
 			};
 
 		case ActionType.REMOVE_TODO:
-			const todoToDelete = state.todos.find(
-				(todo) => todo.id === action.payload,
-			);
-
 			return {
 				todos: state.todos.filter((todo) => todo.id !== action.payload),
-				deletedTodos: todoToDelete
-					? [todoToDelete, ...state.deletedTodos]
-					: state.deletedTodos,
-			};
-
-		case ActionType.RESTORE_TODO:
-			const todoToRestore = state.deletedTodos.find(
-				(todo) => todo.id === action.payload,
-			);
-
-			return {
-				todos: todoToRestore
-					? [...state.todos, todoToRestore]
-					: state.todos,
-				deletedTodos: state.deletedTodos.filter(
-					(todo) => todo.id !== action.payload,
-				),
 			};
 
 		default:

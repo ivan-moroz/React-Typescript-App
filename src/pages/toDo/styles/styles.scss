@@ -26,12 +26,6 @@
 		}
 	}
 
-	&.deleted {
-		span {
-			color: #777;
-		}
-	}
-
 	button {
 		background: transparent;
 		border: none;
@@ -47,18 +41,4 @@
 		font-size: 20px;
 		vertical-align: middle;
 	}
-}
-
-.deleted-items {
-	margin-top: 24px;
-
-	h2 {
-		font-size: 18px;
-		margin-bottom: 8px;
-	}
-}
-
-.empty-state {
-	color: #777;
-	margin: 0;
 }
