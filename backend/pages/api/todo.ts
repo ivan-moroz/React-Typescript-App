@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type Todo = {
@@ -23,7 +24,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Todo |
   }
 
   if (req.method !== 'GET') {
-    res.status(405).json({ message: 'Method not allowed' });
+    res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
     return;
   }
 

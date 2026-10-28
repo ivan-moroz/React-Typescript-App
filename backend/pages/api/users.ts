@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../lib/prisma';
@@ -56,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       const limit = Math.min(requestedLimit, MAX_PAGE_SIZE);
 
       if (!Number.isInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 1) {
-        res.status(400).json({ message: 'offset must be a non-negative integer and limit must be a positive integer' });
+        res.status(400).json({ message: ERROR_MESSAGES.USERS_PAGINATION_INVALID });
         return;
       }
 
@@ -70,14 +71,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       res.status(200).json(users);
       return;
     } catch (error) {
-      res.status(500).json({ message: `Unable to fetch users: ${String(error)}` });
+      res.status(500).json({ message: ERROR_MESSAGES.USERS_FETCH_DETAILS(error) });
       return;
     }
   }
 
   if (req.method === 'POST') {
     if (!isValidUserPayload(req.body ?? {})) {
-      res.status(400).json({ message: 'Invalid payload' });
+      res.status(400).json({ message: ERROR_MESSAGES.INVALID_PAYLOAD });
       return;
     }
 
@@ -102,14 +103,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return;
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
-        res.status(409).json({ message: 'Email address is already in use' });
+        res.status(409).json({ message: ERROR_MESSAGES.EMAIL_IN_USE });
         return;
       }
 
-      res.status(500).json({ message: `Unable to create user: ${String(error)}` });
+      res.status(500).json({ message: ERROR_MESSAGES.USER_CREATE_DETAILS(error) });
       return;
     }
   }
 
-  res.status(405).json({ message: 'Method not allowed' });
+  res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
 }

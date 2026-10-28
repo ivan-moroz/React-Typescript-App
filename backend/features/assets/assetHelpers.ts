@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../src/constants/errors";
 export type Authorization = "INTERNAL" | "PUBLIC";
 export type Asset = {
 	id: string;
@@ -80,7 +81,7 @@ export async function saveAsset(
 	if (!response.ok)
 		throw await responseError(
 			response,
-			asset ? "Could not update asset" : "Could not create asset",
+			asset ? ERROR_MESSAGES.ASSET_UPDATE_FAILED : ERROR_MESSAGES.ASSET_CREATE_FAILED,
 		);
 	const saved = asset ? asset : ((await response.json()) as Asset);
 	if (form.file) {
@@ -96,7 +97,7 @@ export async function saveAsset(
 			},
 		);
 		if (!upload.ok)
-			throw await responseError(upload, "Could not upload file");
+			throw await responseError(upload, ERROR_MESSAGES.ASSET_FILE_UPLOAD_FAILED);
 	}
 	return asset ? undefined : saved;
 }

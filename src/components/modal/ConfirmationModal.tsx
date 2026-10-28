@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../constants/errors";
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Modal from "./Modal";
@@ -37,7 +38,7 @@ export default function ConfirmationModal({
 			setError(
 				error instanceof Error
 					? error.message
-					: "Could not complete the action.",
+					: ERROR_MESSAGES.ACTION_FAILED,
 			);
 		} finally {
 			pending.current = false;

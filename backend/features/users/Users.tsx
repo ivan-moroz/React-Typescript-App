@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../src/constants/errors";
 import React, { useEffect, useReducer, useRef, useState } from "react";
 
 import { useModal } from "../../../src/components/modal/useModal";
@@ -47,7 +48,7 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 				`/api/users?offset=${offset}&limit=${PAGE_SIZE}`,
 			);
 			if (!response.ok) {
-				throw new Error("Unable to fetch users");
+				throw new Error(ERROR_MESSAGES.USERS_FETCH_FAILED);
 			}
 
 			const users: User[] = await response.json();
@@ -59,7 +60,7 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 			});
 			setHasMoreUsers(users.length === PAGE_SIZE);
 		} catch {
-			setError("Failed to load users from backend");
+			setError(ERROR_MESSAGES.USERS_LOAD_FAILED);
 		} finally {
 			isFetchingUsersRef.current = false;
 			setIsLoading(false);
@@ -113,7 +114,7 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 				const response = await fetch(`/api/users/${user.id}`, {
 					method: "DELETE",
 				});
-				if (!response.ok) throw new Error("Failed to delete user");
+				if (!response.ok) throw new Error(ERROR_MESSAGES.USER_DELETE_FAILED);
 				await loadUsers(true);
 			},
 		});
@@ -164,13 +165,13 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 			});
 
 			if (!response.ok) {
-				throw new Error("Unable to save user order");
+				throw new Error(ERROR_MESSAGES.USER_ORDER_SAVE_FAILED);
 			}
 
 			await response.json();
 		} catch {
 			dispatch({ type: ActionType.SET_USERS, payload: previousUsers });
-			setError("Failed to save user order");
+			setError(ERROR_MESSAGES.USER_ORDER_FAILED);
 		} finally {
 			setIsSavingOrder(false);
 		}

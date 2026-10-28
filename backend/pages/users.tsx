@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../src/constants/errors";
 import type { GetServerSideProps } from 'next';
 import UsersPage from '../features/Users';
 import type { UsersTableProps } from '../features/users/Users';
@@ -15,7 +16,7 @@ export const getServerSideProps: GetServerSideProps<UsersTableProps & { initialU
     return { props: { initialUsers: users, initialUser: await getSessionUser(req) } };
   } catch {
     res.statusCode = 503;
-    return { props: { initialUsers: [], initialUser: null, initialError: 'Failed to load users from backend' } };
+    return { props: { initialUsers: [], initialUser: null, initialError: ERROR_MESSAGES.USERS_LOAD_FAILED } };
   }
 };
 

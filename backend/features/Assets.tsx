@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../src/constants/errors";
 import { useEffect, useMemo, useState } from "react";
 
 import ConfirmationModal from "../../src/components/modal/ConfirmationModal";
@@ -19,7 +20,7 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 	useEffect(() => {
 		if (initialAssets !== undefined) return;
 		if (!user) {
-			setMessage("Log in to manage your assets.");
+			setMessage(ERROR_MESSAGES.LOGIN_REQUIRED);
 			setIsLoading(false);
 			return;
 		}
@@ -29,7 +30,7 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 				if (!response.ok)
 					throw await responseError(
 						response,
-						"Could not load assets",
+						ERROR_MESSAGES.ASSETS_FETCH_FAILED,
 					);
 				const loadedAssets: Asset[] = await response.json();
 				setAssets(loadedAssets);
@@ -37,7 +38,7 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 				setMessage(
 					error instanceof Error
 						? error.message
-						: "Could not load assets.",
+						: ERROR_MESSAGES.ASSETS_LOAD_FAILED,
 				);
 			} finally {
 				setIsLoading(false);
@@ -84,7 +85,7 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 			body: JSON.stringify({ userId: user.id }),
 		});
 		if (!response.ok)
-			throw await responseError(response, "Could not remove asset");
+			throw await responseError(response, ERROR_MESSAGES.ASSET_REMOVE_FAILED);
 		setAssets((current) => current.filter((asset) => asset.id !== id));
 		setMessage("Asset removed.");
 	};

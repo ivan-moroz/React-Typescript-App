@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../lib/prisma';
@@ -27,18 +28,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (req.method !== 'PUT') {
-    res.status(405).json({ message: 'Method not allowed' });
+    res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
     return;
   }
 
   const userIds = req.body?.userIds;
   if (!Array.isArray(userIds) || userIds.length === 0 || userIds.some((id) => !Number.isInteger(id) || id <= 0)) {
-    res.status(400).json({ message: 'Invalid user order' });
+    res.status(400).json({ message: ERROR_MESSAGES.USER_ORDER_INVALID });
     return;
   }
 
   if (new Set(userIds).size !== userIds.length) {
-    res.status(400).json({ message: 'User ids must be unique' });
+    res.status(400).json({ message: ERROR_MESSAGES.USER_IDS_DUPLICATE });
     return;
   }
 
@@ -51,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
       const existingUserIds = new Set(existingUsers.map((user) => user.id));
       if (userIds.some((id) => !existingUserIds.has(id))) {
-        throw new Error('The order contains a user that does not exist');
+        throw new Error(ERROR_MESSAGES.USER_ORDER_UNKNOWN_USER);
       }
 
       const reorderedUserIds = [
@@ -71,6 +72,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ message: `Unable to save user order: ${String(error)}` });
+    res.status(500).json({ message: ERROR_MESSAGES.USER_ORDER_SAVE_DETAILS(error) });
   }
 }

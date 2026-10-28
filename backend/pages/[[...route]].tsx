@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../src/constants/errors";
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { GetServerSideProps } from 'next';
@@ -68,7 +69,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
 
       if (!distFilePath) {
         res.statusCode = 400;
-        res.end('Invalid path');
+        res.end(ERROR_MESSAGES.INVALID_PATH);
         return { props: {} };
       }
 
@@ -87,7 +88,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
       return { notFound: true };
     }
     res.statusCode = 500;
-    res.end('Unable to serve frontend build from dist folder.');
+    res.end(ERROR_MESSAGES.FRONTEND_BUILD_UNAVAILABLE);
     return { props: {} };
   }
 };

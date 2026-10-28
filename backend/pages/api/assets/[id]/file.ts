@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../../lib/prisma';
@@ -17,18 +18,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('Access-Control-Allow-Methods', 'PUT,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-  if (req.method !== 'PUT') { res.status(405).json({ message: 'Method not allowed' }); return; }
+  if (req.method !== 'PUT') { res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED }); return; }
 
   const id = typeof req.query.id === 'string' ? req.query.id : null;
   const userId = userIdFrom(req.query.userId);
   const expectedSize = Number(req.headers['content-length']);
   if (!id || !userId || !Number.isInteger(expectedSize) || expectedSize < 0 || expectedSize > MAX_FILE_SIZE) {
-    res.status(400).json({ message: 'A file up to 1 GB and a valid userId are required' });
+    res.status(400).json({ message: ERROR_MESSAGES.ASSET_UPLOAD_REQUIRED });
     return;
   }
 
   const asset = await prisma.asset.findFirst({ where: { id, userId }, select: { id: true, size: true } });
-  if (!asset || asset.size !== expectedSize) { res.status(404).json({ message: 'Asset not found or file size changed' }); return; }
+  if (!asset || asset.size !== expectedSize) { res.status(404).json({ message: ERROR_MESSAGES.ASSET_FILE_CHANGED }); return; }
 
   let position = 0;
   let pending = Buffer.alloc(0);
@@ -38,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     for await (const part of req) {
       const chunk = Buffer.from(part);
       received += chunk.length;
-      if (received > MAX_FILE_SIZE) throw new Error('File exceeds limit');
+      if (received > MAX_FILE_SIZE) throw new Error(ERROR_MESSAGES.FILE_SIZE_LIMIT_EXCEEDED);
       pending = Buffer.concat([pending, chunk]);
       while (pending.length >= CHUNK_SIZE) {
         await prisma.assetChunk.create({ data: { assetId: id, position: position++, data: pending.subarray(0, CHUNK_SIZE) } });
@@ -46,11 +47,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
     if (pending.length) await prisma.assetChunk.create({ data: { assetId: id, position, data: pending } });
-    if (received !== expectedSize) throw new Error('Upload was incomplete');
+    if (received !== expectedSize) throw new Error(ERROR_MESSAGES.UPLOAD_INCOMPLETE);
     await prisma.asset.update({ where: { id }, data: { data: null, storageMode: 'CHUNKED' } });
     res.status(204).end();
   } catch {
     await prisma.assetChunk.deleteMany({ where: { assetId: id } });
-    res.status(500).json({ message: 'Unable to store uploaded file' });
+    res.status(500).json({ message: ERROR_MESSAGES.ASSET_STORAGE_FAILED });
   }
 }

@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../../src/constants/errors";
 import { ChangeEvent, DragEvent, FormEvent, useRef, useState } from "react";
 import Modal from "../../../../../src/components/modal/Modal";
 import type { ModalControls } from "../../../../../src/components/modal/ModalProvider";
@@ -39,7 +40,7 @@ export default function AssetEditorModal({
 	const setFile = (file: File | null) => {
 		if (!file) return;
 		if (file.size > MAX_FILE_SIZE) {
-			setMessage("Files must be 10 MB or smaller.");
+			setMessage(ERROR_MESSAGES.ASSET_FILE_TOO_LARGE);
 			return;
 		}
 		setForm((current) => ({
@@ -61,11 +62,11 @@ export default function AssetEditorModal({
 		event.preventDefault();
 		if (!user) return;
 		if (!form.name.trim()) {
-			setMessage("Asset Name is required.");
+			setMessage(ERROR_MESSAGES.ASSET_NAME_REQUIRED);
 			return;
 		}
 		if (!editingAsset && !form.file) {
-			setMessage("Choose a file to upload.");
+			setMessage(ERROR_MESSAGES.ASSET_FILE_REQUIRED);
 			return;
 		}
 		setIsSaving(true);
@@ -101,7 +102,7 @@ export default function AssetEditorModal({
 			setMessage(
 				error instanceof Error
 					? error.message
-					: "Could not save asset.",
+					: ERROR_MESSAGES.ASSET_SAVE_FAILED,
 			);
 		} finally {
 			setIsSaving(false);

@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../constants/errors";
 import { FormEvent, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
@@ -45,7 +46,7 @@ export default function LoginPage() {
 				throw new Error(
 					typeof payload?.message === "string"
 						? payload.message
-						: "Unable to log in",
+						: ERROR_MESSAGES.LOGIN_FAILED,
 				);
 			}
 
@@ -60,7 +61,7 @@ export default function LoginPage() {
 			}
 		} catch (error) {
 			setError(
-				error instanceof Error ? error.message : "Unable to log in",
+				error instanceof Error ? error.message : ERROR_MESSAGES.LOGIN_FAILED,
 			);
 		} finally {
 			setIsSubmitting(false);

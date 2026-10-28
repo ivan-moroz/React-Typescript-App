@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { TLSSocket } from 'node:tls';
 
@@ -22,13 +23,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (req.method !== 'POST') {
-    res.status(405).json({ message: 'Method not allowed' });
+    res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
     return;
   }
 
   const { email, password } = req.body ?? {};
   if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
-    res.status(400).json({ message: 'Email and password are required' });
+    res.status(400).json({ message: ERROR_MESSAGES.LOGIN_FIELDS_REQUIRED });
     return;
   }
 
@@ -39,13 +40,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     });
 
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
-      res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ message: ERROR_MESSAGES.INVALID_CREDENTIALS });
       return;
     }
 
     res.setHeader('Set-Cookie', sessionCookie(user, (req.socket instanceof TLSSocket && req.socket.encrypted) || req.headers['x-forwarded-proto'] === 'https'));
     res.status(200).json({ id: user.id, name: user.name, email: user.email });
   } catch {
-    res.status(500).json({ message: 'Unable to log in' });
+    res.status(500).json({ message: ERROR_MESSAGES.LOGIN_FAILED });
   }
 }

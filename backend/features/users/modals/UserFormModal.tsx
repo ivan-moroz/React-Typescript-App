@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import React, { useState } from "react";
 import Modal from "../../../../src/components/modal/Modal";
 import type { ModalControls } from "../../../../src/components/modal/ModalProvider";
@@ -34,13 +35,13 @@ export default function UserFormModal({ user, onSaved, onClose }: Props) {
 			!userForm.city.trim() ||
 			(!isEditingUser && !userForm.password)
 		) {
-			setFormError("All fields are required");
+			setFormError(ERROR_MESSAGES.FIELDS_REQUIRED);
 			return;
 		}
 
 		const parsedAge = Number(userForm.age);
 		if (!Number.isInteger(parsedAge) || parsedAge <= 0) {
-			setFormError("Age must be a positive number");
+			setFormError(ERROR_MESSAGES.AGE_INVALID);
 			return;
 		}
 
@@ -71,8 +72,8 @@ export default function UserFormModal({ user, onSaved, onClose }: Props) {
 					typeof responseBody?.message === "string"
 						? responseBody.message
 						: isEditingUser
-							? "Failed to update user"
-							: "Failed to add user";
+							? ERROR_MESSAGES.USER_UPDATE_FAILED
+							: ERROR_MESSAGES.USER_ADD_FAILED;
 				throw new Error(message);
 			}
 
@@ -83,8 +84,8 @@ export default function UserFormModal({ user, onSaved, onClose }: Props) {
 				error instanceof Error
 					? error.message
 					: isEditingUser
-						? "Failed to update user"
-						: "Failed to add user",
+						? ERROR_MESSAGES.USER_UPDATE_FAILED
+						: ERROR_MESSAGES.USER_ADD_FAILED,
 			);
 		} finally {
 			setIsSubmitting(false);

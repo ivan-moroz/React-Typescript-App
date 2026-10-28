@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../src/constants/errors";
 import type { GetServerSideProps } from 'next';
 import AssetsPage, { type AssetsPageProps } from '../features/Assets';
 import prisma from '../lib/prisma';
@@ -7,7 +8,7 @@ export const getServerSideProps: GetServerSideProps<AssetsPageProps> = async ({ 
   res.setHeader('Cache-Control', 'private, no-store');
   try {
     const user = await getSessionUser(req);
-    if (!user) return { props: { initialUser: null, initialAssets: [], initialError: 'Log in to manage your assets.' } };
+    if (!user) return { props: { initialUser: null, initialAssets: [], initialError: ERROR_MESSAGES.LOGIN_REQUIRED } };
     const assets = await prisma.asset.findMany({
       where: { OR: [{ userId: user.id }, { authorization: 'PUBLIC' }] },
       orderBy: { createdAt: 'desc' },
@@ -16,7 +17,7 @@ export const getServerSideProps: GetServerSideProps<AssetsPageProps> = async ({ 
     return { props: { initialUser: user, initialAssets: assets.map(({ mimeType, createdAt, authorization, ...asset }) => ({ ...asset, type: mimeType, authorization: authorization === 'PUBLIC' ? 'PUBLIC' : 'INTERNAL', createdAt: createdAt.toISOString() })) } };
   } catch {
     res.statusCode = 503;
-    return { props: { initialUser: null, initialAssets: [], initialError: 'Unable to load assets. Please try again.' } };
+    return { props: { initialUser: null, initialAssets: [], initialError: ERROR_MESSAGES.ASSETS_PAGE_LOAD_FAILED } };
   }
 };
 

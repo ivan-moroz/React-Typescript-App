@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { extname } from 'node:path';
 
@@ -66,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const userId = userIdFrom(req.method === 'GET' ? req.query.userId : req.body?.userId);
   if (!userId) {
-    res.status(400).json({ message: 'A valid userId is required' });
+    res.status(400).json({ message: ERROR_MESSAGES.ASSET_USER_ID_REQUIRED });
     return;
   }
 
@@ -79,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       });
       res.status(200).json(assets.map(toSummary));
     } catch {
-      res.status(500).json({ message: 'Unable to load assets' });
+      res.status(500).json({ message: ERROR_MESSAGES.ASSETS_SERVER_LOAD_FAILED });
     }
     return;
   }
@@ -87,13 +88,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method === 'POST') {
     const { name, description, authorization, originalFileName, type, size, data } = req.body ?? {};
     if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization) || typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || size > MAX_FILE_SIZE || (data !== undefined && typeof data !== 'string')) {
-      res.status(400).json({ message: 'Invalid asset payload' });
+      res.status(400).json({ message: ERROR_MESSAGES.ASSET_PAYLOAD_INVALID });
       return;
     }
 
     const fileData = typeof data === 'string' ? Buffer.from(data, 'base64') : null;
     if (fileData && fileData.length !== size) {
-      res.status(400).json({ message: 'Asset data is invalid or exceeds the 10 MB limit' });
+      res.status(400).json({ message: ERROR_MESSAGES.ASSET_DATA_INVALID });
       return;
     }
 
@@ -104,10 +105,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       });
       res.status(201).json(toSummary(asset));
     } catch {
-      res.status(500).json({ message: 'Unable to upload asset' });
+      res.status(500).json({ message: ERROR_MESSAGES.ASSET_SERVER_UPLOAD_FAILED });
     }
     return;
   }
 
-  res.status(405).json({ message: 'Method not allowed' });
+  res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
 }

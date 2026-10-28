@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../constants/errors";
 import { Component, Suspense, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -15,8 +16,8 @@ class RouteErrorBoundary extends Component<Props, State> {
 		if (this.state.hasError) {
 			return (
 				<section className="route-feedback" role="alert">
-					<h1>Unable to load this page</h1>
-					<p>Please check your connection and try again.</p>
+					<h1>{ERROR_MESSAGES.PAGE_LOAD_FAILED}</h1>
+					<p>{ERROR_MESSAGES.PAGE_RETRY_HINT}</p>
 					{/* Reload to clear React.lazy's cached rejection and request fresh chunks. */}
 					<button
 						type="button"

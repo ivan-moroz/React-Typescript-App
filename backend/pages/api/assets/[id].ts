@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { extname } from 'node:path';
 
@@ -49,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const id = typeof req.query.id === 'string' ? req.query.id : null;
   const userId = userIdFrom(req.method === 'GET' ? req.query.userId : req.body?.userId);
   if (!id || !userId) {
-    res.status(400).json({ message: 'An asset id and valid userId are required' });
+    res.status(400).json({ message: ERROR_MESSAGES.ASSET_ID_AND_USER_REQUIRED });
     return;
   }
 
@@ -57,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const asset = await prisma.asset.findFirst({ where: { id, OR: [{ userId }, { authorization: 'PUBLIC' }] } });
       if (!asset) {
-        res.status(404).json({ message: 'Asset not found' });
+        res.status(404).json({ message: ERROR_MESSAGES.ASSET_NOT_FOUND });
         return;
       }
       const range = requestedRange(req.headers.range, asset.size);
@@ -86,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       let remaining = rangeLength;
       for (let position = Math.floor(range.start / CHUNK_SIZE); remaining > 0; position += 1) {
         const chunk = await prisma.assetChunk.findUnique({ where: { assetId_position: { assetId: id, position } } });
-        if (!chunk) throw new Error('Asset chunk is missing');
+        if (!chunk) throw new Error(ERROR_MESSAGES.ASSET_CHUNK_MISSING);
         const bytes = Buffer.from(chunk.data);
         const offset = position === Math.floor(range.start / CHUNK_SIZE) ? range.start % CHUNK_SIZE : 0;
         const part = bytes.subarray(offset, offset + remaining);
@@ -95,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       res.end();
     } catch {
-      res.status(500).json({ message: 'Unable to download asset' });
+      res.status(500).json({ message: ERROR_MESSAGES.ASSET_DOWNLOAD_FAILED });
     }
     return;
   }
@@ -104,12 +105,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const deleted = await prisma.asset.deleteMany({ where: { id, userId } });
       if (!deleted.count) {
-        res.status(404).json({ message: 'Asset not found' });
+        res.status(404).json({ message: ERROR_MESSAGES.ASSET_NOT_FOUND });
         return;
       }
       res.status(204).end();
     } catch {
-      res.status(500).json({ message: 'Unable to delete asset' });
+      res.status(500).json({ message: ERROR_MESSAGES.ASSET_SERVER_DELETE_FAILED });
     }
     return;
   }
@@ -117,7 +118,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'PUT') {
     const { name, description, authorization, originalFileName, type, size } = req.body ?? {};
     if (typeof name !== 'string' || !name.trim() || typeof description !== 'string' || !isAuthorization(authorization)) {
-      res.status(400).json({ message: 'Invalid asset payload' });
+      res.status(400).json({ message: ERROR_MESSAGES.ASSET_PAYLOAD_INVALID });
       return;
     }
 
@@ -125,7 +126,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let fileUpdate = {};
     if (hasReplacementFile) {
       if (typeof type !== 'string' || typeof size !== 'number' || !Number.isInteger(size) || size < 0 || size > MAX_FILE_SIZE) {
-        res.status(400).json({ message: 'Invalid replacement file' });
+        res.status(400).json({ message: ERROR_MESSAGES.ASSET_REPLACEMENT_INVALID });
         return;
       }
       fileUpdate = { mimeType: type || 'application/octet-stream', fileExtension: typeof originalFileName === 'string' ? extname(originalFileName).slice(0, 32) : '', size };
@@ -137,15 +138,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: { name: name.trim(), description, authorization, ...fileUpdate },
       });
       if (!updated.count) {
-        res.status(404).json({ message: 'Asset not found' });
+        res.status(404).json({ message: ERROR_MESSAGES.ASSET_NOT_FOUND });
         return;
       }
       res.status(204).end();
     } catch {
-      res.status(500).json({ message: 'Unable to update asset' });
+      res.status(500).json({ message: ERROR_MESSAGES.ASSET_SERVER_UPDATE_FAILED });
     }
     return;
   }
 
-  res.status(405).json({ message: 'Method not allowed' });
+  res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
 }

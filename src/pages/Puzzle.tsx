@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../constants/errors";
 import { useEffect, useRef, useState } from "react";
 import { mergeSequence, parseNumbers } from "./puzzle/solver";
 import "./puzzle/styles.scss";
@@ -34,7 +35,7 @@ export default function PuzzlePage() {
 		setTotal(0);
 		setFileName(file.name);
 		if (!/\.txt$/i.test(file.name)) {
-			setError("Choose a .txt file.");
+			setError(ERROR_MESSAGES.PUZZLE_TEXT_FILE_REQUIRED);
 			return;
 		}
 		setBusy(true);
@@ -64,7 +65,7 @@ export default function PuzzlePage() {
 			solver.onerror = () => {
 				if (current !== request.current) return;
 				setError(
-					"Could not solve this file. Try again with a smaller file.",
+					ERROR_MESSAGES.PUZZLE_SOLVE_FAILED,
 				);
 				finish();
 			};
@@ -74,7 +75,7 @@ export default function PuzzlePage() {
 			setError(
 				error instanceof Error
 					? error.message
-					: "Could not read the file.",
+					: ERROR_MESSAGES.FILE_READ_FAILED,
 			);
 			setBusy(false);
 		}

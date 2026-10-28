@@ -1,13 +1,14 @@
+import { ERROR_MESSAGES } from "../../constants/errors";
 export function parseNumbers(text: string): string[] {
 	const numbers = text
 		.trim()
 		.split(/[\s,;]+/)
 		.filter(Boolean);
 	if (!numbers.length)
-		throw new Error("The file is empty. Add at least one number.");
+		throw new Error(ERROR_MESSAGES.PUZZLE_FILE_EMPTY);
 	if (numbers.some((number) => !/^\d{2,}$/.test(number))) {
 		throw new Error(
-			"Use whole numbers with at least two digits, separated by spaces, newlines, commas, or semicolons.",
+			ERROR_MESSAGES.PUZZLE_NUMBERS_INVALID,
 		);
 	}
 	return numbers;

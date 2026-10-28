@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../lib/prisma';
@@ -30,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const id = Number(req.query.id);
 
   if (!Number.isInteger(id) || id <= 0) {
-    res.status(400).json({ message: 'Invalid user id' });
+    res.status(400).json({ message: ERROR_MESSAGES.USER_ID_INVALID });
     return;
   }
 
@@ -42,14 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       });
 
       if (!user) {
-        res.status(404).json({ message: 'User not found' });
+        res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
         return;
       }
 
       res.status(200).json(user);
       return;
     } catch (error) {
-      res.status(500).json({ message: `Unable to fetch user: ${String(error)}` });
+      res.status(500).json({ message: ERROR_MESSAGES.USER_FETCH_DETAILS(error) });
       return;
     }
   }
@@ -64,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       typeof city !== 'string'
       || (password !== undefined && typeof password !== 'string')
     ) {
-      res.status(400).json({ message: 'Invalid payload' });
+      res.status(400).json({ message: ERROR_MESSAGES.INVALID_PAYLOAD });
       return;
     }
 
@@ -85,11 +86,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return;
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
-        res.status(409).json({ message: 'Email address is already in use' });
+        res.status(409).json({ message: ERROR_MESSAGES.EMAIL_IN_USE });
         return;
       }
 
-      res.status(500).json({ message: `Unable to update user: ${String(error)}` });
+      res.status(500).json({ message: ERROR_MESSAGES.USER_UPDATE_DETAILS(error) });
       return;
     }
   }
@@ -100,10 +101,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       res.status(200).json({ message: 'User deleted' });
       return;
     } catch (error) {
-      res.status(500).json({ message: `Unable to delete user: ${String(error)}` });
+      res.status(500).json({ message: ERROR_MESSAGES.USER_DELETE_DETAILS(error) });
       return;
     }
   }
 
-  res.status(405).json({ message: 'Method not allowed' });
+  res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
 }
