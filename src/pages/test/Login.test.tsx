@@ -18,15 +18,24 @@ function CurrentLocation() {
 
 describe("LoginPage", () => {
 	test("redirects an already logged-in user to Home", async () => {
-		sessionStorage.setItem("authenticatedUser", JSON.stringify({ id: 1, name: "Jane" }));
-		render(<MemoryRouter initialEntries={["/login?from=/users"]}>
-			<Routes>
-				<Route path="/login" element={<LoginPage />} />
-				<Route path="/" element={<h1>Home</h1>} />
-			</Routes>
-		</MemoryRouter>);
-		expect(await screen.findByRole("heading", { name: "Home" })).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "Log in" })).not.toBeInTheDocument();
+		sessionStorage.setItem(
+			"authenticatedUser",
+			JSON.stringify({ id: 1, name: "Jane" }),
+		);
+		render(
+			<MemoryRouter initialEntries={["/login?from=/users"]}>
+				<Routes>
+					<Route path="/login" element={<LoginPage />} />
+					<Route path="/" element={<h1>Home</h1>} />
+				</Routes>
+			</MemoryRouter>,
+		);
+		expect(
+			await screen.findByRole("heading", { name: "Home" }),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole("button", { name: "Log in" }),
+		).not.toBeInTheDocument();
 	});
 	afterEach(() => {
 		vi.restoreAllMocks();
@@ -34,18 +43,42 @@ describe("LoginPage", () => {
 		sessionStorage.clear();
 	});
 
-	test.each(["/assets?sort=name#details", "/users"])("requests a server-rendered page after login: %s", async (destination) => {
-		vi.spyOn(global, "fetch").mockResolvedValue({ ok: true, json: async () => ({ id: 1, name: "Jane" }) } as Response);
-		render(<MemoryRouter initialEntries={[`/login?from=${encodeURIComponent(destination)}`]}><LoginPage /></MemoryRouter>);
-		fireEvent.change(screen.getByLabelText("Email"), { target: { value: "jane@example.com" } });
-		fireEvent.change(screen.getByLabelText("Password"), { target: { value: "12345" } });
-		const assign = vi.fn();
-		const browser = Object.create(window);
-		Object.defineProperty(browser, "location", { value: { assign } });
-		vi.stubGlobal("window", browser);
-		fireEvent.click(screen.getByRole("button", { name: "Log in" }));
-		await waitFor(() => expect(assign).toHaveBeenCalledWith(destination));
-	});
+	test.each([
+		"/assets?sort=name#details",
+		"/users",
+		"/messaging?conversation=123",
+	])(
+		"requests a server-rendered page after login: %s",
+		async (destination) => {
+			vi.spyOn(global, "fetch").mockResolvedValue({
+				ok: true,
+				json: async () => ({ id: 1, name: "Jane" }),
+			} as Response);
+			render(
+				<MemoryRouter
+					initialEntries={[
+						`/login?from=${encodeURIComponent(destination)}`,
+					]}
+				>
+					<LoginPage />
+				</MemoryRouter>,
+			);
+			fireEvent.change(screen.getByLabelText("Email"), {
+				target: { value: "jane@example.com" },
+			});
+			fireEvent.change(screen.getByLabelText("Password"), {
+				target: { value: "12345" },
+			});
+			const assign = vi.fn();
+			const browser = Object.create(window);
+			Object.defineProperty(browser, "location", { value: { assign } });
+			vi.stubGlobal("window", browser);
+			fireEvent.click(screen.getByRole("button", { name: "Log in" }));
+			await waitFor(() =>
+				expect(assign).toHaveBeenCalledWith(destination),
+			);
+		},
+	);
 
 	test("authenticates with email and password", async () => {
 		const fetchMock = vi.spyOn(global, "fetch").mockResolvedValue({

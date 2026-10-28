@@ -1,0 +1,17 @@
+.messages-link {
+	position: relative;
+	display: inline-flex;
+	padding: 8px;
+	border-radius: 4px;
+	background: #e5effb;
+}
+.messages-link-badge {
+	position: absolute;
+	top: -6px;
+	right: -8px;
+	background: #dc3545;
+	color: white;
+	border-radius: 12px;
+	padding: 2px 5px;
+	font-size: 11px;
+}

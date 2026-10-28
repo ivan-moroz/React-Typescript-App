@@ -1,5 +1,15 @@
 // Shared application errors for browser components, workers, SSR, and API routes.
 export const ERROR_MESSAGES = {
+  MESSAGE_DELETE_FAILED: "Unable to delete this message. Please try again.",
+  CONVERSATION_DELETE_FAILED: "Unable to delete this conversation. Please try again.",
+  MESSAGING_LOAD_FAILED: "Unable to load messages. Please try again.",
+  MESSAGING_SEND_FAILED: "Unable to send your message. Please try again.",
+  MESSAGING_CONTENT_INVALID: "Enter a message between 1 and 2000 characters.",
+  MESSAGING_USER_INVALID: "Choose another registered user.",
+  MESSAGING_NOT_FOUND: "Conversation or message not found.",
+  MESSAGING_CURSOR_INVALID: "Invalid messaging pagination parameters.",
+  MESSAGING_SEARCH_INVALID: "Search must contain between 2 and 100 characters.",
+  MESSAGING_ORIGIN_INVALID: "This request origin is not allowed.",
   REQUEST_FAILED: "Unable to complete the request",
   UNAUTHORIZED: "Please log in to continue.",
   FORBIDDEN: "You do not have permission to perform this action.",

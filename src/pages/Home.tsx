@@ -15,6 +15,11 @@ export default function HomePage() {
 				Public assets are visible to all users.
 				Internal assets are visible only to the user who uploaded them.
 			</p>
+			<p>
+				Added Messaging functionality. Users can send messages to each other.
+				Messages are stored in the database and can be viewed in the messaging panel.
+				Users can delete their own messages and conversations.
+			</p>
 		</div>
 	);
 }

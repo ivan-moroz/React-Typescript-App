@@ -1,3 +1,4 @@
+import Messaging from "../messaging/Messaging";
 import { fetchData } from "../../utils/fetchData";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./styles/styles.scss";
@@ -19,7 +20,10 @@ export default function Navigation() {
 	const authenticatedUser = getAuthenticatedUser();
 
 	const handleLogout = async (): Promise<void> => {
-		const result = await fetchData("/api/auth/logout", { method: "POST", responseType: "void" });
+		const result = await fetchData("/api/auth/logout", {
+			method: "POST",
+			responseType: "void",
+		});
 		if (!result.success) return;
 		sessionStorage.removeItem("authenticatedUser");
 		navigate("/login", { state: loginState });
@@ -43,31 +47,39 @@ export default function Navigation() {
 			<NavLink to="/puzzle" style={activeStyle}>
 				Puzzle
 			</NavLink>
-			<a href="/users">
-				Users
-			</a>
-			<a href="/assets">
-				Assets
-			</a>
-			{authenticatedUser ? (
-				<div className="authenticated-user">
-					<span>
-						<b>{authenticatedUser.name}</b>
-					</span>
-					<button type="button" onClick={handleLogout}>
-						Log out
-					</button>
-				</div>
-			) : (
-				<NavLink to={location.pathname === "/login" ? `/login${location.search}` : "/login"} state={loginState} style={activeStyle}>
-					Login
-				</NavLink>
-			)}
+			<a href="/users">Users</a>
+			<a href="/assets">Assets</a>
+			<div className="header-account">
+				{authenticatedUser ? (
+					<div className="authenticated-user">
+						<span>
+							<b>{authenticatedUser.name}</b>
+						</span>
+						<button type="button" onClick={handleLogout}>
+							Log out
+						</button>
+					</div>
+				) : (
+					<NavLink
+						to={
+							location.pathname === "/login"
+								? `/login${location.search}`
+								: "/login"
+						}
+						state={loginState}
+						style={activeStyle}
+					>
+						Login
+					</NavLink>
+				)}
+				<Messaging key={authenticatedUser?.id ?? "anonymous"} />
+			</div>
 		</nav>
 	);
 }
 
 type AuthenticatedUser = {
+	id?: number;
 	name: string;
 };
 
@@ -79,7 +91,16 @@ function getAuthenticatedUser(): AuthenticatedUser | null {
 		}
 
 		const user = JSON.parse(storedUser) as Partial<AuthenticatedUser>;
-		return typeof user.name === "string" ? { name: user.name } : null;
+		return typeof user.name === "string"
+			? {
+					name: user.name,
+					...(typeof user.id === "number" &&
+					Number.isInteger(user.id) &&
+					user.id > 0
+						? { id: user.id }
+						: {}),
+				}
+			: null;
 	} catch {
 		return null;
 	}

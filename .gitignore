@@ -24,4 +24,5 @@ yarn-debug.log*
 yarn-error.log*
 /backend/.next/
 /backend/.next-dev/
+/backend/.next-turbo-dev/
 /dist/

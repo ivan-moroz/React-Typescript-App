@@ -11,3 +11,4 @@ createRoot(document.getElementById("root")!).render(
 
 import "./components/modal/styles/styles.scss";
 import "./components/select/styles/styles.scss";
+import "./components/messaging/styles/styles.scss";

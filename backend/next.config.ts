@@ -10,6 +10,6 @@ export default function config(phase: string): NextConfig {
   return {
     ...nextConfig,
     // Production builds must not overwrite a running dev server's HMR files.
-    distDir: phase === PHASE_DEVELOPMENT_SERVER ? '.next-dev' : '.next',
+    distDir: phase === PHASE_DEVELOPMENT_SERVER ? '.next-turbo-dev' : '.next',
   };
 }

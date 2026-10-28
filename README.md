@@ -2,7 +2,11 @@
 
 This project uses **Vite + React + TypeScript + Next.js + PostgreSQL + Prisma** for the app layer.
 
-Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature added, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets and Public assets, added metadata for assets like Asset Name, Description, Authorization(Internal, Public). Assets content files can be up to 1 GB in size, including videos, images, and other file types. For local use only — clone it and lets continue working with AI. Good luck!
+Already implemented infinite scrolling, modals, drag-and-drop reordering of users, email-and-password login, and user management. An asset feature added, allowing users to upload documents, videos, photos etc. Asset Management — where users can see only their own assets and Public assets, added metadata for assets like Asset Name, Description, Authorization(Internal, Public). Assets content files can be up to 1 GB in size, including videos, images, and other file types.
+
+Private user-to-user messaging is available from the header chat bubble. See [Messaging setup, API, files, and testing](docs/MESSAGING.md) for the required migration and operation details.
+
+For local use only — clone it and lets continue working with AI. Good luck!
 
 ## PostgreSQL + Prisma setup
 
@@ -46,6 +50,8 @@ By default it runs at [http://localhost:5173](http://localhost:5173).
 ### `npm run dev:backend`
 
 Starts the Next.js backend API at [http://localhost:3001](http://localhost:3001).
+
+Development uses Turbopack with an isolated `backend/.next-turbo-dev` cache. After switching from the old Webpack server, stop the old backend process, restart `npm run dev:backend`, and close/reopen app tabs once so they load the new development runtime. Production builds still use `backend/.next`.
 
 User API routes:
 - `GET /api/users?offset=0&limit=10` (returns a page of users; defaults to 10)

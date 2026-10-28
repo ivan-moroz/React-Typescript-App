@@ -8,7 +8,9 @@ import "../styles/login.scss";
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const from = location.state?.from ?? new URLSearchParams(location.search).get("from");
+	const from =
+		location.state?.from ??
+		new URLSearchParams(location.search).get("from");
 	const returnTo =
 		typeof from === "string" &&
 		from.startsWith("/") &&
@@ -23,7 +25,9 @@ export default function LoginPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [alreadyAuthenticated] = useState(() => {
 		try {
-			const user = JSON.parse(sessionStorage.getItem("authenticatedUser") ?? "null");
+			const user = JSON.parse(
+				sessionStorage.getItem("authenticatedUser") ?? "null",
+			);
 			return typeof user?.name === "string";
 		} catch {
 			return false;
@@ -35,7 +39,11 @@ export default function LoginPage() {
 		setError("");
 		setIsSubmitting(true);
 
-		const result = await fetchData<{ id: number; name: string; email: string }>("/api/auth/login", {
+		const result = await fetchData<{
+			id: number;
+			name: string;
+			email: string;
+		}>("/api/auth/login", {
 			method: "POST",
 			errorMessage: ERROR_MESSAGES.LOGIN_FAILED,
 			headers: { "Content-Type": "application/json" },
@@ -48,11 +56,12 @@ export default function LoginPage() {
 			return;
 		}
 		const payload = result.data;
-		sessionStorage.setItem(
-			"authenticatedUser",
-			JSON.stringify(payload),
-		);
-		if (["/assets", "/users"].includes(returnTo.split(/[?#]/)[0])) {
+		sessionStorage.setItem("authenticatedUser", JSON.stringify(payload));
+		if (
+			["/assets", "/users", "/messaging"].includes(
+				returnTo.split(/[?#]/)[0],
+			)
+		) {
 			window.location.assign(returnTo);
 		} else {
 			navigate(returnTo, { replace: true });
