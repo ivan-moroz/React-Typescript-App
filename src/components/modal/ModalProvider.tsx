@@ -1,24 +1,10 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
+import { ModalContext, type ModalActions, type ModalControls } from "./modalContext";
 
-export type ModalControls = { onClose: () => void };
-type ModalActions = {
-	openModal: <P extends object>(
-		component: ComponentType<P & ModalControls>,
-		props: Omit<P, keyof ModalControls>,
-	) => () => void;
-	closeModal: () => void;
-};
+export type { ModalControls } from "./modalContext";
+
 type ActiveModal = { id: number; content: ReactNode };
-const ModalContext = createContext<ModalActions | null>(null);
 
 export function ModalProvider({ children }: { children: ReactNode }) {
 	const [active, setActive] = useState<ActiveModal | null>(null);
@@ -51,24 +37,5 @@ export function ModalProvider({ children }: { children: ReactNode }) {
 			{children}
 			{active && <div key={active.id}>{active.content}</div>}
 		</ModalContext.Provider>
-	);
-}
-
-export function useModal(): ModalActions {
-	const actions = useContext(ModalContext);
-	if (!actions) throw new Error("useModal must be used within ModalProvider");
-	const ownedClose = useRef<(() => void) | null>(null);
-	useEffect(() => () => ownedClose.current?.(), []);
-	const openModal = useCallback<ModalActions["openModal"]>(
-		(component, props) => {
-			const close = actions.openModal(component, props);
-			ownedClose.current = close;
-			return close;
-		},
-		[actions],
-	);
-	return useMemo(
-		() => ({ openModal, closeModal: actions.closeModal }),
-		[openModal, actions],
 	);
 }

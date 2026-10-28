@@ -5,8 +5,8 @@ import {
 	waitFor,
 	within,
 } from "@testing-library/react";
-import { ModalProvider } from "../../components/modal/ModalProvider";
-import AssetsPage from "../Assets";
+import { ModalProvider } from "../../src/components/modal/ModalProvider";
+import AssetsPage from "../features/Assets";
 
 const asset = {
 	id: "a1",

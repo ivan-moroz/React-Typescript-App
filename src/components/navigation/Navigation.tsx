@@ -17,9 +17,15 @@ export default function Navigation() {
 				};
 	const authenticatedUser = getAuthenticatedUser();
 
-	const handleLogout = (): void => {
-		sessionStorage.removeItem("authenticatedUser");
-		navigate("/login", { state: loginState });
+	const handleLogout = async (): Promise<void> => {
+		try {
+			const response = await fetch("/api/auth/logout", { method: "POST" });
+			if (!response.ok) return;
+			sessionStorage.removeItem("authenticatedUser");
+			navigate("/login", { state: loginState });
+		} catch {
+			// Keep the visible login state consistent if the session cannot be cleared.
+		}
 	};
 
 	return (
@@ -40,12 +46,12 @@ export default function Navigation() {
 			<NavLink to="/puzzle" style={activeStyle}>
 				Puzzle
 			</NavLink>
-			<NavLink to="/table" style={activeStyle}>
+			<a href="/table">
 				Users
-			</NavLink>
-			<NavLink to="/assets" style={activeStyle}>
+			</a>
+			<a href="/assets">
 				Assets
-			</NavLink>
+			</a>
 			{authenticatedUser ? (
 				<div className="authenticated-user">
 					<span>
@@ -56,7 +62,7 @@ export default function Navigation() {
 					</button>
 				</div>
 			) : (
-				<NavLink to="/login" state={loginState} style={activeStyle}>
+				<NavLink to={location.pathname === "/login" ? `/login${location.search}` : "/login"} state={loginState} style={activeStyle}>
 					Login
 				</NavLink>
 			)}

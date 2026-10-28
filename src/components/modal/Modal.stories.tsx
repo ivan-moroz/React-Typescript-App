@@ -1,4 +1,5 @@
-import { ModalProvider, useModal } from "./ModalProvider";
+import { ModalProvider } from "./ModalProvider";
+import { useModal } from "./useModal";
 import ConfirmationModal from "./ConfirmationModal";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 

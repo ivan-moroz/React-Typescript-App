@@ -1,27 +1,28 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
 
-import { useModal } from "../../components/modal/ModalProvider";
+import { useModal } from "../../../src/components/modal/useModal";
 import UserFormModal from "./modals/UserFormModal";
-import ConfirmationModal from "../../components/modal/ConfirmationModal";
+import ConfirmationModal from "../../../src/components/modal/ConfirmationModal";
 import { initialState, reducer } from "./reducer/reducer";
 import { ActionType, User } from "./types/types";
-import Table, { type TableColumn } from "../../components/table/Table";
-import "./styles/styles.scss";
+import Table, { type TableColumn } from "../../../src/components/table/Table";
 
 const PAGE_SIZE = 10;
 
-function UsersTable() {
-	const [state, dispatch] = useReducer(reducer, initialState);
-	const [isLoading, setIsLoading] = useState<boolean>(true);
+export type UsersTableProps = { initialUsers?: User[]; initialError?: string };
+
+function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
+	const [state, dispatch] = useReducer(reducer, { ...initialState, users: initialUsers ?? [] });
+	const [isLoading, setIsLoading] = useState<boolean>(initialUsers === undefined);
 	const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-	const [hasMoreUsers, setHasMoreUsers] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
+	const [hasMoreUsers, setHasMoreUsers] = useState<boolean>(initialUsers === undefined || initialUsers.length === PAGE_SIZE);
+	const [error, setError] = useState<string>(initialError);
 	const { openModal } = useModal();
 	const [draggedUserId, setDraggedUserId] = useState<number | null>(null);
 	const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
 	const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
 	const tableScrollContainerRef = useRef<HTMLDivElement | null>(null);
-	const usersRef = useRef<User[]>([]);
+	const usersRef = useRef<User[]>(initialUsers ?? []);
 	const isFetchingUsersRef = useRef<boolean>(false);
 
 	useEffect(() => {
@@ -67,7 +68,7 @@ function UsersTable() {
 	};
 
 	useEffect(() => {
-		void loadUsers(true);
+		if (initialUsers === undefined) void loadUsers(true);
 	}, []);
 
 	useEffect(() => {
@@ -191,14 +192,14 @@ function UsersTable() {
 						aria-label={`Edit user ${user.name}`}
 						onClick={() => handleStartEditUser(user.id)}
 					>
-						<span className="material-icons">edit</span>
+						<span className="material-icons" aria-hidden="true">edit</span>
 					</button>
 					<button
 						type="button"
 						aria-label={`Delete user ${user.name}`}
 						onClick={() => handleRequestDeleteUser(user)}
 					>
-						<span className="material-icons">delete</span>
+						<span className="material-icons" aria-hidden="true">delete</span>
 					</button>
 				</>
 			),

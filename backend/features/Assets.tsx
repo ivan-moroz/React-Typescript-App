@@ -1,33 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 
-import ConfirmationModal from "../components/modal/ConfirmationModal";
-import { useModal } from "../components/modal/ModalProvider";
-import AssetEditorModal from "./assets/modals/AssetEditorModal";
-import AssetPreviewModal from "./assets/modals/AssetPreviewModal";
-import { Asset, getCurrentUser, responseError } from "./assets/assetHelpers";
-import "../styles/assets.scss";
+import ConfirmationModal from "../../src/components/modal/ConfirmationModal";
+import { useModal } from "../../src/components/modal/useModal";
+import AssetCard from "./assets/components/AssetCard";
+import AssetEditorModal from "./assets/components/modals/AssetEditorModal";
+import AssetPreviewModal from "./assets/components/modals/AssetPreviewModal";
+import { Asset, AuthenticatedUser, getCurrentUser, responseError } from "./assets/assetHelpers";
 
-function formatSize(size: number): string {
-	if (size < 1024) return `${size} B`;
-	if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-	return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
-function assetKind(type: string): string {
-	if (type.startsWith("image/")) return "Image";
-	if (type.startsWith("video/")) return "Video";
-	if (type.startsWith("audio/")) return "Audio";
-	if (type === "application/pdf") return "PDF";
-	return "File";
-}
+export type AssetsPageProps = { initialAssets?: Asset[]; initialUser?: AuthenticatedUser | null; initialError?: string };
 
-export default function AssetsPage() {
-	const [assets, setAssets] = useState<Asset[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [message, setMessage] = useState("");
+export default function AssetsPage({ initialAssets, initialUser, initialError = "" }: AssetsPageProps) {
+	const [assets, setAssets] = useState<Asset[]>(initialAssets ?? []);
+	const [isLoading, setIsLoading] = useState(initialAssets === undefined);
+	const [message, setMessage] = useState(initialError);
 	const { openModal } = useModal();
-	const user = useMemo(getCurrentUser, []);
+	const user = useMemo(() => initialUser === undefined ? getCurrentUser() : initialUser, [initialUser]);
 
 	useEffect(() => {
+		if (initialAssets !== undefined) return;
 		if (!user) {
 			setMessage("Log in to manage your assets.");
 			setIsLoading(false);
@@ -51,7 +41,7 @@ export default function AssetsPage() {
 				),
 			)
 			.finally(() => setIsLoading(false));
-	}, [user]);
+	}, [user, initialAssets]);
 
 	const onSaved = (saved: Asset, editing: boolean) => {
 		setAssets((current) =>
@@ -177,81 +167,5 @@ export default function AssetsPage() {
 				</section>
 			)}
 		</main>
-	);
-}
-
-function AssetCard({
-	asset,
-	previewUrl,
-	downloadUrl,
-	isOwner,
-	onOpen,
-	onEdit,
-	onDelete,
-}: {
-	asset: Asset;
-	previewUrl: string;
-	downloadUrl: string;
-	isOwner: boolean;
-	onOpen: () => void;
-	onEdit: () => void;
-	onDelete: () => void;
-}) {
-	return (
-		<article className="asset-card">
-			<div className="asset-preview">
-				<button
-					type="button"
-					onClick={onOpen}
-					aria-label={`Open ${asset.name}`}
-				>
-					{asset.type.startsWith("image/") ? (
-						<img src={previewUrl} alt={asset.name} />
-					) : (
-						<span>{assetKind(asset.type)}</span>
-					)}
-				</button>
-			</div>
-			<div className="asset-details">
-				<h3 title={asset.name}>{asset.name}</h3>
-				<p>
-					{assetKind(asset.type)} · {formatSize(asset.size)}
-				</p>
-				<p
-					className={`asset-authorization is-${asset.authorization.toLowerCase()}`}
-				>
-					{asset.authorization === "PUBLIC" ? "Public" : "Internal"}
-				</p>
-				<time dateTime={asset.createdAt}>
-					Added {new Date(asset.createdAt).toLocaleDateString()}
-				</time>
-				<div className="asset-actions">
-					<button
-						type="button"
-						className="asset-open-button"
-						onClick={onOpen}
-					>
-						Open
-					</button>
-					<a href={downloadUrl} download={asset.name}>
-						Download
-					</a>
-					{isOwner && (
-						<>
-							<button
-								type="button"
-								className="asset-open-button"
-								onClick={onEdit}
-							>
-								Edit
-							</button>
-							<button type="button" onClick={onDelete}>
-								Delete
-							</button>
-						</>
-					)}
-				</div>
-			</div>
-		</article>
 	);
 }

@@ -7,7 +7,7 @@ import {
 	waitFor,
 } from "@testing-library/react";
 import Users from "../Users";
-import { ModalProvider } from "../../../components/modal/ModalProvider";
+import { ModalProvider } from "../../../../src/components/modal/ModalProvider";
 
 const render = (ui: React.ReactNode) =>
 	renderBase(<ModalProvider>{ui}</ModalProvider>);
@@ -197,7 +197,7 @@ describe("Users Component", () => {
 		expect(screen.getByRole("dialog")).toBeInTheDocument();
 	});
 
-	test("loads the next page when the table scroll reaches the bottom", async () => {
+	test.each([false, true])("loads the next page when the table scroll reaches the bottom (SSR: %s)", async (serverRendered) => {
 		const firstPage = Array.from({ length: 10 }, (_, i) => ({
 			id: i + 1,
 			name: `User ${i + 1}`,
@@ -215,23 +215,25 @@ describe("Users Component", () => {
 			},
 		];
 		const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
-		fetchMock
-			.mockResolvedValueOnce({
+		if (!serverRendered) {
+			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => firstPage,
-			} as Response)
-			.mockResolvedValueOnce({
+			} as Response);
+		}
+		fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => secondPage,
 			} as Response);
 
 		let observeCallback: IntersectionObserverCallback | undefined;
+		const observe = vi.fn();
 		const originalIntersectionObserver = window.IntersectionObserver;
 		class MockIntersectionObserver {
 			constructor(callback: IntersectionObserverCallback) {
 				observeCallback = callback;
 			}
-			observe = vi.fn();
+			observe = observe;
 			disconnect = vi.fn();
 			unobserve = vi.fn();
 			takeRecords = vi.fn(() => []);
@@ -240,14 +242,20 @@ describe("Users Component", () => {
 			MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 		try {
-			render(<Users />);
+			render(<Users initialUsers={serverRendered ? firstPage : undefined} />);
 			await screen.findByText("User 10");
 
-			expect(fetchMock).toHaveBeenCalledWith(
-				"/api/users?offset=0&limit=10",
-			);
+			// Rows can appear before the passive effect attaches the observer.
+			await waitFor(() => expect(observe).toHaveBeenCalledWith(
+				screen.getByTestId("users-load-more-trigger"),
+			));
+			if (serverRendered) {
+				expect(fetchMock).not.toHaveBeenCalled();
+			} else {
+				expect(fetchMock).toHaveBeenCalledWith("/api/users?offset=0&limit=10");
+			}
 			await act(async () => {
-				observeCallback?.(
+				observeCallback!(
 					[{ isIntersecting: true } as IntersectionObserverEntry],
 					{} as IntersectionObserver,
 				);
@@ -257,6 +265,8 @@ describe("Users Component", () => {
 			expect(fetchMock).toHaveBeenCalledWith(
 				"/api/users?offset=10&limit=10",
 			);
+			expect(screen.getByText("User 1")).toBeInTheDocument();
+			expect(screen.queryByTestId("users-load-more-trigger")).not.toBeInTheDocument();
 		} finally {
 			window.IntersectionObserver = originalIntersectionObserver;
 		}

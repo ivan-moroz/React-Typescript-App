@@ -1,7 +1,6 @@
-import Modal from "../../../components/modal/Modal";
-import type { ModalControls } from "../../../components/modal/ModalProvider";
-import type { Asset, AuthenticatedUser } from "../assetHelpers";
-import "../../../styles/assets.scss";
+import Modal from "../../../../../src/components/modal/Modal";
+import type { ModalControls } from "../../../../../src/components/modal/ModalProvider";
+import type { Asset, AuthenticatedUser } from "../../assetHelpers";
 type Props = ModalControls & {
 	previewAsset: Asset;
 	user: AuthenticatedUser;

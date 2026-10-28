@@ -1,6 +1,6 @@
 import { ChangeEvent, DragEvent, FormEvent, useRef, useState } from "react";
-import Modal from "../../../components/modal/Modal";
-import type { ModalControls } from "../../../components/modal/ModalProvider";
+import Modal from "../../../../../src/components/modal/Modal";
+import type { ModalControls } from "../../../../../src/components/modal/ModalProvider";
 import {
 	Asset,
 	AssetForm,
@@ -9,8 +9,7 @@ import {
 	EMPTY_FORM,
 	MAX_FILE_SIZE,
 	saveAsset,
-} from "../assetHelpers";
-import "../../../styles/assets.scss";
+} from "../../assetHelpers";
 type Props = ModalControls & {
 	user: AuthenticatedUser;
 	editingAsset?: Asset;

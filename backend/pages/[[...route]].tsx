@@ -43,6 +43,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
   const routeParts = Array.isArray(params?.route) ? params.route : [];
   const requestedPath = routeParts.join('/');
 
+  // Missing Next.js chunks and hot-update manifests must never receive SPA HTML.
+  if (routeParts[0] === '_next') {
+    return { notFound: true };
+  }
+
   try {
     if (requestedPath.startsWith('assets/') || STATIC_FILES.has(requestedPath)) {
       const distFilePath = resolveDistPath(requestedPath);

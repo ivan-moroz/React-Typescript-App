@@ -9,10 +9,8 @@ import './styles/App.scss';
 const Home = lazy(() => import('./pages/Home'));
 const TodoPage = lazy(() => import('./pages/TodoPage'));
 const SelectPage = lazy(() => import('./pages/Select'));
-const UsersPage = lazy(() => import('./pages/Users'));
 const CalculatorPage = lazy(() => import('./pages/Calculator'));
 const LoginPage = lazy(() => import('./pages/Login'));
-const AssetsPage = lazy(() => import('./pages/Assets'));
 const PuzzlePage = lazy(() => import('./pages/Puzzle'));
 
 export default function App() {
@@ -27,9 +25,7 @@ export default function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/todo" element={<TodoPage />} />
                             <Route path="/select" element={<SelectPage />} />
-                            <Route path="/table" element={<UsersPage />} />
                             <Route path="/calculator" element={<CalculatorPage />} />
-                            <Route path="/assets" element={<AssetsPage />} />
                             <Route path="/puzzle" element={<PuzzlePage />} />
                             <Route path="/login" element={<LoginPage />} />
                         </Routes>

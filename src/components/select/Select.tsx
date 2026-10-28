@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import "./styles/styles.scss";
 import { Option, Props, SingleSelectOption } from "./types/types";
 import SelectTag from "./components/SelectTag";
 

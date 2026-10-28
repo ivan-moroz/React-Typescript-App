@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import Modal from "../../../components/modal/Modal";
-import type { ModalControls } from "../../../components/modal/ModalProvider";
+import Modal from "../../../../src/components/modal/Modal";
+import type { ModalControls } from "../../../../src/components/modal/ModalProvider";
 import type { User, UserFormState } from "../types/types";
-import "../styles/styles.scss";
 type Props = ModalControls & { user?: User; onSaved: () => Promise<void> };
 export default function UserFormModal({ user, onSaved, onClose }: Props) {
 	const isEditingUser = user !== undefined;

@@ -19,7 +19,21 @@ function CurrentLocation() {
 describe("LoginPage", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.unstubAllGlobals();
 		sessionStorage.clear();
+	});
+
+	test.each(["/assets?sort=name#details", "/table"])("requests a server-rendered page after login: %s", async (destination) => {
+		vi.spyOn(global, "fetch").mockResolvedValue({ ok: true, json: async () => ({ id: 1, name: "Jane" }) } as Response);
+		render(<MemoryRouter initialEntries={[`/login?from=${encodeURIComponent(destination)}`]}><LoginPage /></MemoryRouter>);
+		fireEvent.change(screen.getByLabelText("Email"), { target: { value: "jane@example.com" } });
+		fireEvent.change(screen.getByLabelText("Password"), { target: { value: "12345" } });
+		const assign = vi.fn();
+		const browser = Object.create(window);
+		Object.defineProperty(browser, "location", { value: { assign } });
+		vi.stubGlobal("window", browser);
+		fireEvent.click(screen.getByRole("button", { name: "Log in" }));
+		await waitFor(() => expect(assign).toHaveBeenCalledWith(destination));
 	});
 
 	test("authenticates with email and password", async () => {
@@ -68,7 +82,7 @@ describe("LoginPage", () => {
 		} as Response);
 
 		render(
-			<MemoryRouter initialEntries={["/assets?sort=name#details"]}>
+			<MemoryRouter initialEntries={["/todo?sort=name#details"]}>
 				<Navigation />
 				<CurrentLocation />
 				<Routes>
@@ -90,7 +104,7 @@ describe("LoginPage", () => {
 
 		await waitFor(() =>
 			expect(screen.getByTestId("location")).toHaveTextContent(
-				"/assets?sort=name#details",
+				"/todo?sort=name#details",
 			),
 		);
 		expect(screen.getByText("Jane")).toBeInTheDocument();

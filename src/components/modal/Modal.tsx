@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import "./styles/styles.scss";
 
 type ModalProps = {
 	isOpen: boolean;
@@ -37,7 +36,7 @@ export default function Modal({
 						aria-label="Close modal"
 						onClick={onClose}
 					>
-						<span className="material-icons">close</span>
+						<span className="material-icons" aria-hidden="true">close</span>
 					</button>
 				</div>
 				<div className="modal-body">{children}</div>

@@ -8,3 +8,6 @@ createRoot(document.getElementById("root")!).render(
 		<App />
 	</StrictMode>
 );
+
+import "./components/modal/styles/styles.scss";
+import "./components/select/styles/styles.scss";

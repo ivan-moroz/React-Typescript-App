@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { TLSSocket } from 'node:tls';
 
 import prisma from '../../../lib/prisma';
 import { verifyPassword } from '../../../lib/password';
+import { sessionCookie } from '../../../lib/session';
 
 type Response = { id: number; name: string; email: string } | { message: string };
 
@@ -41,6 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return;
     }
 
+    res.setHeader('Set-Cookie', sessionCookie(user, (req.socket instanceof TLSSocket && req.socket.encrypted) || req.headers['x-forwarded-proto'] === 'https'));
     res.status(200).json({ id: user.id, name: user.name, email: user.email });
   } catch {
     res.status(500).json({ message: 'Unable to log in' });

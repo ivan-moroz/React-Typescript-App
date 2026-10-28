@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import Modal from "./Modal";
-import { ModalProvider, useModal } from "./ModalProvider";
+import { ModalProvider } from "./ModalProvider";
+import { useModal } from "./useModal";
 import type { ModalControls } from "./ModalProvider";
 
 let closePrevious: () => void;

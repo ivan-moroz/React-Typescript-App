@@ -35,6 +35,12 @@ In the project directory, you can run:
 
 Starts the Vite development server.
 
+Run `npm run dev:backend` alongside Vite. Vite proxies `/api`, `/assets`, `/table`, and Next.js runtime files to port 3001. Assets and Users (`/table`) render on the Next.js server at request time, with their initial data read directly from Prisma; uploads, modals, pagination, and editing remain interactive after hydration.
+
+Assets and Users implementation files, feature components, and tests live under `backend/features` and `backend/test`. Their Next.js route entry points are `backend/pages/assets.tsx` and `backend/pages/table.tsx`. These pages are excluded from the Vite SPA routes and bundles.
+
+Login issues a signed HttpOnly session cookie so the server can load the current user's own and public assets. Sessions expire after 24 hours; log in again after upgrading from the browser-storage-only login. Logout clears the cookie.
+
 By default it runs at [http://localhost:5173](http://localhost:5173).
 
 ### `npm run dev:backend`
@@ -66,6 +72,8 @@ Runs tests with Vitest.
 ### `npm run build`
 
 Builds the app for production into the `dist` folder.
+
+For the full application, run `npm run build`, then `npm run build:backend`, and serve with `npm run start:backend`. Next.js serves Assets and Users with SSR and serves the remaining SPA routes and static files from `dist`. `npm run preview` alone only previews the Vite build and does not provide SSR or the API.
 
 ### `npm run preview`
 

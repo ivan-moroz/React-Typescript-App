@@ -6,7 +6,7 @@ import "../styles/login.scss";
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const from = location.state?.from;
+	const from = location.state?.from ?? new URLSearchParams(location.search).get("from");
 	const returnTo =
 		typeof from === "string" &&
 		from.startsWith("/") &&
@@ -45,7 +45,11 @@ export default function LoginPage() {
 				"authenticatedUser",
 				JSON.stringify(payload),
 			);
-			navigate(returnTo, { replace: true });
+			if (["/assets", "/table"].includes(returnTo.split(/[?#]/)[0])) {
+				window.location.assign(returnTo);
+			} else {
+				navigate(returnTo, { replace: true });
+			}
 		} catch (error) {
 			setError(
 				error instanceof Error ? error.message : "Unable to log in",
