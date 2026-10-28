@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
-      '^/(assets|table)(?:[?]|$)': 'http://localhost:3001',
+      '^/(assets|users)(?:[?]|$)': 'http://localhost:3001',
       '/_next': {
         target: 'http://localhost:3001',
         ws: true,

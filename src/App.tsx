@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Navigation from './components/navigation/Navigation';
 import RouteBoundary from './components/routing/RouteBoundary';
+import NotFoundPage from './pages/NotFound';
 import {ModalProvider} from './components/modal/ModalProvider';
 import './styles/App.scss';
 
@@ -28,6 +29,7 @@ export default function App() {
                             <Route path="/calculator" element={<CalculatorPage />} />
                             <Route path="/puzzle" element={<PuzzlePage />} />
                             <Route path="/login" element={<LoginPage />} />
+                            <Route path="*" element={<NotFoundPage />} />
                         </Routes>
                     </RouteBoundary>
                 </div>

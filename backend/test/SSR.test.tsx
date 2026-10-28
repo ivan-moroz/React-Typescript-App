@@ -5,7 +5,7 @@ import { ModalProvider } from '../../src/components/modal/ModalProvider';
 import AssetsPage from '../features/Assets';
 import UsersPage from '../features/Users';
 import { getServerSideProps as loadAssets } from '../pages/assets';
-import { getServerSideProps as loadUsers } from '../pages/table';
+import { getServerSideProps as loadUsers } from '../pages/users';
 import { getSessionUser, sessionCookie } from '../lib/session';
 import prisma from '../lib/prisma';
 

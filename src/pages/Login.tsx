@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import "../styles/login.scss";
 
@@ -19,6 +19,14 @@ export default function LoginPage() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [alreadyAuthenticated] = useState(() => {
+		try {
+			const user = JSON.parse(sessionStorage.getItem("authenticatedUser") ?? "null");
+			return typeof user?.name === "string";
+		} catch {
+			return false;
+		}
+	});
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -45,7 +53,7 @@ export default function LoginPage() {
 				"authenticatedUser",
 				JSON.stringify(payload),
 			);
-			if (["/assets", "/table"].includes(returnTo.split(/[?#]/)[0])) {
+			if (["/assets", "/users"].includes(returnTo.split(/[?#]/)[0])) {
 				window.location.assign(returnTo);
 			} else {
 				navigate(returnTo, { replace: true });
@@ -58,6 +66,8 @@ export default function LoginPage() {
 			setIsSubmitting(false);
 		}
 	};
+
+	if (alreadyAuthenticated) return <Navigate to="/" replace />;
 
 	return (
 		<main className="app login-page">

@@ -46,7 +46,7 @@ export default function Navigation() {
 			<NavLink to="/puzzle" style={activeStyle}>
 				Puzzle
 			</NavLink>
-			<a href="/table">
+			<a href="/users">
 				Users
 			</a>
 			<a href="/assets">

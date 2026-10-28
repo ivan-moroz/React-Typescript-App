@@ -1,12 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { GetServerSideProps } from 'next';
+import { getSessionUser } from '../lib/session';
 
 type Props = Record<string, never>;
 
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
 const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
 const STATIC_FILES = new Set(['favicon.ico', 'logo192.png', 'logo512.png', 'manifest.json', 'robots.txt']);
+const SPA_ROUTES = new Set(['', 'todo', 'select', 'calculator', 'puzzle', 'login']);
 
 const CONTENT_TYPES: Record<string, string> = {
   '.css': 'text/css; charset=utf-8',
@@ -39,7 +41,7 @@ const sendDistFile = async (res: Parameters<GetServerSideProps<Props>>[0]['res']
   res.end(fileContents);
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params, res }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ params, req, res }) => {
   const routeParts = Array.isArray(params?.route) ? params.route : [];
   const requestedPath = routeParts.join('/');
 
@@ -48,8 +50,20 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
     return { notFound: true };
   }
 
+  const isStaticFile = requestedPath.startsWith('assets/') || STATIC_FILES.has(requestedPath);
+  if (!isStaticFile && !SPA_ROUTES.has(requestedPath)) {
+    return { notFound: true };
+  }
+
   try {
-    if (requestedPath.startsWith('assets/') || STATIC_FILES.has(requestedPath)) {
+    if (requestedPath === 'login') {
+      res.setHeader('Cache-Control', 'private, no-store');
+      if (await getSessionUser(req)) {
+        return { redirect: { destination: '/', permanent: false } };
+      }
+    }
+
+    if (isStaticFile) {
       const distFilePath = resolveDistPath(requestedPath);
 
       if (!distFilePath) {
@@ -68,7 +82,10 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
     res.statusCode = 200;
     res.end(indexHtml);
     return { props: {} };
-  } catch {
+  } catch (error) {
+    if (isStaticFile && error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return { notFound: true };
+    }
     res.statusCode = 500;
     res.end('Unable to serve frontend build from dist folder.');
     return { props: {} };

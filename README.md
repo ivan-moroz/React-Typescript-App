@@ -35,9 +35,9 @@ In the project directory, you can run:
 
 Starts the Vite development server.
 
-Run `npm run dev:backend` alongside Vite. Vite proxies `/api`, `/assets`, `/table`, and Next.js runtime files to port 3001. Assets and Users (`/table`) render on the Next.js server at request time, with their initial data read directly from Prisma; uploads, modals, pagination, and editing remain interactive after hydration.
+Run `npm run dev:backend` alongside Vite. Vite proxies `/api`, `/assets`, `/users`, and Next.js runtime files to port 3001. Assets and Users (`/users`) render on the Next.js server at request time, with their initial data read directly from Prisma; uploads, modals, pagination, and editing remain interactive after hydration.
 
-Assets and Users implementation files, feature components, and tests live under `backend/features` and `backend/test`. Their Next.js route entry points are `backend/pages/assets.tsx` and `backend/pages/table.tsx`. These pages are excluded from the Vite SPA routes and bundles.
+Assets and Users implementation files, feature components, and tests live under `backend/features` and `backend/test`. Their Next.js route entry points are `backend/pages/assets.tsx` and `backend/pages/users.tsx`. These pages are excluded from the Vite SPA routes and bundles.
 
 Login issues a signed HttpOnly session cookie so the server can load the current user's own and public assets. Sessions expire after 24 hours; log in again after upgrading from the browser-storage-only login. Logout clears the cookie.
 
