@@ -2,8 +2,8 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 
-import LoginPage from "./Login";
-import Navigation from "../components/navigation/Navigation";
+import LoginPage from "../Login";
+import Navigation from "../../components/navigation/Navigation";
 
 function CurrentLocation() {
 	const location = useLocation();
