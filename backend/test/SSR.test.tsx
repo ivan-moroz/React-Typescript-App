@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
+import { hydrateRoot } from 'react-dom/client';
 import type { GetServerSidePropsContext } from 'next';
 import { ModalProvider } from '../../src/components/modal/ModalProvider';
 import AssetsPage from '../features/Assets';
@@ -37,6 +38,48 @@ test('includes initial users and assets in server HTML and does not fetch them a
   expect(screen.getByText('Server user')).toBeInTheDocument();
   expect(screen.getByText('Server photo')).toBeInTheDocument();
   expect(fetch).not.toHaveBeenCalled();
+});
+
+test.each([true, false])('hydrates server-rendered users and assets without mismatches or duplicate requests (populated: %s)', async (populated) => {
+  const fetch = vi.spyOn(global, 'fetch');
+  const onRecoverableError = vi.fn();
+  const content = <ModalProvider>
+    <UsersPage initialUsers={populated ? [{ id: 1, name: 'Server user' }] : []} />
+    <AssetsPage initialAssets={populated ? [asset] : []} initialUser={{ id: user.id, name: user.name }} />
+  </ModalProvider>;
+  const container = document.createElement('div');
+  container.innerHTML = renderToString(content);
+  document.body.appendChild(container);
+  let root: ReturnType<typeof hydrateRoot> | undefined;
+  try {
+    await act(async () => {
+      root = hydrateRoot(container, content, { onRecoverableError });
+    });
+    expect(onRecoverableError).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(container.textContent).toContain(populated ? 'Server user' : 'No users found.');
+    expect(container.textContent).toContain(populated ? 'Server photo' : 'No assets yet');
+  } finally {
+    await act(async () => root?.unmount());
+    container.remove();
+  }
+});
+
+test('returns a server error state when users cannot be loaded', async () => {
+  vi.mocked(prisma.user.findMany).mockRejectedValueOnce(new Error('Database unavailable'));
+  const ctx = context();
+  const result = await loadUsers(ctx);
+  expect(ctx.res.statusCode).toBe(503);
+  expect(result).toEqual({ props: { initialUsers: [], initialUser: null, initialError: 'Failed to load users from backend' } });
+});
+
+test('returns a server error state when authenticated assets cannot be loaded', async () => {
+  vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(user as never);
+  vi.mocked(prisma.asset.findMany).mockRejectedValueOnce(new Error('Database unavailable'));
+  const ctx = context(sessionCookie(user, false).split(';')[0]);
+  const result = await loadAssets(ctx);
+  expect(ctx.res.statusCode).toBe(503);
+  expect(result).toEqual({ props: { initialAssets: [], initialUser: null, initialError: 'Unable to load assets. Please try again.' } });
 });
 
 test('loads the ordered first page of users on the server without exposing password hashes', async () => {
