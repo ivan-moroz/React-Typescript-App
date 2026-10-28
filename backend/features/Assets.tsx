@@ -23,24 +23,27 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 			setIsLoading(false);
 			return;
 		}
-		fetch(`/api/assets?userId=${user.id}`)
-			.then(async (response) => {
+		const loadAssets = async () => {
+			try {
+				const response = await fetch(`/api/assets?userId=${user.id}`);
 				if (!response.ok)
 					throw await responseError(
 						response,
 						"Could not load assets",
 					);
-				return response.json() as Promise<Asset[]>;
-			})
-			.then(setAssets)
-			.catch((error: unknown) =>
+				const loadedAssets: Asset[] = await response.json();
+				setAssets(loadedAssets);
+			} catch (error: unknown) {
 				setMessage(
 					error instanceof Error
 						? error.message
 						: "Could not load assets.",
-				),
-			)
-			.finally(() => setIsLoading(false));
+				);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+		void loadAssets();
 	}, [user, initialAssets]);
 
 	const onSaved = (saved: Asset, editing: boolean) => {
