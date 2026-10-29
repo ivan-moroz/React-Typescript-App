@@ -47,14 +47,6 @@ const features = [
 		className: "feature-card-calculator",
 		icon: "calculate",
 	},
-	{
-		title: "Smart select",
-		description: "Explore a flexible single and multi-select control.",
-		href: "/select",
-		category: "INTERACTIVE",
-		className: "feature-card-select",
-		icon: "tune",
-	},
 ];
 
 export default function HomePage() {

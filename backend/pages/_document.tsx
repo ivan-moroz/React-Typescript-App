@@ -11,6 +11,7 @@ export default function AppDocument({ navigation }: NavigationDocumentProps) {
   return (
     <Html lang="en">
       <Head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
       </Head>
       <body>

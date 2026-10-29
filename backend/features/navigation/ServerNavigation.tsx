@@ -11,7 +11,6 @@ const links = [
   ["/users", "People"],
   ["/messaging", "Messages"],
   ["/todo", "ToDo"],
-  ["/select", "Select"],
   ["/calculator", "Calculator"],
   ["/puzzle", "Puzzle"],
 ] as const;
@@ -26,7 +25,7 @@ export default function ServerNavigation({
     <nav className="app-navigation">
       <div className="navigation-inner">
         <a href="/" className="brand-mark" aria-label="Studio home">
-          <span className="brand-symbol">V</span>
+          <img className="brand-icon" src="/favicon.svg" alt="" />
           <span>STUDIO</span>
         </a>
         <div className="navigation-links">

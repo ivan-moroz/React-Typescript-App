@@ -9,7 +9,7 @@ type Props = Record<string, never>;
 
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
 const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
-const STATIC_FILES = new Set(['favicon.ico', 'logo192.png', 'logo512.png', 'manifest.json', 'robots.txt']);
+const STATIC_FILES = new Set(['favicon.ico', 'favicon.svg', 'logo192.png', 'logo512.png', 'manifest.json', 'robots.txt']);
 const SPA_ROUTES = new Set(['', 'todo', 'select', 'calculator', 'puzzle', 'login']);
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -19,6 +19,7 @@ const CONTENT_TYPES: Record<string, string> = {
   '.js': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
+  '.svg': 'image/svg+xml',
   '.txt': 'text/plain; charset=utf-8',
 };
 
