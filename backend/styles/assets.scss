@@ -135,6 +135,7 @@
 .asset-editor {
   display: grid;
   gap: 14px;
+  min-width: 0;
 
   label {
     color: #344054;
@@ -142,14 +143,19 @@
     font-size: 0.88rem;
     font-weight: 700;
     gap: 6px;
+    min-width: 0;
   }
 
   input, textarea, select {
     border: 1px solid #d0d5dd;
     border-radius: 6px;
+    box-sizing: border-box;
     font: inherit;
     font-weight: 400;
+    max-width: 100%;
+    min-width: 0;
     padding: 9px 10px;
+    width: 100%;
   }
 
   textarea { min-height: 84px; resize: vertical; }
@@ -157,9 +163,15 @@
 
 .asset-file-dropzone {
   margin: 0;
+  min-width: 0;
   padding: 20px;
+  width: 100%;
 
-  strong { font-size: 0.9rem; }
+  strong {
+    font-size: 0.9rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
 }
 
 .asset-preview-details {
