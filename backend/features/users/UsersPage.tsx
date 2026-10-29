@@ -1,4 +1,4 @@
-import Users, { type UsersTableProps } from './users/Users'
+import Users, { type UsersTableProps } from './Users'
 import React from "react";
 
 export default function UsersPage(props: UsersTableProps) {

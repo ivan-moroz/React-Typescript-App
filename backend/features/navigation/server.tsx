@@ -1,8 +1,7 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import type { IncomingMessage } from "node:http";
-import ServerNavigation from "../features/navigation/ServerNavigation";
-import { unreadCount } from "./messaging";
-import { getSessionUser } from "./session";
+import ServerNavigation from "./ServerNavigation";
+import { unreadCount } from "../messaging/server/messaging";
+import { getSessionUser } from "../../lib/session";
 
 export async function getServerNavigationProps(req: IncomingMessage | undefined, asPath: string) {
   const pathname = asPath.split(/[?#]/, 1)[0] || "/";
@@ -26,7 +25,3 @@ export async function getServerNavigationProps(req: IncomingMessage | undefined,
   return { pathname, from, user: user ? { name: user.name } : null, unreadCount: count };
 }
 
-export async function renderServerNavigation(req: IncomingMessage, asPath: string) {
-  const props = await getServerNavigationProps(req, asPath);
-  return renderToStaticMarkup(<ServerNavigation {...props} />);
-}

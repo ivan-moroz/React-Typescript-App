@@ -7,12 +7,10 @@ import type { MessagingSnapshot } from "./types/types";
 export default function Messaging({
   initialData,
   initialOpen = false,
-  returnTo = "/assets",
   onOpenChange,
 }: {
   initialData: MessagingSnapshot;
   initialOpen?: boolean;
-  returnTo?: "/assets" | "/users";
   onOpenChange?: (open: boolean) => void;
 }) {
   const [user, setUser] = useState(initialData.user);
@@ -122,7 +120,7 @@ export default function Messaging({
         {user && (
           <a
             className="messaging-more"
-            href={`/messaging?returnTo=${encodeURIComponent(returnTo)}`}
+            href="/messaging"
           >
             Open full inbox
           </a>

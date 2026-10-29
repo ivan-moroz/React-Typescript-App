@@ -1,6 +1,7 @@
 import { ERROR_MESSAGES } from "../../constants/errors";
 import { Component, Suspense, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
+import RouteLoading from "./RouteLoading";
 
 type Props = { children: ReactNode };
 type State = { hasError: boolean };
@@ -39,11 +40,7 @@ export default function RouteBoundary({ children }: Props) {
 	return (
 		<RouteErrorBoundary key={location.key}>
 			<Suspense
-				fallback={
-					<div className="route-feedback" role="status">
-						Loading page…
-					</div>
-				}
+				fallback={<RouteLoading />}
 			>
 				{children}
 			</Suspense>

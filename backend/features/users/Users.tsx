@@ -1,3 +1,5 @@
+"use client";
+
 import { fetchData } from "../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../src/constants/errors";
 import React, { useEffect, useReducer, useRef, useState } from "react";

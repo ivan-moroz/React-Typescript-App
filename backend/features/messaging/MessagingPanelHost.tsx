@@ -22,12 +22,8 @@ const emptySnapshot = (
 
 export default function MessagingPanelHost({
   initialData,
-  initialOpen = false,
-  returnTo = "/assets",
 }: {
   initialData?: MessagingSnapshot;
-  initialOpen?: boolean;
-  returnTo?: "/assets" | "/users";
 }) {
   const [snapshot, setSnapshot] = useState<MessagingSnapshot | null>(null);
   const [panelKey, setPanelKey] = useState(0);
@@ -80,10 +76,6 @@ export default function MessagingPanelHost({
   }, [initialData]);
 
   useEffect(() => {
-    if (initialOpen) void openPanel();
-  }, [initialOpen, openPanel]);
-
-  useEffect(() => {
     const handleClick = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) return;
       const trigger = event.target.closest<HTMLAnchorElement>(
@@ -111,7 +103,6 @@ export default function MessagingPanelHost({
         key={panelKey}
         initialData={snapshot}
         initialOpen
-        returnTo={returnTo}
         onOpenChange={setPanelVisible}
       />
     </div>

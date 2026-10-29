@@ -2,6 +2,7 @@ import {lazy} from "react";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import RouteBoundary from './components/routing/RouteBoundary';
+import './components/routing/RouteLoading.scss';
 import NotFoundPage from './pages/NotFound';
 import {ModalProvider} from './components/modal/ModalProvider';
 import './styles/App.scss';

@@ -15,8 +15,8 @@ export function sessionCookie(user: { id: number; passwordHash: string }, secure
 
 export const clearSessionCookie = `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
 
-export async function getSessionUser(req: IncomingMessage) {
-  const token = req.headers.cookie?.split(';').map(value => value.trim())
+export async function getSessionUserFromCookie(cookieHeader?: string) {
+  const token = cookieHeader?.split(';').map(value => value.trim())
     .find(value => value.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
   if (!token) return null;
   const parts = token.split('.');
@@ -27,4 +27,8 @@ export async function getSessionUser(req: IncomingMessage) {
   const user = await prisma.user.findUnique({ where: { id: Number(id) }, select: { id: true, name: true, passwordHash: true } });
   if (!user || !timingSafeEqual(Buffer.from(signed, 'hex'), Buffer.from(signature(`${id}.${expires}`, user.passwordHash), 'hex'))) return null;
   return { id: user.id, name: user.name };
+}
+
+export async function getSessionUser(req: IncomingMessage) {
+  return getSessionUserFromCookie(req.headers.cookie);
 }

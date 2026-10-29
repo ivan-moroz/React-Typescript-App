@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { GetServerSideProps } from 'next';
 import { getSessionUser } from '../lib/session';
-import { renderServerNavigation } from '../lib/serverNavigation';
+import { renderServerNavigation } from '../features/navigation/renderServerNavigation';
 
 type Props = Record<string, never>;
 

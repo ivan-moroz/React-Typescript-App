@@ -5,13 +5,11 @@ export default function ConversationList({
   conversations,
   onSelect,
   serverNavigation = false,
-  returnTo,
   onDelete,
 }: {
   conversations: ConversationSummary[];
   onSelect: (conversation: ConversationSummary) => void;
   serverNavigation?: boolean;
-  returnTo?: "/assets" | "/users";
   onDelete?: (conversation: ConversationSummary) => void;
 }) {
   return (
@@ -42,7 +40,7 @@ export default function ConversationList({
             {serverNavigation ? (
               <a
                 className="conversation-item"
-                href={`/messaging?conversation=${conversation.id}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`}
+                href={`/messaging?conversation=${conversation.id}`}
               >
                 {content}
               </a>

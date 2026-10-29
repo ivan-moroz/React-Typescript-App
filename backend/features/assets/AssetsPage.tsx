@@ -1,13 +1,15 @@
-import { fetchData } from "../../src/utils/fetchData";
-import { ERROR_MESSAGES } from "../../src/constants/errors";
+"use client";
+
+import { fetchData } from "../../../src/utils/fetchData";
+import { ERROR_MESSAGES } from "../../../src/constants/errors";
 import { useEffect, useMemo, useState } from "react";
 
-import ConfirmationModal from "../../src/components/modal/ConfirmationModal";
-import { useModal } from "../../src/components/modal/useModal";
-import AssetCard from "./assets/components/AssetCard";
-import AssetEditorModal from "./assets/components/modals/AssetEditorModal";
-import AssetPreviewModal from "./assets/components/modals/AssetPreviewModal";
-import { Asset, AuthenticatedUser, getCurrentUser } from "./assets/assetHelpers";
+import ConfirmationModal from "../../../src/components/modal/ConfirmationModal";
+import { useModal } from "../../../src/components/modal/useModal";
+import AssetCard from "./components/AssetCard";
+import AssetEditorModal from "./components/modals/AssetEditorModal";
+import AssetPreviewModal from "./components/modals/AssetPreviewModal";
+import { Asset, AuthenticatedUser, getCurrentUser } from "./assetHelpers";
 
 export type AssetsPageProps = { initialAssets?: Asset[]; initialUser?: AuthenticatedUser | null; initialError?: string };
 

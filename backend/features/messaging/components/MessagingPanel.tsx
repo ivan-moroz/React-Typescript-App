@@ -19,7 +19,6 @@ export default function MessagingPanel({
   initialData,
   active = true,
   serverNavigation = false,
-  returnTo,
 }: {
   user: MessagingUser;
   onUnread: (count: number) => void;
@@ -27,7 +26,6 @@ export default function MessagingPanel({
   initialData?: MessagingSnapshot;
   active?: boolean;
   serverNavigation?: boolean;
-  returnTo?: "/assets" | "/users";
 }) {
   const [conversations, setConversations] = useState<ConversationSummary[]>(
     initialData?.conversationPage.conversations ?? [],
@@ -145,9 +143,7 @@ export default function MessagingPanel({
       return;
     }
     if (serverNavigation) {
-      window.location.assign(
-        `/messaging?conversation=${result.data.id}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`,
-      );
+      window.location.assign(`/messaging?conversation=${result.data.id}`);
       return;
     }
     setSelected(result.data);
@@ -158,7 +154,7 @@ export default function MessagingPanel({
     removedIds.current.add(id);
     setConversations(current => current.filter(item => item.id !== id));
     setSelected(current => current?.id === id ? null : current);
-    if (serverNavigation && selected?.id === id) window.location.assign(`/messaging${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`);
+    if (serverNavigation && selected?.id === id) window.location.assign("/messaging");
   };
   const deleteDialog = deleting && <ConfirmationModal title="Delete conversation"
     message={`Delete the conversation with ${deleting.user?.name ?? 'this user'} for both participants? All messages will be permanently removed.`}
@@ -185,9 +181,7 @@ export default function MessagingPanel({
         }
         onBack={() => {
           if (serverNavigation)
-            window.location.assign(
-              `/messaging${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`,
-            );
+            window.location.assign("/messaging");
           else setSelected(null);
         }}
         onExpired={onExpired}
@@ -262,7 +256,6 @@ export default function MessagingPanel({
         conversations={conversations}
         onSelect={setSelected}
         serverNavigation={serverNavigation}
-        returnTo={returnTo}
         onDelete={setDeleting}
       />
       {cursor && (

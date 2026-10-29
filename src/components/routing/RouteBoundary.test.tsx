@@ -30,6 +30,9 @@ describe("RouteBoundary", () => {
 
 		expect(screen.getByText("Navigation")).toBeInTheDocument();
 		expect(screen.getByRole("status")).toHaveTextContent("Loading page");
+		expect(
+			screen.getByRole("status").querySelector(".route-loading-spinner"),
+		).toBeInTheDocument();
 
 		await act(async () => {
 			resolvePage({ default: () => <h1>Loaded page</h1> });

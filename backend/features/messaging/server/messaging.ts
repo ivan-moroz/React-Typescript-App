@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
-import prisma from "./prisma";
-import { ERROR_MESSAGES, HttpError } from "../../src/constants/errors";
-import { MAX_MESSAGE_LENGTH } from "../features/messaging/types/types";
+import prisma from "../../../lib/prisma";
+import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
+import { MAX_MESSAGE_LENGTH } from "../types/types";
 
 const PAGE_SIZE = 40;
 const messageSelect = {

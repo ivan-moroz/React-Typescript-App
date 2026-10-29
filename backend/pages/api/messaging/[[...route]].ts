@@ -10,7 +10,7 @@ import {
   searchUsers,
   sendMessage,
   unreadCount,
-} from "../../../lib/messaging";
+} from "../../../features/messaging/server/messaging";
 import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
 
 export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };

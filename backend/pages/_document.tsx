@@ -1,7 +1,7 @@
 import { Head, Html, Main, NextScript } from 'next/document';
 import Document, { type DocumentContext, type DocumentInitialProps } from 'next/document';
 import ServerNavigation from '../features/navigation/ServerNavigation';
-import { getServerNavigationProps } from '../lib/serverNavigation';
+import { getServerNavigationProps } from '../features/navigation/server';
 
 type NavigationDocumentProps = DocumentInitialProps & {
   navigation: { pathname: string; from: string; user: { name: string } | null; unreadCount: number };

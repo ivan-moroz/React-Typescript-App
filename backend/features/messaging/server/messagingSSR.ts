@@ -1,8 +1,8 @@
-import { ERROR_MESSAGES, HttpError } from "../../src/constants/errors";
+import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
 import type {
   MessagingSnapshot,
   MessagingUser,
-} from "../features/messaging/types/types";
+} from "../types/types";
 import {
   getConversationSummary,
   listConversations,
