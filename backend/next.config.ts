@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   experimental: { externalDir: true },
   outputFileTracingRoot: path.resolve(backendDir, '..'),
   outputFileTracingIncludes: {
-    '/[[...route]]': ['../dist/**/*'],
+    '/*': ['../dist/**/*'],
   },
 };
 

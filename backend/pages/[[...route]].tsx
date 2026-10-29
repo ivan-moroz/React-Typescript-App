@@ -1,5 +1,5 @@
 import { ERROR_MESSAGES } from "../../src/constants/errors";
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { GetServerSideProps } from 'next';
 import { getSessionUser } from '../lib/session';
@@ -7,8 +7,12 @@ import { renderServerNavigation } from '../lib/serverNavigation';
 
 type Props = Record<string, never>;
 
-const DIST_DIR = path.resolve(process.cwd(), 'dist');
-const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
+const DIST_DIR_CANDIDATES = [
+  path.resolve(process.cwd(), 'dist'),
+  path.resolve(process.cwd(), '../dist'),
+  path.resolve(__dirname, '../../../../dist'),
+  path.resolve(__dirname, '../../../dist'),
+];
 const STATIC_FILES = new Set(['favicon.ico', 'logo192.png', 'logo512.png', 'manifest.json', 'robots.txt']);
 const SPA_ROUTES = new Set(['', 'todo', 'select', 'calculator', 'puzzle', 'login']);
 
@@ -22,11 +26,24 @@ const CONTENT_TYPES: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-const resolveDistPath = (requestedPath: string) => {
-  const normalizedPath = path.normalize(requestedPath).replace(/^([.][.][/\\])+/, '');
-  const absolutePath = path.join(DIST_DIR, normalizedPath);
+const resolveDistDir = async () => {
+  for (const candidate of DIST_DIR_CANDIDATES) {
+    try {
+      await access(path.join(candidate, 'index.html'));
+      return candidate;
+    } catch {
+      // Next.js and Vercel may run this page with different working directories.
+    }
+  }
+  throw new Error('Frontend build index.html was not found in the deployment.');
+};
 
-  if (!absolutePath.startsWith(DIST_DIR)) {
+const resolveDistPath = (distDir: string, requestedPath: string) => {
+  const normalizedPath = path.normalize(requestedPath).replace(/^([.][.][/\\])+/, '');
+  const absolutePath = path.resolve(distDir, normalizedPath);
+  const relativePath = path.relative(distDir, absolutePath);
+
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
     return null;
   }
 
@@ -65,8 +82,10 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
       }
     }
 
+    const distDir = await resolveDistDir();
+
     if (isStaticFile) {
-      const distFilePath = resolveDistPath(requestedPath);
+      const distFilePath = resolveDistPath(distDir, requestedPath);
 
       if (!distFilePath) {
         res.statusCode = 400;
@@ -78,7 +97,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
       return { props: {} };
     }
 
-    const indexHtml = await readFile(INDEX_HTML_PATH, 'utf-8');
+    const indexHtml = await readFile(path.join(distDir, 'index.html'), 'utf-8');
     const root = '<div id="root"></div>';
     if (!indexHtml.includes(root)) {
       res.statusCode = 500;
