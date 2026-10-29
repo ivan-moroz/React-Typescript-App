@@ -1,6 +1,6 @@
 # Private messaging
 
-The chat bubble at the right of both navigation bars opens private messaging. It shows the total unread message count. Users can search names, start a conversation, read and paginate history, and send plain-text messages. The complete messaging interface lives in `backend/features/messaging`. The Vite SPA header contains only a link and unread indicator; it opens the Next.js `/messaging` page. Assets and Users retain a dropdown with server-loaded initial data.
+The Next.js backend renders the shared site navigation for both Next.js pages and Vite SPA routes. Its messaging icon opens the panel in place without changing the current URL; the panel links to the full `/messaging` inbox. The complete messaging interface lives in `backend/features/messaging`; it supports searching names, starting a conversation, reading and paginating history, and sending plain-text messages.
 
 ## Setup
 
@@ -104,6 +104,8 @@ Created:
 - `backend/features/messaging/test/Messaging.test.tsx`
 - `backend/features/messaging/types/types.ts`
 - `backend/features/messaging/styles/styles.scss`
+- `backend/features/navigation/ServerNavigation.tsx`
+- `backend/lib/serverNavigation.tsx`
 
 Modified:
 
@@ -111,10 +113,13 @@ Modified:
 - `backend/pages/_app.tsx`
 - `backend/pages/assets.tsx`
 - `backend/pages/users.tsx`
+- `backend/pages/_document.tsx`
+- `backend/pages/[[...route]].tsx`
 - `src/pages/Login.tsx`
-- `src/components/navigation/styles/styles.scss`
+- `src/App.tsx`
+- `backend/features/navigation/styles/styles.scss`
 - `vite.config.ts`
-- `src/components/navigation/Navigation.tsx`
+- `backend/pages/api/auth/logout.ts`
 - `src/constants/errors.ts`
 - `src/main.tsx`
 - `README.md`

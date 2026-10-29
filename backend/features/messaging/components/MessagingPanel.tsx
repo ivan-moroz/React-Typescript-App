@@ -194,6 +194,8 @@ export default function MessagingPanel({
         onDeleteConversation={() => setDeleting(selected)}
         onConversationDeleted={() => removeFromPanel(selected.id)}
         onChanged={() => {
+          if (serverNavigation)
+            window.dispatchEvent(new Event("messaging:changed"));
           if (lifetime.current) void load(lifetime.current.signal);
         }}
       />{deleteDialog}</>

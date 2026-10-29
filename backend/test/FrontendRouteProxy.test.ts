@@ -30,13 +30,16 @@ test.each([
   expect(res.end).not.toHaveBeenCalled();
 });
 
-test('continues serving SPA routes from the frontend build', async () => {
-  vi.mocked(readFile).mockResolvedValue('<html>SPA</html>');
+test('serves SPA routes with the server navigation outside the frontend root', async () => {
+  vi.mocked(readFile).mockResolvedValue('<html><body><div id="root"></div></body></html>');
   const res = { setHeader: vi.fn(), end: vi.fn() };
-  const context = { params: { route: ['login'] }, res } as unknown as GetServerSidePropsContext;
+  const context = { params: { route: ['todo'] }, resolvedUrl: '/todo', req: { headers: {} }, res } as unknown as GetServerSidePropsContext;
 
   expect(await getServerSideProps(context)).toEqual({ props: {} });
-  expect(res.end).toHaveBeenCalledWith('<html>SPA</html>');
+  const html = vi.mocked(res.end).mock.calls[0][0] as string;
+  expect(html.indexOf('class="app-navigation"')).toBeLessThan(html.indexOf('<div id="root"></div>'));
+  expect(html).toContain('href="/messaging"');
+  expect(html).toContain('data-open-messaging-panel');
 });
 
 test.each(['unknown', 'table', 'users/unknown', 'todo/unknown'])('returns a 404 for an unknown route: %s', async (url) => {

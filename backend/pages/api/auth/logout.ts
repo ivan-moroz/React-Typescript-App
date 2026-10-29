@@ -8,5 +8,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
   res.setHeader('Set-Cookie', clearSessionCookie);
-  res.status(204).end();
+  const from = typeof req.body?.from === 'string' && req.body.from.startsWith('/') && !req.body.from.startsWith('//')
+    ? req.body.from
+    : '/';
+  res.redirect(303, `/login?from=${encodeURIComponent(from)}`);
 }

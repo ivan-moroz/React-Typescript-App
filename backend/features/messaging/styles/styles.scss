@@ -10,6 +10,19 @@
 .messaging-panel[hidden] {
   display: none;
 }
+.messaging-dock {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 200;
+
+  .messaging-panel {
+    position: fixed;
+    top: auto;
+    right: 24px;
+    bottom: 80px;
+  }
+}
 .messaging-page-heading {
   display: flex;
   align-items: center;

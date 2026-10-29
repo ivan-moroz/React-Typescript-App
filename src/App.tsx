@@ -1,11 +1,13 @@
 import {lazy} from "react";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import Navigation from './components/navigation/Navigation';
 import RouteBoundary from './components/routing/RouteBoundary';
 import NotFoundPage from './pages/NotFound';
 import {ModalProvider} from './components/modal/ModalProvider';
 import './styles/App.scss';
+import '../backend/features/navigation/styles/styles.scss';
+import '../backend/features/messaging/styles/styles.scss';
+import MessagingPanelHost from '../backend/features/messaging/MessagingPanelHost';
 
 const Home = lazy(() => import('./pages/Home'));
 const TodoPage = lazy(() => import('./pages/TodoPage'));
@@ -18,8 +20,7 @@ export default function App() {
     return (
         <BrowserRouter>
             <ModalProvider>
-                <Navigation />
-
+                <MessagingPanelHost />
                 <div className='page-wrapper'>
                     <RouteBoundary>
                         <Routes>

@@ -1,41 +1,22 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 
 import LoginPage from "../Login";
-import Navigation from "../../components/navigation/Navigation";
-
-function CurrentLocation() {
-	const location = useLocation();
-	return (
-		<output data-testid="location">
-			{location.pathname}
-			{location.search}
-			{location.hash}
-		</output>
-	);
-}
 
 describe("LoginPage", () => {
-	test("redirects an already logged-in user to Home", async () => {
+	test("shows the login page when sessionStorage has a stale user", () => {
 		sessionStorage.setItem(
 			"authenticatedUser",
 			JSON.stringify({ id: 1, name: "Jane" }),
 		);
 		render(
 			<MemoryRouter initialEntries={["/login?from=/users"]}>
-				<Routes>
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="/" element={<h1>Home</h1>} />
-				</Routes>
+				<LoginPage />
 			</MemoryRouter>,
 		);
-		expect(
-			await screen.findByRole("heading", { name: "Home" }),
-		).toBeInTheDocument();
-		expect(
-			screen.queryByRole("button", { name: "Log in" }),
-		).not.toBeInTheDocument();
+		expect(screen.getByRole("heading", { name: "Log in" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Log in" })).toBeInTheDocument();
 	});
 	afterEach(() => {
 		vi.restoreAllMocks();
@@ -44,11 +25,13 @@ describe("LoginPage", () => {
 	});
 
 	test.each([
+		"/",
+		"/todo?sort=name#details",
 		"/assets?sort=name#details",
 		"/users",
 		"/messaging?conversation=123",
 	])(
-		"requests a server-rendered page after login: %s",
+		"requests the destination from the server after login: %s",
 		async (destination) => {
 			vi.spyOn(global, "fetch").mockResolvedValue({
 				ok: true,
@@ -89,6 +72,10 @@ describe("LoginPage", () => {
 				email: "user1@example.com",
 			}),
 		} as Response);
+		const assign = vi.fn();
+		const browser = Object.create(window);
+		Object.defineProperty(browser, "location", { value: { assign } });
+		vi.stubGlobal("window", browser);
 
 		render(
 			<MemoryRouter>
@@ -114,45 +101,10 @@ describe("LoginPage", () => {
 				}),
 			});
 		});
+		expect(assign).toHaveBeenCalledWith("/");
 		expect(sessionStorage.getItem("authenticatedUser")).toContain(
 			"user1@example.com",
 		);
-	});
-
-	test("returns to the previous page with its query and fragment after logging in", async () => {
-		vi.spyOn(global, "fetch").mockResolvedValue({
-			ok: true,
-			json: async () => ({ name: "Jane" }),
-		} as Response);
-
-		render(
-			<MemoryRouter initialEntries={["/todo?sort=name#details"]}>
-				<Navigation />
-				<CurrentLocation />
-				<Routes>
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="*" element={null} />
-				</Routes>
-			</MemoryRouter>,
-		);
-
-		fireEvent.click(screen.getByRole("link", { name: "Login" }));
-		// Clicking Login again must preserve the original destination.
-		fireEvent.click(screen.getByRole("link", { name: "Login" }));
-		fireEvent.change(screen.getByLabelText("Email"), {
-			target: { value: "jane@example.com" },
-		});
-		fireEvent.change(screen.getByLabelText("Password"), {
-			target: { value: "12345" },
-		});
-		fireEvent.click(screen.getByRole("button", { name: "Log in" }));
-
-		await waitFor(() =>
-			expect(screen.getByTestId("location")).toHaveTextContent(
-				"/todo?sort=name#details",
-			),
-		);
-		expect(screen.getByText("Jane")).toBeInTheDocument();
 	});
 
 	test.each([undefined, "/login", "//example.com", "/\\example.com"])(
@@ -163,15 +115,14 @@ describe("LoginPage", () => {
 				json: async () => ({ name: "Jane" }),
 			} as Response);
 
+			const assign = vi.fn();
+			const browser = Object.create(window);
+			Object.defineProperty(browser, "location", { value: { assign } });
+			vi.stubGlobal("window", browser);
+
 			render(
-				<MemoryRouter
-					initialEntries={[{ pathname: "/login", state: { from } }]}
-				>
-					<CurrentLocation />
-					<Routes>
-						<Route path="/login" element={<LoginPage />} />
-						<Route path="*" element={null} />
-					</Routes>
+				<MemoryRouter initialEntries={[{ pathname: "/login", state: { from } }]}>
+					<LoginPage />
 				</MemoryRouter>,
 			);
 
@@ -183,9 +134,7 @@ describe("LoginPage", () => {
 			});
 			fireEvent.click(screen.getByRole("button", { name: "Log in" }));
 
-			await waitFor(() =>
-				expect(screen.getByTestId("location").textContent).toBe("/"),
-			);
+			await waitFor(() => expect(assign).toHaveBeenCalledWith("/"));
 		},
 	);
 

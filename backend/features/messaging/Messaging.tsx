@@ -8,10 +8,12 @@ export default function Messaging({
   initialData,
   initialOpen = false,
   returnTo = "/assets",
+  onOpenChange,
 }: {
   initialData: MessagingSnapshot;
   initialOpen?: boolean;
   returnTo?: "/assets" | "/users";
+  onOpenChange?: (open: boolean) => void;
 }) {
   const [user, setUser] = useState(initialData.user);
   const [open, setOpen] = useState(initialOpen);
@@ -29,6 +31,7 @@ export default function Messaging({
     setOpen(false);
     trigger.current?.focus();
   }, []);
+  useEffect(() => onOpenChange?.(open), [onOpenChange, open]);
   useEffect(() => {
     setUser(initialData.user);
     setUnread(initialData.conversationPage.unreadCount);

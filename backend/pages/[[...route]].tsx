@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { GetServerSideProps } from 'next';
 import { getSessionUser } from '../lib/session';
+import { renderServerNavigation } from '../lib/serverNavigation';
 
 type Props = Record<string, never>;
 
@@ -42,7 +43,7 @@ const sendDistFile = async (res: Parameters<GetServerSideProps<Props>>[0]['res']
   res.end(fileContents);
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params, req, res }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ params, req, res, resolvedUrl }) => {
   const routeParts = Array.isArray(params?.route) ? params.route : [];
   const requestedPath = routeParts.join('/');
 
@@ -78,10 +79,19 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
     }
 
     const indexHtml = await readFile(INDEX_HTML_PATH, 'utf-8');
+    const root = '<div id="root"></div>';
+    if (!indexHtml.includes(root)) {
+      res.statusCode = 500;
+      res.end(ERROR_MESSAGES.FRONTEND_BUILD_UNAVAILABLE);
+      return { props: {} };
+    }
+    const navigation = await renderServerNavigation(req, resolvedUrl ?? '/');
+    const html = indexHtml.replace(root, `${navigation}${root}`);
 
+    res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.statusCode = 200;
-    res.end(indexHtml);
+    res.end(html);
     return { props: {} };
   } catch (error) {
     if (isStaticFile && error instanceof Error && 'code' in error && error.code === 'ENOENT') {
