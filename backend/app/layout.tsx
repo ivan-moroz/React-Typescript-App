@@ -19,6 +19,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <title>V Studio</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/icon?family=Material+Icons"
