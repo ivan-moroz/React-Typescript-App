@@ -1,21 +1,86 @@
+@use "./colors" as *;
+@use "./font-sizes" as *;
+
 /* ===== Reset ===== */
 * {
   box-sizing: border-box;
 }
 
+html {
+  color-scheme: dark;
+  min-width: 320px;
+}
+
 body {
+  background: $color-dark;
+  color: $color-off-white;
   font-family: Arial, Helvetica, sans-serif;
-  background: #f4f6f8;
+  margin: 0;
+  min-height: 100vh;
 }
 
 button {
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 5px;
   border: none;
 }
 
-input {
-  border-radius: 4px;
-  border: 1px solid #ccc;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
+:where(
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  summary
+) {
+  cursor: pointer;
+  transition: filter 140ms ease;
+}
+
+:where(
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  summary
+):hover {
+  filter: brightness(1.15);
+}
+
+input,
+textarea,
+select {
+  background: $color-charcoal;
+  border: 1px solid $color-surface;
+  border-radius: 5px;
+  color: $color-off-white;
+}
+
+input:not([type="button"]):not([type="submit"]):not([type="reset"]):hover,
+textarea:hover,
+select:hover {
+  border-color: $color-gray;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: $color-gray;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: $color-red;
+  color: $color-white;
+}

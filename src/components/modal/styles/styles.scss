@@ -1,6 +1,9 @@
+@use "../../../styles/colors" as *;
+@use "../../../styles/font-sizes" as *;
+
 .modal-backdrop {
 	align-items: center;
-	background: rgba(0, 0, 0, 0.45);
+	background: rgba($color-dark, 0.78);
 	bottom: 0;
 	display: flex;
 	justify-content: center;
@@ -13,10 +16,12 @@
 }
 
 .modal {
-	background: #ffffff;
-	border-radius: 8px;
-	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
-	max-width: 420px;
+	background: $color-charcoal;
+	border: 1px solid $color-surface;
+	border-radius: 10px;
+	box-shadow: 0 20px 70px rgba($color-dark, 0.6);
+	color: $color-off-white;
+	max-width: min(560px, 100%);
 	width: 100%;
 }
 
@@ -29,11 +34,11 @@
 }
 
 .modal-header {
-	border-bottom: 1px solid #dddddd;
+	border-bottom: 1px solid $color-surface;
 	justify-content: space-between;
 
 	h2 {
-		font-size: 20px;
+		font-size: $font-size-large;
 		margin: 0;
 	}
 }
@@ -47,6 +52,24 @@
 }
 
 .modal-footer {
-	border-top: 1px solid #dddddd;
+	border-top: 1px solid $color-surface;
 	justify-content: flex-end;
+
+	button {
+		background: $color-surface;
+		color: $color-off-white;
+		padding: 9px 13px;
+
+		&:hover {
+			background: $color-surface;
+		}
+
+		&[type="submit"] {
+			background: $color-red;
+
+			&:hover {
+				background: $color-red;
+			}
+		}
+	}
 }

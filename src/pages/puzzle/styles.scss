@@ -1,17 +1,31 @@
+@use "../../styles/colors" as *;
+@use "../../styles/font-sizes" as *;
+
 .app.puzzle-page {
   max-width: 850px;
-  label { display: block; font-weight: 600; margin-bottom: 10px; }
+  label { color: $color-light-gray; display: block; font-weight: 600; margin-bottom: 10px; }
   input[type="file"] { max-width: 100%; }
-  .puzzle-help { color: #555; line-height: 1.6; }
-  .puzzle-example { padding: 14px; background: #f2f6f2; border-radius: 6px; }
+  .puzzle-help { color: $color-light-gray; line-height: 1.6; }
+  .puzzle-example { padding: 14px; background: $color-charcoal; border: 1px solid $color-surface; border-radius: 6px; }
   .puzzle-row {
     overflow-x: auto;
     white-space: nowrap;
     padding: 16px;
-    background: #f2f6f2;
-    border: 1px solid #ccdccc;
+    background: $color-dark;
+    border: 1px solid $color-surface;
     border-radius: 6px;
-    code { font-size: 1.15rem; }
+    code { font-size: $font-size-base; }
   }
-  [role="alert"] { color: #a52222; }
+  [role="alert"] { color: $color-red; }
+  [role="status"] {
+    background: $color-charcoal;
+    border: 1px solid $color-surface;
+    border-radius: 8px;
+    padding: 14px;
+  }
+  button {
+    background: $color-red;
+    color: $color-white;
+    padding: 9px 14px;
+  }
 }

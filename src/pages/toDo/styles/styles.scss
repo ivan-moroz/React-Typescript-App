@@ -1,3 +1,6 @@
+@use "../../../styles/colors" as *;
+@use "../../../styles/font-sizes" as *;
+
 .todo-list {
 	list-style: none;
 	padding: 0;
@@ -10,7 +13,7 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 8px 0;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid $color-surface;
 
 	label {
 		display: flex;
@@ -22,23 +25,25 @@
 	&.completed {
 		span:not(.material-icons) {
 			text-decoration: line-through;
-			color: #999;
+			color: $color-gray;
 		}
 	}
 
 	button {
-		background: transparent;
+		background: $color-transparent;
 		border: none;
 		cursor: pointer;
-		font-size: 16px;
+		font-size: $font-size-base;
+		color: $color-light-gray;
 
 		&:hover {
-			background: #eeeeee;
+			background: $color-surface;
+			color: $color-white;
 		}
 	}
 
 	.material-icons {
-		font-size: 20px;
+		font-size: $font-size-large;
 		vertical-align: middle;
 	}
 }

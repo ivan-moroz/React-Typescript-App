@@ -30,26 +30,48 @@ export default function Navigation() {
 	};
 
 	return (
-		<nav>
-			<NavLink to="/" style={activeStyle}>
-				Home
-			</NavLink>
-
-			<NavLink to="/todo" style={activeStyle}>
-				ToDo
-			</NavLink>
-			<NavLink to="/select" style={activeStyle}>
-				Select
-			</NavLink>
-			<NavLink to="/calculator" style={activeStyle}>
-				Calculator
-			</NavLink>
-			<NavLink to="/puzzle" style={activeStyle}>
-				Puzzle
-			</NavLink>
-			<a href="/users">Users</a>
-			<a href="/assets">Assets</a>
-			<div className="header-account">
+		<nav className="app-navigation">
+			<div className="navigation-inner">
+				<NavLink to="/" className="brand-mark" aria-label="Studio home">
+					<span className="brand-symbol">V</span>
+					<span>STUDIO</span>
+				</NavLink>
+				<div className="navigation-links">
+					<NavLink to="/" style={activeStyle}>
+						Home
+					</NavLink>
+					<a
+						href="/assets"
+						aria-current={location.pathname === "/assets" ? "page" : undefined}
+					>
+						Library
+					</a>
+					<a
+						href="/users"
+						aria-current={location.pathname === "/users" ? "page" : undefined}
+					>
+						People
+					</a>
+					<a
+						href="/messaging"
+						aria-current={location.pathname === "/messaging" ? "page" : undefined}
+					>
+						Messages
+					</a>
+					<NavLink to="/todo" style={activeStyle}>
+						ToDo
+					</NavLink>
+					<NavLink to="/select" style={activeStyle}>
+						Select
+					</NavLink>
+					<NavLink to="/calculator" style={activeStyle}>
+						Calculator
+					</NavLink>
+					<NavLink to="/puzzle" style={activeStyle}>
+						Puzzle
+					</NavLink>
+				</div>
+				<div className="header-account">
 				{authenticatedUser ? (
 					<div className="authenticated-user">
 						<span>
@@ -73,6 +95,7 @@ export default function Navigation() {
 					</NavLink>
 				)}
 				<Messaging key={authenticatedUser?.id ?? "anonymous"} />
+				</div>
 			</div>
 		</nav>
 	);

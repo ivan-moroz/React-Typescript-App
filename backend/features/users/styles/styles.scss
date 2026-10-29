@@ -1,10 +1,44 @@
+@use "../../../../src/styles/colors" as *;
+@use "../../../../src/styles/font-sizes" as *;
+
 .user-table {
+	border-collapse: separate;
+	border-spacing: 0;
+	min-width: 720px;
 	width: 100%;
+	color: $color-light-gray;
+	background: $color-charcoal;
 
 	th,
 	td {
 		box-sizing: border-box;
-		height: 40px;
+		height: 56px;
+		padding: 12px 18px;
+		text-align: left;
+	}
+
+	th {
+		background: $color-surface;
+		color: $color-white;
+		font-size: $font-size-small;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		position: sticky;
+		text-transform: uppercase;
+		top: 0;
+		z-index: 1;
+	}
+
+	th:first-child {
+		border-top-left-radius: 10px;
+	}
+
+	th:last-child {
+		border-top-right-radius: 10px;
+	}
+
+	tbody tr:not(:last-child) td {
+		border-bottom: 1px solid $color-surface;
 	}
 
 	tbody tr[draggable="true"] {
@@ -17,11 +51,27 @@
 	}
 
 	td {
-		padding: 5px;
+		button {
+			background: $color-charcoal;
+			border: 1px solid $color-surface;
+			border-radius: 6px;
+			color: $color-off-white;
+			min-height: 40px;
+			min-width: 42px;
+			padding: 8px 10px;
+
+			&:hover {
+				background: $color-surface;
+			}
+		}
 
 		button:not(:last-child) {
-			margin-right: 5px;
+			margin-right: 8px;
 		}
+	}
+
+	td:last-child {
+		white-space: nowrap;
 	}
 }
 
@@ -35,20 +85,41 @@
 		width: 100%;
 	}
 
+	button {
+		background: $color-red;
+		color: $color-white;
+		padding: 10px 12px;
+	}
+
 	p {
 		margin: 0;
 	}
 }
 
 .user-table-container {
-	// One 40px header plus five 40px user rows.
-	height: 240px;
-	margin-top: 10px;
-	overflow-y: auto;
+	border: 1px solid $color-surface;
+	border-radius: 10px;
+	height: 336px;
+	margin-top: 18px;
+	overflow: auto;
+}
+
+.user-table-container,
+.add-user-form {
+	color: $color-light-gray;
+}
+
+.user-table-container tbody tr {
+	transition: background-color 140ms ease;
+}
+
+.user-table-container tbody tr:hover {
+	background: $color-surface;
 }
 
 .users-load-more-trigger {
 	min-height: 1px;
 	padding: 12px 0;
 	text-align: center;
+	color: $color-light-gray;
 }

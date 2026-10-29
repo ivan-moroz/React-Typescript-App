@@ -1,24 +1,29 @@
+@use "./colors" as *;
+@use "./font-sizes" as *;
+
 .login-page form {
   display: grid;
   gap: 16px;
 
   label {
+    color: $color-light-gray;
     display: grid;
     gap: 6px;
   }
 
   input,
   button {
-    padding: 8px 10px;
+    padding: 11px 12px;
   }
 
   button {
-    background: #4caf50;
-    color: #ffffff;
+    background: $color-red;
+    color: $color-white;
+    font-weight: 700;
   }
 
   [role='alert'] {
-    color: #b00020;
+    color: $color-red;
     margin: 0;
   }
 }

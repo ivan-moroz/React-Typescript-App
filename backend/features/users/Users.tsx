@@ -224,8 +224,6 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 				>
 					<Table
 						className="user-table"
-						border={1}
-						style={{ borderCollapse: "collapse" }}
 						columns={columns}
 						data={state.users}
 						getRowKey={(user) => user.id}

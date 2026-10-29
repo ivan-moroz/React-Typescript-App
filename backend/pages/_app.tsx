@@ -8,7 +8,7 @@ import type { MessagingSnapshot } from "../features/messaging/types/types";
 import { ModalProvider } from "../../src/components/modal/ModalProvider";
 import "../../src/styles/index.scss";
 import "../../src/styles/App.scss";
-import "../styles/assets.scss";
+import "../features/assets/assets.scss";
 import "../features/users/styles/styles.scss";
 import "../../src/components/modal/styles/styles.scss";
 import "../../src/components/select/styles/styles.scss";
@@ -31,26 +31,33 @@ export default function App({ Component, pageProps, router }: AppProps) {
   const from = encodeURIComponent(router.asPath);
   return (
     <ModalProvider>
-      <nav>
-        {Object.entries({
-          "/": "Home",
-          "/todo": "ToDo",
-          "/select": "Select",
-          "/calculator": "Calculator",
-          "/puzzle": "Puzzle",
-          "/users": "Users",
-          "/assets": "Assets",
-        }).map(([href, label]) => (
-          <a
-            key={href}
-            href={href}
-            aria-current={router.pathname === href ? "page" : undefined}
-            style={{ fontWeight: router.pathname === href ? "bold" : "normal" }}
-          >
-            {label}
+      <nav className="app-navigation">
+        <div className="navigation-inner">
+          <a href="/" className="brand-mark" aria-label="Studio home">
+            <span className="brand-symbol">V</span>
+            <span>STUDIO</span>
           </a>
-        ))}
-        <div className="header-account">
+          <div className="navigation-links">
+            {Object.entries({
+              "/": "Home",
+              "/assets": "Library",
+              "/users": "People",
+              "/messaging": "Messages",
+              "/todo": "ToDo",
+              "/select": "Select",
+              "/calculator": "Calculator",
+              "/puzzle": "Puzzle",
+            }).map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                aria-current={router.pathname === href ? "page" : undefined}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+          <div className="header-account">
           {snapshot.user ? (
             <div className="authenticated-user">
               <b>{snapshot.user.name}</b>
@@ -95,6 +102,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
               returnTo={router.pathname === "/users" ? "/users" : "/assets"}
             />
           )}
+          </div>
         </div>
       </nav>
       <div className="page-wrapper">
