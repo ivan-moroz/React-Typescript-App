@@ -10,6 +10,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build:backend": "next build backend",
+    "vercel-build": "npm run prisma:generate && npm run build && npm run build:backend",
     "start:backend": "next start backend -p 3001",
     "preview": "vite preview",
     "test": "vitest run",

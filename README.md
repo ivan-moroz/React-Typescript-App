@@ -86,6 +86,14 @@ Builds the app for production into the `dist` folder.
 
 For the full application, run `npm run build`, then `npm run build:backend`, and serve with `npm run start:backend`. Next.js serves Assets and Users with SSR and serves the remaining SPA routes and static files from `dist`. `npm run preview` alone only previews the Vite build and does not provide SSR or the API.
 
+### Deploying to Vercel
+
+The root `vercel.json` selects the Next.js framework and runs `npm run vercel-build`, which generates Prisma, builds the Vite frontend into `dist`, then builds the Next.js backend. The Next.js route trace includes the Vite files required by the frontend proxy.
+
+When importing the repository into Vercel, keep the Root Directory at the repository root. Add `DATABASE_URL` to the Vercel project's Production, Preview, and Development environment variables, using a PostgreSQL provider reachable from Vercel. Apply database migrations to that hosted database with `npx prisma migrate deploy` before using the deployment.
+
+Vercel Functions limit request and response bodies to 4.5 MB. This project currently uploads files through API routes and supports larger files locally, so uploads over that limit need a direct object-storage upload path (for example, Vercel Blob client uploads) before they can work on Vercel. See [Vercel Function limits](https://vercel.com/docs/functions/limitations) and [Vercel Blob client uploads](https://vercel.com/docs/vercel-blob/client-upload).
+
 ### `npm run preview`
 
 Previews the production build locally.
