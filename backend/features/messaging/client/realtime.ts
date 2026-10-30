@@ -62,7 +62,6 @@ function connect() {
     const reconnected = hasConnected;
     hasConnected = true;
     reconnectAttempt = 0;
-    console.info("[messaging-ws] connected");
     notify({ type: "connected", reconnected });
   });
   connection.addEventListener("message", (message) => {
@@ -117,7 +116,6 @@ function connect() {
         typeof event.conversationId === "string" && "messages" in event &&
         Array.isArray(event.messages) && event.messages.every(isChatMessage)
       ) {
-        console.info(`[messaging-ws] sync response received conversation=${event.conversationId} messages=${event.messages.length}`);
         notify({
           type: "sync-messages",
           conversationId: event.conversationId,
@@ -150,13 +148,11 @@ function connect() {
     }
   });
   connection.addEventListener("close", () => {
-    console.warn("[messaging-ws] connection closed; reconnecting");
     if (socket !== connection) return;
     socket = null;
     scheduleReconnect();
   });
-  connection.addEventListener("error", (event) => {
-    console.error("[messaging-ws] connection error", event);
+  connection.addEventListener("error", () => {
     connection.close();
   });
 }
@@ -231,5 +227,4 @@ export function requestMessagingSync(request:
     return;
   }
   socket.send(JSON.stringify(request));
-  console.info(`[messaging-ws] sync request sent type=${request.type}`);
 }

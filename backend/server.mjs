@@ -60,20 +60,14 @@ function queueMessageUpdate(userId, update) {
 
 function publishMessagingUpdate(userIds, update) {
   const payload = JSON.stringify(update);
-  let delivered = 0;
-  let queued = 0;
-  const recipientStatus = [];
   for (const userId of new Set(userIds)) {
     const clients = [...(userSockets.get(userId) ?? [])].filter(
       (client) => client.readyState === WebSocket.OPEN,
     );
     if (clients.length === 0) {
       queueMessageUpdate(userId, update);
-      if (update.kind === "message-sent" && update.message) queued += 1;
-      recipientStatus.push(`${userId}:queued`);
       continue;
     }
-    recipientStatus.push(`${userId}:open=${clients.length}`);
     for (const client of clients) {
       if (client.readyState === WebSocket.OPEN) {
         try {
@@ -83,7 +77,6 @@ function publishMessagingUpdate(userIds, update) {
               console.error(`[messaging-ws] send failed user=${userId}; queued message`, error);
             }
           });
-          delivered += 1;
         } catch (error) {
           queueMessageUpdate(userId, update);
           console.error(`[messaging-ws] send threw user=${userId}; queued message`, error);
@@ -91,7 +84,6 @@ function publishMessagingUpdate(userIds, update) {
       }
     }
   }
-  console.info(`[messaging-ws] ${update.kind} conversation=${update.conversationId} delivered=${delivered} queued=${queued} recipients=${recipientStatus.join(",")}`);
 }
 
 // Install after app.prepare(): Next.js dev preparation can replace globals.
@@ -163,13 +155,11 @@ async function connectNotificationClient() {
       return;
     }
     notificationRetryAttempt = 0;
-    console.info("[messaging-ws] PostgreSQL LISTEN connected channel=messaging_updates");
     if (notificationListenerConnected) {
       const resync = JSON.stringify({ type: "resync" });
       for (const socket of websocketServer.clients) {
         if (socket.readyState === WebSocket.OPEN) socket.send(resync);
       }
-      console.info("[messaging-ws] requested client resync after PostgreSQL reconnect");
     }
     notificationListenerConnected = true;
   } catch (error) {
@@ -190,7 +180,6 @@ function rejectUpgrade(socket, status = 400, message = "Bad Request") {
 
 server.on("upgrade", async (request, socket, head) => {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
-  console.info(`[messaging-ws] upgrade path=${url.pathname} host=${request.headers.host ?? ""} origin=${request.headers.origin ?? ""}`);
   if (url.pathname !== "/api/messaging/socket") {
     handleUpgrade(request, socket, head);
     return;
@@ -221,25 +210,19 @@ server.on("upgrade", async (request, socket, head) => {
       return;
     }
     const user = await session.json();
-    console.info(`[messaging-ws] authenticated user=${user?.id ?? "none"} socketDestroyed=${socket.destroyed}`);
     if (!user || !Number.isSafeInteger(user.id) || user.id < 1) {
       console.warn("[messaging-ws] rejected invalid session user");
       rejectUpgrade(socket, 401, "Unauthorized");
       return;
     }
-    if (socket.destroyed) {
-      console.warn("[messaging-ws] client closed during authentication");
-      return;
-    }
+    if (socket.destroyed) return;
 
     websocketServer.handleUpgrade(request, socket, head, (client) => {
-      console.info(`[messaging-ws] upgrade accepted user=${user.id}`);
       client.userId = user.id;
       client.sessionCookie = request.headers.cookie ?? "";
       const clients = userSockets.get(user.id) ?? new Set();
       clients.add(client);
       userSockets.set(user.id, clients);
-      console.info(`[messaging-ws] connected user=${user.id} sockets=${clients.size}`);
       const pending = pendingMessageUpdates.get(user.id) ?? [];
       pendingMessageUpdates.delete(user.id);
       for (const update of pending) {
@@ -248,9 +231,6 @@ server.on("upgrade", async (request, socket, head) => {
             if (error) queueMessageUpdate(user.id, update);
           });
         }
-      }
-      if (pending.length > 0) {
-        console.info(`[messaging-ws] replayed user=${user.id} messages=${pending.length}`);
       }
       websocketServer.emit("connection", client, request);
       void syncSocketClient(client, "/api/messaging/conversations")
@@ -299,7 +279,6 @@ websocketServer.on("connection", (client) => {
     }
     try {
       if (request?.type === "sync-unread") {
-        console.info(`[messaging-ws] sync request user=${client.userId} type=sync-unread`);
         const unread = await syncSocketClient(client, "/api/messaging/unread");
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({
@@ -319,7 +298,6 @@ websocketServer.on("connection", (client) => {
         (request.after === null || (typeof request.after === "string" && uuid.test(request.after))) &&
         (request.from === null || (typeof request.from === "string" && uuid.test(request.from)))
       ) {
-        console.info(`[messaging-ws] sync request user=${client.userId} conversation=${request.conversationId}`);
         const query = new URLSearchParams();
         if (request.after) query.set("after", request.after);
         if (request.from) query.set("from", request.from);
@@ -329,7 +307,6 @@ websocketServer.on("connection", (client) => {
           `/api/messaging/conversations/${request.conversationId}/messages${suffix}`,
         );
         if (client.readyState === WebSocket.OPEN) {
-          console.info(`[messaging-ws] sync response user=${client.userId} conversation=${request.conversationId} messages=${result.messages.length}`);
           client.send(JSON.stringify({
             type: "sync-messages",
             conversationId: request.conversationId,
@@ -348,7 +325,6 @@ websocketServer.on("connection", (client) => {
     }
   });
   client.on("close", () => {
-    console.info(`[messaging-ws] disconnected user=${client.userId}`);
     const clients = userSockets.get(client.userId);
     clients?.delete(client);
     if (clients?.size === 0) userSockets.delete(client.userId);
@@ -364,11 +340,7 @@ const heartbeat = setInterval(() => {
     client.isAlive = false;
     client.ping();
   }
-// Detect half-open browser connections quickly. With a 30s interval, a tab
-// that silently lost its socket could remain registered until the next ping
-// cycle and miss live updates for roughly half a minute.
 }, WEBSOCKET_HEARTBEAT_INTERVAL_MS);
-console.info(`[messaging-ws] heartbeat interval=${WEBSOCKET_HEARTBEAT_INTERVAL_MS}ms`);
 
 server.on("error", (error) => {
   if (error?.code === "EADDRINUSE") {

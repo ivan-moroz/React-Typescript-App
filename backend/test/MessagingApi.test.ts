@@ -136,6 +136,12 @@ test("uses the authenticated sender and saves a message transactionally", async 
     conversationId,
     actorId: 1,
     kind: "message-sent",
+    message: expect.objectContaining({
+      id: messageId,
+      createdAt: now.toISOString(),
+      readAt: null,
+      deletedAt: null,
+    }),
   });
 });
 

@@ -37,7 +37,7 @@ Default connection string in `.env.example` uses:
 
 In the project directory, you can run:
 
-### `npm run dev`
+### `npm run dev:backend`
 
 Starts the Vite development server.
 

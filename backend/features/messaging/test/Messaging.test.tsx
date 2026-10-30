@@ -18,6 +18,7 @@ class MockWebSocket extends EventTarget {
   static OPEN = 1;
   static instances: MockWebSocket[] = [];
   readyState = 0;
+  sent: unknown[] = [];
 
   constructor(readonly url: string) {
     super();
@@ -29,7 +30,11 @@ class MockWebSocket extends EventTarget {
     this.dispatchEvent(new Event("open"));
   }
 
-  receive(event: { type: "update"; conversationId: string; actorId: number; kind: "message-sent" | "message-deleted" | "conversation-deleted" }) {
+  send(data: string) {
+    this.sent.push(JSON.parse(data));
+  }
+
+  receive(event: unknown) {
     this.dispatchEvent(new MessageEvent("message", { data: JSON.stringify(event) }));
   }
 
@@ -298,12 +303,17 @@ test("does not skip an incoming message that arrives while a message is being se
       actorId: 2,
       kind: "message-sent",
     });
+    socket.receive({
+      type: "sync-messages",
+      conversationId,
+      messages: [between, outgoing],
+    });
     await vi.advanceTimersByTimeAsync(25);
   });
-  expect(fetch).toHaveBeenCalledWith(
-    expect.stringContaining("?after=a"),
-    expect.anything(),
-  );
+  expect(socket.sent).toContainEqual(expect.objectContaining({
+    type: "sync-messages",
+    conversationId,
+  }));
   expect(result.current.messages.map((message) => message.id)).toEqual([
     "a",
     "b",
@@ -315,13 +325,7 @@ test("does not skip an incoming message that arrives while a message is being se
 test("syncs a message sent from another messaging panel on the Messages page", async () => {
   vi.useFakeTimers();
   vi.stubGlobal("WebSocket", MockWebSocket);
-  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    Response.json({
-      messages: [outgoing],
-      hasMore: false,
-      nextCursor: null,
-    }),
-  );
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 204 }));
   const { result, unmount } = renderHook(() =>
     useChatMessages(
       conversationId,
@@ -341,13 +345,18 @@ test("syncs a message sent from another messaging panel on the Messages page", a
       actorId: user.id,
       kind: "message-sent",
     });
+    socket.receive({
+      type: "sync-messages",
+      conversationId,
+      messages: [{ ...incoming, readAt: incoming.createdAt }, outgoing],
+    });
     await vi.advanceTimersByTimeAsync(25);
   });
 
-  expect(fetch).toHaveBeenCalledWith(
-    expect.stringContaining(`/api/messaging/conversations/${conversationId}/messages?after=a`),
-    expect.anything(),
-  );
+  expect(socket.sent).toContainEqual(expect.objectContaining({
+    type: "sync-messages",
+    conversationId,
+  }));
   expect(result.current.messages).toContainEqual(outgoing);
   unmount();
 });
@@ -420,6 +429,7 @@ test('WebSocket updates synchronize message deletions made in another session', 
   socket.open();
   await act(async () => {
     socket.receive({ type: "update", conversationId, actorId: 2, kind: "message-deleted" });
+    socket.receive({ type: "sync-messages", conversationId, messages: [], deletedMessageIds: [outgoing.id] });
     await vi.advanceTimersByTimeAsync(25);
   });
   expect(result.current.messages[0]).toMatchObject({ id: outgoing.id, content: '', deletedAt: expect.any(String) });

@@ -33,7 +33,7 @@ export function useChatMessages(
   const readThrough = useRef("");
   const lastInitial =
     initialPage?.messages[initialPage.messages.length - 1] ?? null;
-  const pollCursor = useRef<string | null>(lastInitial?.id ?? null);
+  const latestCursor = useRef<string | null>(lastInitial?.id ?? null);
   const readCursor = useRef<ChatMessage | null>(lastInitial);
   const lifetime = useRef<AbortController | null>(null);
   const endpoint = `/api/messaging/conversations/${conversationId}`;
@@ -119,7 +119,6 @@ export function useChatMessages(
     const sendSyncAttempt = () => {
       if (syncReceived) return;
       if (syncAttempts >= 4) {
-        console.warn("[messaging-ws] sync did not complete; doing one recovery read");
         void refresh();
         return;
       }
@@ -145,7 +144,7 @@ export function useChatMessages(
     };
     const refresh = async (latestPage = false) => {
       const result = await fetchData<MessagePage>(
-        `${endpoint}/messages${!latestPage && initialized.current && pollCursor.current ? `?after=${pollCursor.current}&from=${current.current[0]?.id ?? pollCursor.current}` : ""}`,
+        `${endpoint}/messages${!latestPage && initialized.current && latestCursor.current ? `?after=${latestCursor.current}&from=${current.current[0]?.id ?? latestCursor.current}` : ""}`,
         { signal: controller.signal },
       );
       if (controller.signal.aborted) return;
@@ -160,7 +159,7 @@ export function useChatMessages(
       const fetchedLatest =
         result.data.messages[result.data.messages.length - 1];
       if (fetchedLatest) {
-        pollCursor.current = fetchedLatest.id;
+        latestCursor.current = fetchedLatest.id;
         readCursor.current = fetchedLatest;
       }
       result.data.deletedMessageIds?.forEach(id => deletedIds.current.add(id));
@@ -180,10 +179,13 @@ export function useChatMessages(
         // A successful WebSocket response can still be stale/empty while this
         // tab already has history. Reconcile once from the latest page so a
         // missed message is recovered after reconnect without polling.
-        if (event.messages.length === 0 && current.current.length > 0) {
+        if (
+          event.messages.length === 0 &&
+          current.current.length > 0 &&
+          !event.deletedMessageIds?.length
+        ) {
           if (!emptySyncRecoveryStarted) {
             emptySyncRecoveryStarted = true;
-            console.warn("[messaging-ws] empty sync for a non-empty conversation; refreshing latest page once");
             void refresh(true);
           }
           return;
@@ -192,10 +194,14 @@ export function useChatMessages(
         event.deletedMessageIds?.forEach((id) => deletedIds.current.add(id));
         const latest = event.messages[event.messages.length - 1];
         if (latest) {
-          pollCursor.current = latest.id;
+          latestCursor.current = latest.id;
           readCursor.current = latest;
         }
         merge(event.messages);
+        // Messages received while this conversation is open should be marked
+        // read as soon as the authoritative socket sync includes them. Without
+        // this, only the initial page load clears the unread badge.
+        void markSeen(controller.signal);
         return;
       }
       if (event.type === "sync-error") {
@@ -206,7 +212,7 @@ export function useChatMessages(
       if (event.type === "sync-inbox") {
         const summary = event.conversations.find((item) => item.id === conversationId);
         if (summary?.lastMessage) {
-          pollCursor.current = summary.lastMessage.id;
+          latestCursor.current = summary.lastMessage.id;
           readCursor.current = summary.lastMessage;
           merge([summary.lastMessage]);
         }
@@ -218,7 +224,7 @@ export function useChatMessages(
           return;
         }
         if (event.message) {
-          pollCursor.current = event.message.id;
+          latestCursor.current = event.message.id;
           readCursor.current = event.message;
           merge([event.message]);
         }
@@ -230,24 +236,23 @@ export function useChatMessages(
     const handleConnectionRestore = () => {
       if (document.visibilityState === "visible") requestSync();
     };
+    const handleLocalMessage = (event: Event) => {
+      const message = (event as CustomEvent<ChatMessage>).detail;
+      if (message?.conversationId === conversationId) merge([message]);
+    };
+    window.addEventListener("messaging:message-sent", handleLocalMessage);
     window.addEventListener("online", handleConnectionRestore);
     window.addEventListener("focus", handleConnectionRestore);
     document.addEventListener("visibilitychange", handleConnectionRestore);
-    const handleLocalMessage = (event: Event) => {
-      const message = (event as CustomEvent<ChatMessage>).detail;
-      if (!message || message.conversationId !== conversationId) return;
-      merge([message]);
-    };
-    window.addEventListener("messaging:message-sent", handleLocalMessage);
     return () => {
       clearTimeout(timer);
       clearTimeout(syncRetryTimer);
       controller.abort();
       unsubscribe();
+      window.removeEventListener("messaging:message-sent", handleLocalMessage);
       window.removeEventListener("online", handleConnectionRestore);
       window.removeEventListener("focus", handleConnectionRestore);
       document.removeEventListener("visibilitychange", handleConnectionRestore);
-      window.removeEventListener("messaging:message-sent", handleLocalMessage);
     };
   }, [active, conversationId, endpoint, initialPage, userId]);
 
