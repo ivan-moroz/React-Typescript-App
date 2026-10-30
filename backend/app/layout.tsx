@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
-import { Suspense } from "react";
-import ServerNavigationSSR from "./navigation/server-navigation";
+import { headers } from "next/headers";
+import type { IncomingMessage } from "node:http";
+import ServerNavigation from "../features/navigation/ServerNavigation";
+import { getServerNavigationProps } from "../features/navigation/server";
 import AppProviders from "./providers";
 import "../../src/components/messaging/styles/styles.scss";
 import "../features/messaging/styles/styles.scss";
@@ -15,7 +17,15 @@ import "./loading/loading.scss";
 
 export const dynamic = "force-dynamic";
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const requestHeaders = await headers();
+  const pathname = requestHeaders.get("x-app-pathname") ??
+    requestHeaders.get("x-next-url")?.split("?", 1)[0] ?? "";
+  const request = {
+    headers: { cookie: requestHeaders.get("cookie") ?? undefined },
+  } as IncomingMessage;
+  const navigation = await getServerNavigationProps(request, pathname);
+
   return (
     <html lang="en">
       <head>
@@ -27,10 +37,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <Suspense fallback={<nav className="app-navigation" aria-label="Main navigation" />}>
-          <ServerNavigationSSR />
-        </Suspense>
-        <AppProviders>{children}</AppProviders>
+        <ServerNavigation {...navigation} liveUpdates />
+        <AppProviders userId={navigation.user?.id ?? null}>{children}</AppProviders>
       </body>
     </html>
   );

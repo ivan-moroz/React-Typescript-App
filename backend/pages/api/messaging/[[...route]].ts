@@ -55,7 +55,7 @@ export default async function handler(
           .json(await listConversations(user.id, cursor(req.query.cursor)));
       else if (req.method === "POST") {
         const conversation = await createConversation(user.id, req.body?.userId);
-        publishMessagingUpdate(
+        await publishMessagingUpdate(
           [user.id, conversation.user.id],
           {
             type: "update",
@@ -89,7 +89,7 @@ export default async function handler(
       if (route.length === 2) {
         const participants = await getConversationParticipantIds(route[1]);
         await deleteConversation(user.id, route[1]);
-        publishMessagingUpdate(participants, {
+        await publishMessagingUpdate(participants, {
           type: "update",
           conversationId: route[1],
           actorId: user.id,
@@ -101,7 +101,7 @@ export default async function handler(
       if (route.length === 4 && route[2] === 'messages' && uuid.test(route[3])) {
         const participants = await getConversationParticipantIds(route[1]);
         await deleteMessage(user.id, route[1], route[3]);
-        publishMessagingUpdate(participants, {
+        await publishMessagingUpdate(participants, {
           type: "update",
           conversationId: route[1],
           actorId: user.id,
@@ -120,11 +120,17 @@ export default async function handler(
         if (req.method === "POST") {
           const message = await sendMessage(user.id, route[1], req.body?.content);
           const participants = await getConversationParticipantIds(route[1]);
-          publishMessagingUpdate(participants, {
+          await publishMessagingUpdate(participants, {
             type: "update",
             conversationId: route[1],
             actorId: user.id,
             kind: "message-sent",
+            message: {
+              ...message,
+              createdAt: message.createdAt.toISOString(),
+              readAt: message.readAt?.toISOString() ?? null,
+              deletedAt: message.deletedAt?.toISOString() ?? null,
+            },
           });
           res.status(201).json(message);
         } else if (req.method === 'GET') {
@@ -133,7 +139,6 @@ export default async function handler(
           if (before && after)
             throw new HttpError(400, ERROR_MESSAGES.MESSAGING_CURSOR_INVALID);
           const from = cursor(req.query.from);
-          if (from && !after) throw new HttpError(400, ERROR_MESSAGES.MESSAGING_CURSOR_INVALID);
           res
             .status(200)
             .json(await listMessages(user.id, route[1], before, after, from));
@@ -146,7 +151,7 @@ export default async function handler(
         if (!messageId)
           throw new HttpError(400, ERROR_MESSAGES.MESSAGING_CURSOR_INVALID);
         await markRead(user.id, route[1], messageId);
-        publishMessagingUpdate(await getConversationParticipantIds(route[1]), {
+        await publishMessagingUpdate(await getConversationParticipantIds(route[1]), {
           type: "update",
           conversationId: route[1],
           actorId: user.id,

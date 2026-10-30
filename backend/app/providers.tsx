@@ -3,11 +3,29 @@
 import { ModalProvider } from "../../src/components/modal/ModalProvider";
 import { fetchData } from "../../src/utils/fetchData";
 import MessagingPanelHost from "../features/messaging/MessagingPanelHost";
+import { subscribeMessagingRealtime } from "../features/messaging/client/realtime";
 import NavigationCurrentPage from "./navigation/navigation-current";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 
-export default function AppProviders({ children }: { children: React.ReactNode }) {
+function MessagingRealtimeBridge({ userId }: { userId: number | null }) {
+  useEffect(() => {
+    if (!userId) return;
+    // This root-level subscriber keeps the socket alive independently of the
+    // navigation or messaging panel mount lifecycle.
+    return subscribeMessagingRealtime(() => {});
+  }, [userId]);
+
+  return null;
+}
+
+export default function AppProviders({
+  children,
+  userId,
+}: {
+  children: React.ReactNode;
+  userId: number | null;
+}) {
   const router = useRouter();
   const navigate = useCallback((href: string) => {
     const url = new URL(href, window.location.origin);
@@ -79,6 +97,7 @@ export default function AppProviders({ children }: { children: React.ReactNode }
 
   return (
     <ModalProvider>
+      <MessagingRealtimeBridge userId={userId} />
       {children}
       <NavigationCurrentPage />
       <MessagingPanelHost />

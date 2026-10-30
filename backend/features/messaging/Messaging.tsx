@@ -36,7 +36,7 @@ export default function Messaging({
     setError(initialData.error);
   }, [initialData]);
   useEffect(() => {
-    if (!user || open) return;
+    if (!user) return;
     const handleUnread = (event: Event) => {
       const count = (event as CustomEvent<number>).detail;
       if (Number.isSafeInteger(count) && count >= 0) {
@@ -48,7 +48,7 @@ export default function Messaging({
     return () => {
       window.removeEventListener("messaging:unread", handleUnread);
     };
-  }, [open, user]);
+  }, [user]);
   useEffect(() => {
     if (!open) return;
     const outside = (event: MouseEvent) => {

@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node backend/server.mjs --dev",
     "dev:backend": "node backend/server.mjs --dev",
+    "dev:vite": "vite",
     "build": "vite build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

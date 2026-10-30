@@ -6,6 +6,7 @@ import { subscribeMessagingRealtime } from "../client/realtime";
 import ConversationList from "./ConversationList";
 import ChatThread from "./ChatThread";
 import type {
+  ChatMessage,
   ConversationPage,
   ConversationSummary,
   MessagingSnapshot,
@@ -100,9 +101,38 @@ export default function MessagingPanel({
     if (!active) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const applyMessage = (message: ChatMessage) => {
+      setConversations((current) => {
+        const next = current.map((item) => item.id !== message.conversationId ? item : {
+          ...item,
+          updatedAt: message.createdAt,
+          lastMessage: message,
+          unreadCount: message.senderId === user.id ? item.unreadCount : item.unreadCount + 1,
+        });
+        return next.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || b.id.localeCompare(a.id));
+      });
+      setSelected((current) => current?.id === message.conversationId ? {
+        ...current,
+        updatedAt: message.createdAt,
+        lastMessage: message,
+      } : current);
+    };
+    const handleLocalMessage = (event: Event) => {
+      const message = (event as CustomEvent<ChatMessage>).detail;
+      if (message?.conversationId) applyMessage(message);
+    };
+    window.addEventListener("messaging:message-sent", handleLocalMessage);
     const unsubscribe = subscribeMessagingRealtime((event) => {
+      if (event.type === "sync-inbox") {
+        setConversations(event.conversations);
+        setSelected((current) => current ? event.conversations.find((item) => item.id === current.id) ?? current : null);
+        return;
+      }
+      if (event.type === "update" && event.kind === "message-sent" && event.message) {
+        applyMessage(event.message);
+        return;
+      }
       const needsRefresh =
-        (event.type === "connected" && event.reconnected) ||
         (event.type === "update" &&
           event.kind !== "message-read" &&
           (event.actorId !== user.id || event.kind === "message-sent"));
@@ -120,6 +150,7 @@ export default function MessagingPanel({
       clearTimeout(timer);
       controller.abort();
       unsubscribe();
+      window.removeEventListener("messaging:message-sent", handleLocalMessage);
     };
   }, [active, selected, user.id]);
 

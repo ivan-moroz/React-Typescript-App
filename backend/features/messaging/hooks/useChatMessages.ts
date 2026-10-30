@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
-import { subscribeMessagingRealtime } from "../client/realtime";
+import { requestMessagingSync, subscribeMessagingRealtime } from "../client/realtime";
 import {
   MAX_MESSAGE_LENGTH,
   type ChatMessage,
@@ -112,9 +112,40 @@ export function useChatMessages(
     if (!active) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const refresh = async () => {
+    let syncRetryTimer: ReturnType<typeof setTimeout> | undefined;
+    let syncReceived = false;
+    let syncAttempts = 0;
+    let emptySyncRecoveryStarted = false;
+    const sendSyncAttempt = () => {
+      if (syncReceived) return;
+      if (syncAttempts >= 4) {
+        console.warn("[messaging-ws] sync did not complete; doing one recovery read");
+        void refresh();
+        return;
+      }
+      syncAttempts += 1;
+      const loaded = current.current;
+      const request = {
+        type: "sync-messages" as const,
+        conversationId,
+        // Reconcile the latest page on reconnect/hints. Cursor-only sync can
+        // miss a message if an event advanced a stale local cursor.
+        after: null,
+        from: loaded[0]?.id ?? null,
+      };
+      requestMessagingSync(request);
+      clearTimeout(syncRetryTimer);
+      syncRetryTimer = setTimeout(sendSyncAttempt, 1000);
+    };
+    const requestSync = () => {
+      syncReceived = false;
+      syncAttempts = 0;
+      clearTimeout(syncRetryTimer);
+      sendSyncAttempt();
+    };
+    const refresh = async (latestPage = false) => {
       const result = await fetchData<MessagePage>(
-        `${endpoint}/messages${initialized.current && pollCursor.current ? `?after=${pollCursor.current}&from=${current.current[0]?.id ?? pollCursor.current}` : ""}`,
+        `${endpoint}/messages${!latestPage && initialized.current && pollCursor.current ? `?after=${pollCursor.current}&from=${current.current[0]?.id ?? pollCursor.current}` : ""}`,
         { signal: controller.signal },
       );
       if (controller.signal.aborted) return;
@@ -138,16 +169,70 @@ export function useChatMessages(
     };
     if (!initialPage) timer = setTimeout(() => void refresh(), 0);
     const unsubscribe = subscribeMessagingRealtime((event) => {
-      if (
-        (event.type === "connected" && event.reconnected) ||
-        (event.type === "update" &&
-          event.conversationId === conversationId &&
-          (event.actorId !== userId || event.kind === "message-sent"))
-      ) {
-        clearTimeout(timer);
-        timer = setTimeout(() => void refresh(), 25);
+      if (event.type === "connected") {
+        requestSync();
+        return;
+      }
+      if (event.type === "sync-messages" && event.conversationId === conversationId) {
+        syncReceived = true;
+        syncAttempts = 0;
+        clearTimeout(syncRetryTimer);
+        // A successful WebSocket response can still be stale/empty while this
+        // tab already has history. Reconcile once from the latest page so a
+        // missed message is recovered after reconnect without polling.
+        if (event.messages.length === 0 && current.current.length > 0) {
+          if (!emptySyncRecoveryStarted) {
+            emptySyncRecoveryStarted = true;
+            console.warn("[messaging-ws] empty sync for a non-empty conversation; refreshing latest page once");
+            void refresh(true);
+          }
+          return;
+        }
+        emptySyncRecoveryStarted = false;
+        event.deletedMessageIds?.forEach((id) => deletedIds.current.add(id));
+        const latest = event.messages[event.messages.length - 1];
+        if (latest) {
+          pollCursor.current = latest.id;
+          readCursor.current = latest;
+        }
+        merge(event.messages);
+        return;
+      }
+      if (event.type === "sync-error") {
+        clearTimeout(syncRetryTimer);
+        sendSyncAttempt();
+        return;
+      }
+      if (event.type === "sync-inbox") {
+        const summary = event.conversations.find((item) => item.id === conversationId);
+        if (summary?.lastMessage) {
+          pollCursor.current = summary.lastMessage.id;
+          readCursor.current = summary.lastMessage;
+          merge([summary.lastMessage]);
+        }
+        return;
+      }
+      if (event.type === "update" && event.conversationId === conversationId) {
+        if (event.kind === "conversation-deleted") {
+          onConversationDeleted?.();
+          return;
+        }
+        if (event.message) {
+          pollCursor.current = event.message.id;
+          readCursor.current = event.message;
+          merge([event.message]);
+        }
+        // Treat the live event as a hint and reconcile against the server over
+        // the same socket, so a dropped or malformed event cannot hide a message.
+        requestSync();
       }
     });
+    const handleConnectionRestore = () => {
+      if (document.visibilityState === "visible") requestSync();
+    };
+    window.addEventListener("online", handleConnectionRestore);
+    window.addEventListener("focus", handleConnectionRestore);
+    document.addEventListener("visibilitychange", handleConnectionRestore);
     const handleLocalMessage = (event: Event) => {
       const message = (event as CustomEvent<ChatMessage>).detail;
       if (!message || message.conversationId !== conversationId) return;
@@ -156,8 +241,12 @@ export function useChatMessages(
     window.addEventListener("messaging:message-sent", handleLocalMessage);
     return () => {
       clearTimeout(timer);
+      clearTimeout(syncRetryTimer);
       controller.abort();
       unsubscribe();
+      window.removeEventListener("online", handleConnectionRestore);
+      window.removeEventListener("focus", handleConnectionRestore);
+      document.removeEventListener("visibilitychange", handleConnectionRestore);
       window.removeEventListener("messaging:message-sent", handleLocalMessage);
     };
   }, [active, conversationId, endpoint, initialPage, userId]);
@@ -211,7 +300,6 @@ export function useChatMessages(
         detail: result.data,
       }),
     );
-    onChanged();
     return true;
   };
   const removeMessage = async (id: string) => {
