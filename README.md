@@ -25,6 +25,8 @@ For local use only — clone it and lets continue working with AI. Good luck!
    npm run prisma:migrate
    ```
 
+The Prisma client uses the PostgreSQL driver adapter rather than a native query-engine DLL, so client generation does not require stopping the running backend on Windows.
+
 Default connection string in `.env.example` uses:
 - username: `postgres`
 - password: `postgres`
