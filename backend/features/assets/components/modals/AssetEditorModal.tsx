@@ -116,7 +116,7 @@ export default function AssetEditorModal({
 					</button>
 					<button type="submit" form="asset-form" disabled={isSaving}>
 						{isSaving
-							? "Savingâ€¦"
+							? "Saving..."
 							: editingAsset
 								? "Save changes"
 								: "Upload asset"}
