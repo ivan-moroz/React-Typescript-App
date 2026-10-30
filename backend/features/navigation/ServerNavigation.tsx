@@ -1,8 +1,11 @@
+import NavigationRealtime from "./NavigationRealtime";
+
 type ServerNavigationProps = {
   pathname: string;
   from: string;
-  user: { name: string } | null;
+  user: { id: number; name: string } | null;
   unreadCount: number;
+  liveUpdates?: boolean;
 };
 
 const links = [
@@ -20,6 +23,7 @@ export default function ServerNavigation({
   from,
   user,
   unreadCount,
+  liveUpdates = false,
 }: ServerNavigationProps) {
   return (
     <nav className="app-navigation">
@@ -47,19 +51,23 @@ export default function ServerNavigation({
           ) : (
             <a href={`/login?from=${encodeURIComponent(from)}`}>Login</a>
           )}
-          <a
-            href="/messaging"
-            className="messages-link"
-            aria-label={`Messages${unreadCount ? `, ${unreadCount} unread` : ""}`}
-            data-open-messaging-panel
-          >
-            <span className="material-icons" aria-hidden="true">chat_bubble_outline</span>
-            {unreadCount > 0 && (
-              <span className="messages-link-badge">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </a>
+          {user && liveUpdates ? (
+            <NavigationRealtime userId={user.id} unreadCount={unreadCount} />
+          ) : (
+            <a
+              href="/messaging"
+              className="messages-link"
+              aria-label={`Messages${unreadCount ? `, ${unreadCount} unread` : ""}`}
+              data-open-messaging-panel
+            >
+              <span className="material-icons" aria-hidden="true">chat_bubble_outline</span>
+              {unreadCount > 0 && (
+                <span className="messages-link-badge">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </a>
+          )}
         </div>
       </div>
     </nav>

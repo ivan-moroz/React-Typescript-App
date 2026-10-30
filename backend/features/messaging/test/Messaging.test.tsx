@@ -9,12 +9,35 @@ import {
 } from "@testing-library/react";
 import Messaging from "../Messaging";
 import ChatThread from '../components/ChatThread';
-import { usePolling } from "../hooks/usePolling";
 import { useChatMessages } from "../hooks/useChatMessages";
 import type { ChatMessage, MessagingSnapshot } from "../types/types";
 
 const conversationId = "11111111-1111-4111-8111-111111111111";
 const user = { id: 1, name: "Jane" };
+class MockWebSocket extends EventTarget {
+  static OPEN = 1;
+  static instances: MockWebSocket[] = [];
+  readyState = 0;
+
+  constructor(readonly url: string) {
+    super();
+    MockWebSocket.instances.push(this);
+  }
+
+  open() {
+    this.readyState = MockWebSocket.OPEN;
+    this.dispatchEvent(new Event("open"));
+  }
+
+  receive(event: { type: "update"; conversationId: string; actorId: number; kind: "message-sent" | "message-deleted" | "conversation-deleted" }) {
+    this.dispatchEvent(new MessageEvent("message", { data: JSON.stringify(event) }));
+  }
+
+  close() {
+    this.readyState = 3;
+    this.dispatchEvent(new Event("close"));
+  }
+}
 const incoming: ChatMessage = {
   id: "a",
   conversationId,
@@ -53,7 +76,9 @@ const snapshot = (unread = 0): MessagingSnapshot => ({
 });
 
 afterEach(() => {
+  MockWebSocket.instances = [];
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -179,42 +204,63 @@ test("shows a login prompt to an anonymous visitor", async () => {
   );
 });
 
-test("polling pauses in hidden tabs and aborts requests and timers on unmount", async () => {
-  vi.useFakeTimers();
-  let visibility: DocumentVisibilityState = "visible";
-  vi.spyOn(document, "visibilityState", "get").mockImplementation(
-    () => visibility,
+test("can render the messaging panel without a floating trigger button", () => {
+  render(<Messaging initialData={snapshot()} initialOpen showTrigger={false} />);
+
+  expect(
+    screen.queryByRole("button", { name: "Messages" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("dialog", { name: "Private messages" }),
+  ).toBeInTheDocument();
+});
+
+test("refreshes the open conversation list only when a WebSocket update arrives", async () => {
+  vi.stubGlobal("WebSocket", MockWebSocket);
+  MockWebSocket.instances = [];
+  const updated = {
+    ...incoming,
+    content: "Realtime update",
+    createdAt: "2026-10-28T10:03:00.000Z",
+  };
+  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    Response.json({
+      conversations: [
+        {
+          id: conversationId,
+          user: { id: 2, name: "Alex" },
+          updatedAt: updated.createdAt,
+          lastMessage: updated,
+          unreadCount: 1,
+        },
+      ],
+      conversationIds: [conversationId],
+      unreadCount: 1,
+      nextCursor: null,
+    }),
   );
-  const task = vi.fn(async (_signal: AbortSignal) => {});
-  const { unmount } = renderHook(() => usePolling(task, 3000));
-  await act(async () => {});
-  expect(task).toHaveBeenCalledTimes(1);
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(3000);
+  render(<Messaging initialData={snapshot(1)} initialOpen />);
+  const socket = MockWebSocket.instances[0];
+  socket.open();
+  socket.receive({
+    type: "update",
+    conversationId,
+    actorId: 2,
+    kind: "message-sent",
   });
-  expect(task).toHaveBeenCalledTimes(2);
-  visibility = "hidden";
-  act(() => {
-    document.dispatchEvent(new Event("visibilitychange"));
-  });
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(9000);
-  });
-  expect(task).toHaveBeenCalledTimes(2);
-  visibility = "visible";
-  await act(async () => {
-    document.dispatchEvent(new Event("visibilitychange"));
-  });
-  expect(task).toHaveBeenCalledTimes(3);
-  const lastSignal = task.mock.calls[2][0];
-  unmount();
-  expect(lastSignal.aborted).toBe(true);
-  await vi.advanceTimersByTimeAsync(9000);
-  expect(task).toHaveBeenCalledTimes(3);
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  expect(screen.getByText("Realtime update")).toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith(
+    "/api/messaging/conversations",
+    expect.anything(),
+  );
 });
 
 test("does not skip an incoming message that arrives while a message is being sent", async () => {
   vi.useFakeTimers();
+  vi.stubGlobal("WebSocket", MockWebSocket);
   const between = {
     ...incoming,
     id: "b",
@@ -237,12 +283,22 @@ test("does not skip an incoming message that arrives while a message is being se
   const { result, unmount } = renderHook(() =>
     useChatMessages(conversationId, 1, vi.fn(), vi.fn()),
   );
-  await act(async () => {});
+  const socket = MockWebSocket.instances[0];
+  socket.open();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
   await act(async () => {
     await result.current.send("Hello Alex");
   });
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(3000);
+    socket.receive({
+      type: "update",
+      conversationId,
+      actorId: 2,
+      kind: "message-sent",
+    });
+    await vi.advanceTimersByTimeAsync(25);
   });
   expect(fetch).toHaveBeenCalledWith(
     expect.stringContaining("?after=a"),
@@ -254,6 +310,70 @@ test("does not skip an incoming message that arrives while a message is being se
     "c",
   ]);
   unmount();
+});
+
+test("syncs a message sent from another messaging panel on the Messages page", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("WebSocket", MockWebSocket);
+  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    Response.json({
+      messages: [outgoing],
+      hasMore: false,
+      nextCursor: null,
+    }),
+  );
+  const { result, unmount } = renderHook(() =>
+    useChatMessages(
+      conversationId,
+      user.id,
+      vi.fn(),
+      vi.fn(),
+      { messages: [incoming], hasMore: false, nextCursor: null },
+    ),
+  );
+  const socket = MockWebSocket.instances[0];
+  socket.open();
+
+  await act(async () => {
+    socket.receive({
+      type: "update",
+      conversationId,
+      actorId: user.id,
+      kind: "message-sent",
+    });
+    await vi.advanceTimersByTimeAsync(25);
+  });
+
+  expect(fetch).toHaveBeenCalledWith(
+    expect.stringContaining(`/api/messaging/conversations/${conversationId}/messages?after=a`),
+    expect.anything(),
+  );
+  expect(result.current.messages).toContainEqual(outgoing);
+  unmount();
+});
+
+test("immediately shows a panel-sent message in the Messages page thread", async () => {
+  const sentMessage = { ...outgoing, content: "Sent from the panel" };
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json(sentMessage));
+  const initialPage = {
+    messages: [{ ...incoming, readAt: incoming.createdAt }],
+    hasMore: false,
+    nextCursor: null,
+  };
+  const panel = renderHook(() =>
+    useChatMessages(conversationId, user.id, vi.fn(), vi.fn(), initialPage),
+  );
+  const messagesPage = renderHook(() =>
+    useChatMessages(conversationId, user.id, vi.fn(), vi.fn(), initialPage),
+  );
+
+  await act(async () => {
+    expect(await panel.result.current.send("Sent from the panel")).toBe(true);
+  });
+
+  expect(messagesPage.result.current.messages).toContainEqual(sentMessage);
+  panel.unmount();
+  messagesPage.unmount();
 });
 
 test('only offers deletion for own messages and retains the confirmation after a failed deletion', async () => {
@@ -291,21 +411,33 @@ test('requires confirmation before deleting a conversation and refreshes the inb
   expect(fetch).toHaveBeenCalledWith(`/api/messaging/conversations/${conversationId}`, expect.objectContaining({ method: 'DELETE' }));
 });
 
-test('polling applies message deletions made in another session', async () => {
+test('WebSocket updates synchronize message deletions made in another session', async () => {
   vi.useFakeTimers();
+  vi.stubGlobal("WebSocket", MockWebSocket);
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ messages: [], deletedMessageIds: [outgoing.id], hasMore: false, nextCursor: null }));
   const { result, unmount } = renderHook(() => useChatMessages(conversationId, 1, vi.fn(), vi.fn(), { messages: [outgoing], hasMore: false, nextCursor: null }));
-  await act(async () => { await vi.advanceTimersByTimeAsync(3000); });
+  const socket = MockWebSocket.instances[0];
+  socket.open();
+  await act(async () => {
+    socket.receive({ type: "update", conversationId, actorId: 2, kind: "message-deleted" });
+    await vi.advanceTimersByTimeAsync(25);
+  });
   expect(result.current.messages[0]).toMatchObject({ id: outgoing.id, content: '', deletedAt: expect.any(String) });
   unmount();
 });
 
 test('closes a conversation deleted by the other participant', async () => {
   vi.useFakeTimers();
+  vi.stubGlobal("WebSocket", MockWebSocket);
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ message: 'Conversation not found' }, { status: 404 }));
   const onDeleted = vi.fn();
   const { unmount } = renderHook(() => useChatMessages(conversationId, 1, vi.fn(), vi.fn(), { messages: [outgoing], hasMore: false, nextCursor: null }, true, onDeleted));
-  await act(async () => { await vi.advanceTimersByTimeAsync(3000); });
+  const socket = MockWebSocket.instances[0];
+  socket.open();
+  await act(async () => {
+    socket.receive({ type: "update", conversationId, actorId: 2, kind: "conversation-deleted" });
+    await vi.advanceTimersByTimeAsync(25);
+  });
   expect(onDeleted).toHaveBeenCalledTimes(1);
   unmount();
 });

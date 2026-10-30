@@ -23,6 +23,14 @@ export async function requireConversation(userId: number, id: string) {
     throw new HttpError(404, ERROR_MESSAGES.MESSAGING_NOT_FOUND);
 }
 
+export async function getConversationParticipantIds(id: string) {
+  const conversation = await prisma.conversation.findUnique({
+    where: { id },
+    select: { participants: { select: { userId: true } } },
+  });
+  return conversation?.participants.map(({ userId }) => userId) ?? [];
+}
+
 export async function getConversationSummary(userId: number, id: string) {
   const conversation = await prisma.conversation.findFirst({
     where: { id, participants: { some: { userId } } },

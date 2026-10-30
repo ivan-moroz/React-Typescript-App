@@ -6,7 +6,7 @@ import type { AppProps } from "next/app";
 import { ModalProvider } from "../../src/components/modal/ModalProvider";
 import "../../src/styles/index.scss";
 import "../../src/styles/App.scss";
-import "../features/assets/assets.scss";
+import "../features/assets/styles/styles.scss";
 import "../features/users/styles/styles.scss";
 import "../../src/components/modal/styles/styles.scss";
 import "../../src/components/select/styles/styles.scss";

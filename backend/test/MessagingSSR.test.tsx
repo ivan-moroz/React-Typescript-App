@@ -76,6 +76,19 @@ test("full inbox does not offer a return-to-panel action", async () => {
   );
 });
 
+test("opens the selected conversation when App Router supplies updated page data", async () => {
+  const inbox = await getInitialMessaging(user);
+  const selected = await getInitialMessaging(user, conversationId);
+  const { rerender } = render(<MessagingPageClient initialMessaging={inbox} />);
+
+  expect(screen.queryByRole("heading", { level: 3, name: "Alex" })).not.toBeInTheDocument();
+
+  rerender(<MessagingPageClient initialMessaging={selected} />);
+
+  expect(screen.getByRole("heading", { level: 3, name: "Alex" })).toBeInTheDocument();
+  expect(screen.getByText("Rendered on the server")).toBeInTheDocument();
+});
+
 test("opens the messaging panel when requested", async () => {
   const initialData = await getInitialMessaging(user);
   render(<Messaging initialData={initialData} initialOpen />);

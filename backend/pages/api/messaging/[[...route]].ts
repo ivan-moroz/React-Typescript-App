@@ -4,6 +4,7 @@ import {
   createConversation,
   deleteConversation,
   deleteMessage,
+  getConversationParticipantIds,
   listConversations,
   listMessages,
   markRead,
@@ -11,6 +12,7 @@ import {
   sendMessage,
   unreadCount,
 } from "../../../features/messaging/server/messaging";
+import { publishMessagingUpdate } from "../../../features/messaging/server/realtime";
 import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
 
 export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };
@@ -51,10 +53,19 @@ export default async function handler(
         res
           .status(200)
           .json(await listConversations(user.id, cursor(req.query.cursor)));
-      else if (req.method === "POST")
-        res
-          .status(200)
-          .json(await createConversation(user.id, req.body?.userId));
+      else if (req.method === "POST") {
+        const conversation = await createConversation(user.id, req.body?.userId);
+        publishMessagingUpdate(
+          [user.id, conversation.user.id],
+          {
+            type: "update",
+            conversationId: conversation.id,
+            actorId: user.id,
+            kind: "conversation-created",
+          },
+        );
+        res.status(200).json(conversation);
+      }
       else throw new HttpError(405, ERROR_MESSAGES.METHOD_NOT_ALLOWED);
       return;
     }
@@ -76,12 +87,26 @@ export default async function handler(
     }
     if (req.method === 'DELETE' && route[0] === 'conversations' && uuid.test(route[1] ?? '')) {
       if (route.length === 2) {
+        const participants = await getConversationParticipantIds(route[1]);
         await deleteConversation(user.id, route[1]);
+        publishMessagingUpdate(participants, {
+          type: "update",
+          conversationId: route[1],
+          actorId: user.id,
+          kind: "conversation-deleted",
+        });
         res.status(204).end();
         return;
       }
       if (route.length === 4 && route[2] === 'messages' && uuid.test(route[3])) {
+        const participants = await getConversationParticipantIds(route[1]);
         await deleteMessage(user.id, route[1], route[3]);
+        publishMessagingUpdate(participants, {
+          type: "update",
+          conversationId: route[1],
+          actorId: user.id,
+          kind: "message-deleted",
+        });
         res.status(204).end();
         return;
       }
@@ -92,11 +117,17 @@ export default async function handler(
       uuid.test(route[1])
     ) {
       if (route[2] === "messages") {
-        if (req.method === "POST")
-          res
-            .status(201)
-            .json(await sendMessage(user.id, route[1], req.body?.content));
-        else if (req.method === 'GET') {
+        if (req.method === "POST") {
+          const message = await sendMessage(user.id, route[1], req.body?.content);
+          const participants = await getConversationParticipantIds(route[1]);
+          publishMessagingUpdate(participants, {
+            type: "update",
+            conversationId: route[1],
+            actorId: user.id,
+            kind: "message-sent",
+          });
+          res.status(201).json(message);
+        } else if (req.method === 'GET') {
           const before = cursor(req.query.before),
             after = cursor(req.query.after);
           if (before && after)
@@ -115,6 +146,12 @@ export default async function handler(
         if (!messageId)
           throw new HttpError(400, ERROR_MESSAGES.MESSAGING_CURSOR_INVALID);
         await markRead(user.id, route[1], messageId);
+        publishMessagingUpdate(await getConversationParticipantIds(route[1]), {
+          type: "update",
+          conversationId: route[1],
+          actorId: user.id,
+          kind: "message-read",
+        });
         res.status(204).end();
         return;
       }

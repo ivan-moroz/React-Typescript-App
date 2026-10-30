@@ -1,3 +1,5 @@
+"use client";
+
 import Calculator from "../components/calculator/Calculator";
 import React from "react";
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { ERROR_MESSAGES } from "../constants/errors";
 import { useEffect, useRef, useState } from "react";
 import { mergeSequence, parseNumbers } from "./puzzle/solver";

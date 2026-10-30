@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchData } from "../../../src/utils/fetchData";
 import MessagingPanel from "./components/MessagingPanel";
-import { usePolling } from "./hooks/usePolling";
 import type { MessagingSnapshot } from "./types/types";
 
 export default function Messaging({
   initialData,
   initialOpen = false,
+  showTrigger = true,
   onOpenChange,
 }: {
   initialData: MessagingSnapshot;
   initialOpen?: boolean;
+  showTrigger?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
   const [user, setUser] = useState(initialData.user);
@@ -35,23 +35,20 @@ export default function Messaging({
     setUnread(initialData.conversationPage.unreadCount);
     setError(initialData.error);
   }, [initialData]);
-  usePolling(
-    async (signal) => {
-      const result = await fetchData<{ unreadCount: number }>(
-        "/api/messaging/unread",
-        { signal },
-      );
-      if (signal.aborted) return;
-      if (result.success) {
-        setUnread(result.data.unreadCount ?? 0);
+  useEffect(() => {
+    if (!user || open) return;
+    const handleUnread = (event: Event) => {
+      const count = (event as CustomEvent<number>).detail;
+      if (Number.isSafeInteger(count) && count >= 0) {
+        setUnread(count);
         setError("");
-      } else if (result.error.status === 401) expire();
-      else setError(result.error.message);
-    },
-    15000,
-    Boolean(user) && !open,
-    false,
-  );
+      }
+    };
+    window.addEventListener("messaging:unread", handleUnread);
+    return () => {
+      window.removeEventListener("messaging:unread", handleUnread);
+    };
+  }, [open, user]);
   useEffect(() => {
     if (!open) return;
     const outside = (event: MouseEvent) => {
@@ -69,24 +66,26 @@ export default function Messaging({
   }, [open, close]);
   return (
     <div className="messaging" ref={wrapper}>
-      <button
-        ref={trigger}
-        type="button"
-        className="messaging-trigger"
-        aria-label={`Messages${unread ? `, ${unread} unread` : ""}`}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        onClick={() => setOpen((value) => !value)}
-      >
-        <span className="material-icons" aria-hidden="true">
-          chat_bubble_outline
-        </span>
-        {unread > 0 && (
-          <span className="messaging-badge" aria-hidden="true">
-            {unread > 99 ? "99+" : unread}
+      {showTrigger && (
+        <button
+          ref={trigger}
+          type="button"
+          className="messaging-trigger"
+          aria-label={`Messages${unread ? `, ${unread} unread` : ""}`}
+          aria-expanded={open}
+          aria-haspopup="dialog"
+          onClick={() => setOpen((value) => !value)}
+        >
+          <span className="material-icons" aria-hidden="true">
+            chat_bubble_outline
           </span>
-        )}
-      </button>
+          {unread > 0 && (
+            <span className="messaging-badge" aria-hidden="true">
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )}
+        </button>
+      )}
       <section
         className="messaging-panel"
         hidden={!open}

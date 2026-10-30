@@ -39,7 +39,7 @@ In the project directory, you can run:
 
 Starts the Vite development server.
 
-Run `npm run dev:backend` alongside Vite. Vite proxies `/api`, `/assets`, `/users`, and Next.js runtime files to port 3001. Assets and Users (`/users`) render on the Next.js server at request time, with their initial data read directly from Prisma; uploads, modals, pagination, and editing remain interactive after hydration.
+Run `npm run dev:backend` alongside Vite. Vite proxies `/api` (including WebSocket upgrades), `/assets`, `/users`, and Next.js runtime files to port 3001. Assets and Users (`/users`) render on the Next.js server at request time, with their initial data read directly from Prisma; uploads, modals, pagination, and editing remain interactive after hydration.
 
 Assets and Users implementation files, feature components, and tests live under `backend/features` and `backend/test`. Their Next.js route entry points are `backend/pages/assets.tsx` and `backend/pages/users.tsx`. These pages are excluded from the Vite SPA routes and bundles.
 
@@ -49,7 +49,7 @@ By default it runs at [http://localhost:5173](http://localhost:5173).
 
 ### `npm run dev:backend`
 
-Starts the Next.js backend API at [http://localhost:3001](http://localhost:3001).
+Starts the custom Node.js server for Next.js, APIs, and authenticated messaging WebSockets at [http://localhost:3001](http://localhost:3001).
 
 Development uses Turbopack with an isolated `backend/.next-turbo-dev` cache. After switching from the old Webpack server, stop the old backend process, restart `npm run dev:backend`, and close/reopen app tabs once so they load the new development runtime. Production builds still use `backend/.next`.
 
@@ -84,7 +84,7 @@ Runs tests with Vitest.
 
 Builds the app for production into the `dist` folder.
 
-For the full application, run `npm run build`, then `npm run build:backend`, and serve with `npm run start:backend`. Next.js serves Assets and Users with SSR and serves the remaining SPA routes and static files from `dist`. `npm run preview` alone only previews the Vite build and does not provide SSR or the API.
+For the full application, run `npm run build`, then `npm run build:backend`, and serve with `npm run start:backend`. The persistent custom Node.js server serves Next.js pages, APIs, and messaging WebSockets. `npm run preview` alone only previews the Vite build and does not provide SSR, APIs, or WebSockets.
 
 ### `npm run preview`
 

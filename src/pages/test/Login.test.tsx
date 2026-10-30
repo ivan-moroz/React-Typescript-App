@@ -12,7 +12,7 @@ describe("LoginPage", () => {
 		);
 		render(
 			<MemoryRouter initialEntries={["/login?from=/users"]}>
-				<LoginPage />
+				<LoginPage from="/users" />
 			</MemoryRouter>,
 		);
 		expect(screen.getByRole("heading", { name: "Log in" })).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("LoginPage", () => {
 						`/login?from=${encodeURIComponent(destination)}`,
 					]}
 				>
-					<LoginPage />
+					<LoginPage from={destination} />
 				</MemoryRouter>,
 			);
 			fireEvent.change(screen.getByLabelText("Email"), {
@@ -120,9 +120,9 @@ describe("LoginPage", () => {
 			Object.defineProperty(browser, "location", { value: { assign } });
 			vi.stubGlobal("window", browser);
 
-			render(
-				<MemoryRouter initialEntries={[{ pathname: "/login", state: { from } }]}>
-					<LoginPage />
+				render(
+					<MemoryRouter initialEntries={[{ pathname: "/login", state: { from } }]}>
+						<LoginPage from={from} />
 				</MemoryRouter>,
 			);
 

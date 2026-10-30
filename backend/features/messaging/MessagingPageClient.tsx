@@ -17,7 +17,14 @@ export default function MessagingPageClient({
         <h1>Private messages</h1>
       </div>
       {initialMessaging.user && !expired ? (
-        <MessagingPanel user={initialMessaging.user} initialData={initialMessaging} serverNavigation onUnread={() => {}} onExpired={expire} />
+        <MessagingPanel
+          key={initialMessaging.selectedConversation?.id ?? "inbox"}
+          user={initialMessaging.user}
+          initialData={initialMessaging}
+          serverNavigation
+          onUnread={() => {}}
+          onExpired={expire}
+        />
       ) : (
         <div className="messaging-empty">
           {initialMessaging.error && <p role="alert">{initialMessaging.error}</p>}

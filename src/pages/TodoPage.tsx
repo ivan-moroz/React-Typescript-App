@@ -1,3 +1,5 @@
+"use client";
+
 import React, { lazy } from "react";
 
 const ToDo = lazy(() => import("./toDo/ToDo"));

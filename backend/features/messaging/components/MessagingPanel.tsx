@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ConfirmationModal from '../../../../src/components/modal/ConfirmationModal';
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
-import { usePolling } from "../hooks/usePolling";
+import { subscribeMessagingRealtime } from "../client/realtime";
 import ConversationList from "./ConversationList";
 import ChatThread from "./ChatThread";
 import type {
@@ -27,6 +27,9 @@ export default function MessagingPanel({
   active?: boolean;
   serverNavigation?: boolean;
 }) {
+  const navigateServerPage = (href: string) => {
+    window.dispatchEvent(new CustomEvent("app:navigate", { detail: href }));
+  };
   const [conversations, setConversations] = useState<ConversationSummary[]>(
     initialData?.conversationPage.conversations ?? [],
   );
@@ -46,6 +49,7 @@ export default function MessagingPanel({
   const [starting, setStarting] = useState(false);
   const [deleting, setDeleting] = useState<ConversationSummary | null>(null);
   const removedIds = useRef(new Set<string>());
+  const refreshInboxOnReturn = useRef(false);
   const lifetime = useRef<AbortController | null>(null);
   useEffect(() => {
     const controller = new AbortController();
@@ -68,6 +72,11 @@ export default function MessagingPanel({
     }
     setError("");
     onUnread(result.data.unreadCount);
+    window.dispatchEvent(
+      new CustomEvent<number>("messaging:unread", {
+        detail: result.data.unreadCount,
+      }),
+    );
     const activeIds = result.data.conversationIds ? new Set(result.data.conversationIds) : null;
     if (selected && activeIds && !activeIds.has(selected.id)) removeFromPanel(selected.id);
     setSelected((current) =>
@@ -84,15 +93,41 @@ export default function MessagingPanel({
           b.updatedAt.localeCompare(a.updatedAt) || b.id.localeCompare(a.id),
       );
     });
-    // Polling the first page must not reset the user's history pagination.
+    // Refreshing the first page must not reset the user's history pagination.
     if (next || conversations.length <= 30) setCursor(result.data.nextCursor);
   };
-  usePolling(
-    (signal) => load(signal),
-    10000,
-    active,
-    !initialData || Boolean(initialData.error),
-  );
+  useEffect(() => {
+    if (!active) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe = subscribeMessagingRealtime((event) => {
+      const needsRefresh =
+        (event.type === "connected" && event.reconnected) ||
+        (event.type === "update" &&
+          event.kind !== "message-read" &&
+          (event.actorId !== user.id || event.kind === "message-sent"));
+      if (!needsRefresh) return;
+      if (selected) {
+        refreshInboxOnReturn.current = true;
+        return;
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        void load(controller.signal);
+      }, 50);
+    });
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      unsubscribe();
+    };
+  }, [active, selected, user.id]);
+
+  useEffect(() => {
+    if (!active || selected || !refreshInboxOnReturn.current || !lifetime.current) return;
+    refreshInboxOnReturn.current = false;
+    void load(lifetime.current.signal);
+  }, [active, selected]);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -143,7 +178,7 @@ export default function MessagingPanel({
       return;
     }
     if (serverNavigation) {
-      window.location.assign(`/messaging?conversation=${result.data.id}`);
+      navigateServerPage(`/messaging?conversation=${result.data.id}`);
       return;
     }
     setSelected(result.data);
@@ -154,7 +189,7 @@ export default function MessagingPanel({
     removedIds.current.add(id);
     setConversations(current => current.filter(item => item.id !== id));
     setSelected(current => current?.id === id ? null : current);
-    if (serverNavigation && selected?.id === id) window.location.assign("/messaging");
+    if (serverNavigation && selected?.id === id) navigateServerPage("/messaging");
   };
   const deleteDialog = deleting && <ConfirmationModal title="Delete conversation"
     message={`Delete the conversation with ${deleting.user?.name ?? 'this user'} for both participants? All messages will be permanently removed.`}
@@ -181,15 +216,13 @@ export default function MessagingPanel({
         }
         onBack={() => {
           if (serverNavigation)
-            window.location.assign("/messaging");
+            navigateServerPage("/messaging");
           else setSelected(null);
         }}
         onExpired={onExpired}
         onDeleteConversation={() => setDeleting(selected)}
         onConversationDeleted={() => removeFromPanel(selected.id)}
         onChanged={() => {
-          if (serverNavigation)
-            window.dispatchEvent(new Event("messaging:changed"));
           if (lifetime.current) void load(lifetime.current.signal);
         }}
       />{deleteDialog}</>

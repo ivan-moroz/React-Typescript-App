@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import UsersPage from "../../features/users/UsersPage";
 import { loadUsersPage } from "../../features/users/server/loadUsersPage";
-import { RouteLoading } from "../route-loading";
+import { RouteLoading } from "../loading/route-loading";
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
-import { usePolling } from "./usePolling";
+import { subscribeMessagingRealtime } from "../client/realtime";
 import {
   MAX_MESSAGE_LENGTH,
   type ChatMessage,
@@ -108,13 +108,16 @@ export function useChatMessages(
       void markSeen(lifetime.current.signal);
   }, [active]);
 
-  usePolling(
-    async (signal) => {
+  useEffect(() => {
+    if (!active) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = async () => {
       const result = await fetchData<MessagePage>(
         `${endpoint}/messages${initialized.current && pollCursor.current ? `?after=${pollCursor.current}&from=${current.current[0]?.id ?? pollCursor.current}` : ""}`,
-        { signal },
+        { signal: controller.signal },
       );
-      if (signal.aborted) return;
+      if (controller.signal.aborted) return;
       setLoading(false);
       if (!result.success) {
         fail(result.error);
@@ -131,12 +134,33 @@ export function useChatMessages(
       }
       result.data.deletedMessageIds?.forEach(id => deletedIds.current.add(id));
       merge(result.data.messages);
-      await markSeen(signal);
-    },
-    3000,
-    active,
-    !initialPage,
-  );
+      await markSeen(controller.signal);
+    };
+    if (!initialPage) timer = setTimeout(() => void refresh(), 0);
+    const unsubscribe = subscribeMessagingRealtime((event) => {
+      if (
+        (event.type === "connected" && event.reconnected) ||
+        (event.type === "update" &&
+          event.conversationId === conversationId &&
+          (event.actorId !== userId || event.kind === "message-sent"))
+      ) {
+        clearTimeout(timer);
+        timer = setTimeout(() => void refresh(), 25);
+      }
+    });
+    const handleLocalMessage = (event: Event) => {
+      const message = (event as CustomEvent<ChatMessage>).detail;
+      if (!message || message.conversationId !== conversationId) return;
+      merge([message]);
+    };
+    window.addEventListener("messaging:message-sent", handleLocalMessage);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      unsubscribe();
+      window.removeEventListener("messaging:message-sent", handleLocalMessage);
+    };
+  }, [active, conversationId, endpoint, initialPage, userId]);
 
   const loadOlder = async () => {
     if (olderRef.current || !hasOlder || !current.current.length) return;
@@ -182,6 +206,11 @@ export function useChatMessages(
       return false;
     }
     merge([result.data]);
+    window.dispatchEvent(
+      new CustomEvent<ChatMessage>("messaging:message-sent", {
+        detail: result.data,
+      }),
+    );
     onChanged();
     return true;
   };

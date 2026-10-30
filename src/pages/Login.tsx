@@ -1,15 +1,18 @@
 import { fetchData } from "../utils/fetchData";
 import { ERROR_MESSAGES } from "../constants/errors";
 import { FormEvent, useState } from "react";
-import { useLocation } from "react-router-dom";
 
 import "../styles/login.scss";
 
-export default function LoginPage() {
-	const location = useLocation();
-	const from =
-		location.state?.from ??
-		new URLSearchParams(location.search).get("from");
+
+export default function LoginPage({
+	from: initialFrom,
+	onNavigate,
+}: {
+	from?: string | null;
+	onNavigate?: (href: string) => void;
+} = {}) {
+	const from = initialFrom ?? (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("from"));
 	const returnTo =
 		typeof from === "string" &&
 		from.startsWith("/") &&
@@ -46,7 +49,8 @@ export default function LoginPage() {
 		}
 		const payload = result.data;
 		sessionStorage.setItem("authenticatedUser", JSON.stringify(payload));
-		window.location.assign(returnTo);
+		if (onNavigate) onNavigate(returnTo);
+		else window.location.assign(returnTo);
 	};
 
 	return (

@@ -22,6 +22,5 @@ export async function getServerNavigationProps(req: IncomingMessage | undefined,
       }
     }
   }
-  return { pathname, from, user: user ? { name: user.name } : null, unreadCount: count };
+  return { pathname, from, user: user ? { id: user.id, name: user.name } : null, unreadCount: count };
 }
-

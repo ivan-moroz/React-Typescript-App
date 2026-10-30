@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RouteBoundary from './components/routing/RouteBoundary';
 import './components/routing/RouteLoading.scss';
 import NotFoundPage from './pages/NotFound';
+import LoginRoute from './pages/LoginRoute';
 import {ModalProvider} from './components/modal/ModalProvider';
 import './styles/App.scss';
 import '../backend/features/navigation/styles/styles.scss';
@@ -13,7 +14,6 @@ import MessagingPanelHost from '../backend/features/messaging/MessagingPanelHost
 const Home = lazy(() => import('./pages/Home'));
 const TodoPage = lazy(() => import('./pages/TodoPage'));
 const CalculatorPage = lazy(() => import('./pages/Calculator'));
-const LoginPage = lazy(() => import('./pages/Login'));
 const PuzzlePage = lazy(() => import('./pages/Puzzle'));
 
 export default function App() {
@@ -28,7 +28,7 @@ export default function App() {
                             <Route path="/todo" element={<TodoPage />} />
                             <Route path="/calculator" element={<CalculatorPage />} />
                             <Route path="/puzzle" element={<PuzzlePage />} />
-                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/login" element={<LoginRoute />} />
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>
                     </RouteBoundary>

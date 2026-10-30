@@ -27,7 +27,6 @@ export default function MessagingPanelHost({
 }) {
   const [snapshot, setSnapshot] = useState<MessagingSnapshot | null>(null);
   const [panelKey, setPanelKey] = useState(0);
-  const [panelVisible, setPanelVisible] = useState(false);
   const opening = useRef(false);
 
   const openPanel = useCallback(async () => {
@@ -90,11 +89,10 @@ export default function MessagingPanelHost({
   }, [openPanel]);
 
   useEffect(() => {
-    if (!panelVisible) return;
-    const refreshOpenPanel = () => void openPanel();
-    window.addEventListener("messaging:changed", refreshOpenPanel);
-    return () => window.removeEventListener("messaging:changed", refreshOpenPanel);
-  }, [openPanel, panelVisible]);
+    const openRequested = () => void openPanel();
+    window.addEventListener("messaging:open", openRequested);
+    return () => window.removeEventListener("messaging:open", openRequested);
+  }, [openPanel]);
 
   if (!snapshot || panelKey === 0) return null;
   return (
@@ -103,7 +101,7 @@ export default function MessagingPanelHost({
         key={panelKey}
         initialData={snapshot}
         initialOpen
-        onOpenChange={setPanelVisible}
+        showTrigger={false}
       />
     </div>
   );

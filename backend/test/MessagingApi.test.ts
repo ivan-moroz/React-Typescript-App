@@ -55,6 +55,7 @@ async function request(
 
 beforeEach(() => {
   vi.resetAllMocks();
+  globalThis.publishMessagingUpdate = vi.fn();
   vi.mocked(getSessionUser).mockResolvedValue({ id: 1, name: "Jane" });
   db.$transaction.mockImplementation(async (work: unknown) =>
     typeof work === "function"
@@ -62,6 +63,10 @@ beforeEach(() => {
       : Promise.all(work as Promise<unknown>[]),
   );
   db.message.count.mockResolvedValue(0);
+});
+
+afterEach(() => {
+  globalThis.publishMessagingUpdate = undefined;
 });
 
 test.each(["conversations", "unread", "users"])(
@@ -103,6 +108,9 @@ test("rejects sending as a non-member", async () => {
 
 test("uses the authenticated sender and saves a message transactionally", async () => {
   db.conversation.findFirst.mockResolvedValue({ _count: { participants: 2 } });
+  db.conversation.findUnique.mockResolvedValue({
+    participants: [{ userId: 1 }, { userId: 2 }],
+  });
   db.message.create.mockResolvedValue({ id: messageId, createdAt: now });
   const res = await request(
     ["conversations", conversationId, "messages"],
@@ -122,6 +130,12 @@ test("uses the authenticated sender and saves a message transactionally", async 
   expect(db.conversation.updateMany).toHaveBeenCalledWith({
     where: { id: conversationId, updatedAt: { lt: now } },
     data: { updatedAt: now },
+  });
+  expect(globalThis.publishMessagingUpdate).toHaveBeenCalledWith([1, 2], {
+    type: "update",
+    conversationId,
+    actorId: 1,
+    kind: "message-sent",
   });
 });
 
