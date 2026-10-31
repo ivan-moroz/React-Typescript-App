@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MAX_MESSAGE_LENGTH } from "../types/types";
 
 export default function MessageComposer({
@@ -15,6 +15,18 @@ export default function MessageComposer({
   onSend: (text: string) => Promise<boolean>;
 }) {
   const [draft, setDraft] = useState("");
+  const draftInput = useRef<HTMLTextAreaElement>(null);
+  const wasSending = useRef(sending);
+  const restoreFocusAfterSend = useRef(false);
+
+  useEffect(() => {
+    const finishedSending = wasSending.current && !sending;
+    wasSending.current = sending;
+    if (!finishedSending || !restoreFocusAfterSend.current) return;
+
+    restoreFocusAfterSend.current = false;
+    draftInput.current?.focus();
+  }, [sending]);
 
   return (
     <form
@@ -22,6 +34,8 @@ export default function MessageComposer({
       onSubmit={async (event) => {
         event.preventDefault();
         if (loading || sending) return;
+        if (!draft.trim()) return;
+        restoreFocusAfterSend.current = true;
         if (await onSend(draft)) setDraft("");
       }}
     >
@@ -33,6 +47,7 @@ export default function MessageComposer({
         placeholder="Write a message…"
         maxLength={MAX_MESSAGE_LENGTH}
         rows={2}
+        ref={draftInput}
         value={draft}
         disabled={sending}
         autoFocus={active}
