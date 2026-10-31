@@ -1,4 +1,5 @@
 import type { MessagingUser } from "../types/types";
+import type { ChangeEvent } from "react";
 
 export default function ConversationSearch({
   query,
@@ -19,6 +20,13 @@ export default function ConversationSearch({
   onQueryChange: (query: string) => void;
   onStart: (recipient: MessagingUser) => void;
 }) {
+  const onQueryChangeInput = (event: ChangeEvent<HTMLInputElement>) => {
+    onQueryChange(event.target.value);
+  };
+  const onStartConversation = (recipient: MessagingUser) => () => {
+    onStart(recipient);
+  };
+
   return (
     <>
       <label className="messaging-search">
@@ -28,7 +36,7 @@ export default function ConversationSearch({
           placeholder="Search users by name"
           maxLength={100}
           value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={onQueryChangeInput}
           autoFocus={active}
         />
       </label>
@@ -45,7 +53,7 @@ export default function ConversationSearch({
               type="button"
               key={recipient.id}
               disabled={starting}
-              onClick={() => onStart(recipient)}
+              onClick={onStartConversation(recipient)}
             >
               {recipient.name}
               <span>Start chat</span>

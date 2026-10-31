@@ -51,6 +51,13 @@ export default function ChatThread({
   );
   const [deletingMessage, setDeletingMessage] = useState<string | null>(null);
 
+  const onCloseDeleteMessage = () => {
+    setDeletingMessage(null);
+  };
+  const onConfirmDeleteMessage = async () => {
+    if (deletingMessage) await removeMessage(deletingMessage);
+  };
+
   return (
     <div className="chat-thread">
       <div className="chat-heading">
@@ -64,7 +71,18 @@ export default function ChatThread({
           </span>
         </button>
         <h3>{conversation.user?.name ?? "Deleted user"}</h3>
-        {onDeleteConversation && <button className="chat-delete-conversation" type="button" aria-label="Delete conversation" onClick={onDeleteConversation}><span className="material-icons" aria-hidden="true">delete</span></button>}
+        {onDeleteConversation && (
+          <button
+            className="chat-delete-conversation"
+            type="button"
+            aria-label="Delete conversation"
+            onClick={onDeleteConversation}
+          >
+            <span className="material-icons" aria-hidden="true">
+              delete
+            </span>
+          </button>
+        )}
       </div>
       {error && (
         <p role="alert" className="messaging-error">
@@ -91,7 +109,15 @@ export default function ChatThread({
       ) : (
         <p className="messaging-empty">This user is no longer available.</p>
       )}
-      {deletingMessage && <ConfirmationModal title="Delete message" message="Delete this message for everyone? This cannot be undone." confirmLabel="Delete" onClose={() => setDeletingMessage(null)} onConfirm={() => removeMessage(deletingMessage)} />}
+      {deletingMessage && (
+        <ConfirmationModal
+          title="Delete message"
+          message="Delete this message for everyone? This cannot be undone."
+          confirmLabel="Delete"
+          onClose={onCloseDeleteMessage}
+          onConfirm={onConfirmDeleteMessage}
+        />
+      )}
     </div>
   );
 }

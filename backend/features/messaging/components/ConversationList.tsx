@@ -12,6 +12,13 @@ export default function ConversationList({
   serverNavigation?: boolean;
   onDelete?: (conversation: ConversationSummary) => void;
 }) {
+  const onSelectConversation = (conversation: ConversationSummary) => () => {
+    onSelect(conversation);
+  };
+  const onDeleteConversation = (conversation: ConversationSummary) => () => {
+    onDelete?.(conversation);
+  };
+
   return (
     <ul className="conversation-list">
       {conversations.map((conversation) => {
@@ -48,12 +55,23 @@ export default function ConversationList({
               <button
                 type="button"
                 className="conversation-item"
-                onClick={() => onSelect(conversation)}
+                onClick={onSelectConversation(conversation)}
               >
                 {content}
               </button>
             )}
-            {onDelete && <button className="conversation-delete" type="button" aria-label={`Delete conversation with ${conversation.user?.name ?? 'deleted user'}`} onClick={() => onDelete(conversation)}><span className="material-icons" aria-hidden="true">delete</span></button>}
+            {onDelete && (
+              <button
+                className="conversation-delete"
+                type="button"
+                aria-label={`Delete conversation with ${conversation.user?.name ?? "deleted user"}`}
+                onClick={onDeleteConversation(conversation)}
+              >
+                <span className="material-icons" aria-hidden="true">
+                  delete
+                </span>
+              </button>
+            )}
           </li>
         );
       })}

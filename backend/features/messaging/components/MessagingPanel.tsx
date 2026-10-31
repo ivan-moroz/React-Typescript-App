@@ -54,6 +54,7 @@ export default function MessagingPanel({
     initialMessagingPanelState,
   );
   const { starting, deleting } = panelState;
+  const selected = inbox.selected;
 
   const start = async (recipient: MessagingUser) => {
     if (starting) return;
@@ -84,32 +85,72 @@ export default function MessagingPanel({
     setQuery("");
   };
 
-  const removeFromPanel = (id: string) => {
-    inbox.removeFromPanel(id);
+  const onCloseDeleteDialog = () => {
+    dispatchPanel({ type: MESSAGING_PANEL_ACTIONS.DELETE_DIALOG_CLOSED });
   };
-  const selected = inbox.selected;
+  const onConfirmDeleteConversation = async () => {
+    if (!deleting) return;
+    const signal = inbox.lifetime.current!.signal;
+    const result = await fetchData(
+      `/api/messaging/conversations/${deleting.id}`,
+      {
+        method: "DELETE",
+        responseType: "void",
+        signal,
+        errorMessage: ERROR_MESSAGES.CONVERSATION_DELETE_FAILED,
+      },
+    );
+    if (signal.aborted) return;
+    if (!result.success) throw result.error;
+    inbox.removeFromPanel(deleting.id);
+    await inbox.load(signal);
+  };
+  const onBackToConversations = () => {
+    if (serverNavigation) inbox.navigateServerPage("/messaging");
+    else inbox.setSelected(null);
+  };
+  const onDeleteSelectedConversation = () => {
+    if (!selected) return;
+    dispatchPanel({
+      type: MESSAGING_PANEL_ACTIONS.CONVERSATION_SELECTED_FOR_DELETION,
+      conversation: selected,
+    });
+  };
+  const onSelectedConversationDeleted = () => {
+    if (selected) inbox.removeFromPanel(selected.id);
+  };
+  const onChatChanged = () => {
+    const signal = inbox.lifetime.current?.signal;
+    if (signal) void inbox.load(signal);
+  };
+  const onStartConversation = (recipient: MessagingUser) => {
+    void start(recipient);
+  };
+  const onSelectConversation = (conversation: ConversationSummary) => {
+    inbox.setSelected(conversation);
+  };
+  const onDeleteConversation = (conversation: ConversationSummary) => {
+    dispatchPanel({
+      type: MESSAGING_PANEL_ACTIONS.CONVERSATION_SELECTED_FOR_DELETION,
+      conversation,
+    });
+  };
+  const onRetryLoadConversations = () => {
+    const signal = inbox.lifetime.current?.signal;
+    if (signal) void inbox.load(signal);
+  };
+  const onLoadOlderConversations = () => {
+    const signal = inbox.lifetime.current?.signal;
+    if (!signal) return;
+    inbox.setLoadingMore(true);
+    void inbox.load(signal, inbox.cursor ?? undefined);
+  };
+
   const deleteDialog = deleting && (
     <ConversationDeleteDialog
       conversation={deleting}
-      onClose={() =>
-        dispatchPanel({ type: MESSAGING_PANEL_ACTIONS.DELETE_DIALOG_CLOSED })
-      }
-      onConfirm={async () => {
-        const signal = inbox.lifetime.current!.signal;
-        const result = await fetchData(
-          `/api/messaging/conversations/${deleting.id}`,
-          {
-            method: "DELETE",
-            responseType: "void",
-            signal,
-            errorMessage: ERROR_MESSAGES.CONVERSATION_DELETE_FAILED,
-          },
-        );
-        if (signal.aborted) return;
-        if (!result.success) throw result.error;
-        removeFromPanel(deleting.id);
-        await inbox.load(signal);
-      }}
+      onClose={onCloseDeleteDialog}
+      onConfirm={onConfirmDeleteConversation}
     />
   );
 
@@ -126,23 +167,11 @@ export default function MessagingPanel({
               ? (initialData.messagePage ?? undefined)
               : undefined
           }
-          onBack={() => {
-            if (serverNavigation)
-              inbox.navigateServerPage("/messaging");
-            else inbox.setSelected(null);
-          }}
+          onBack={onBackToConversations}
           onExpired={onExpired}
-          onDeleteConversation={() =>
-            dispatchPanel({
-              type: MESSAGING_PANEL_ACTIONS.CONVERSATION_SELECTED_FOR_DELETION,
-              conversation: selected,
-            })
-          }
-          onConversationDeleted={() => removeFromPanel(selected.id)}
-          onChanged={() => {
-            if (inbox.lifetime.current)
-              void inbox.load(inbox.lifetime.current.signal);
-          }}
+          onDeleteConversation={onDeleteSelectedConversation}
+          onConversationDeleted={onSelectedConversationDeleted}
+          onChanged={onChatChanged}
         />
         {deleteDialog}
       </>
@@ -158,7 +187,7 @@ export default function MessagingPanel({
         starting={starting}
         active={active}
         onQueryChange={setQuery}
-        onStart={(recipient) => void start(recipient)}
+        onStart={onStartConversation}
       />
       <ConversationInbox
         loading={inbox.loading}
@@ -167,24 +196,10 @@ export default function MessagingPanel({
         cursor={inbox.cursor}
         loadingMore={inbox.loadingMore}
         serverNavigation={serverNavigation}
-        onSelect={inbox.setSelected}
-        onDelete={(conversation) =>
-          dispatchPanel({
-            type: MESSAGING_PANEL_ACTIONS.CONVERSATION_SELECTED_FOR_DELETION,
-            conversation,
-          })
-        }
-        onRetry={() => {
-          if (inbox.lifetime.current)
-            void inbox.load(inbox.lifetime.current.signal);
-        }}
-        onLoadOlder={() => {
-          inbox.setLoadingMore(true);
-          void inbox.load(
-            inbox.lifetime.current!.signal,
-            inbox.cursor ?? undefined,
-          );
-        }}
+        onSelect={onSelectConversation}
+        onDelete={onDeleteConversation}
+        onRetry={onRetryLoadConversations}
+        onLoadOlder={onLoadOlderConversations}
       />
       {deleteDialog}
     </div>

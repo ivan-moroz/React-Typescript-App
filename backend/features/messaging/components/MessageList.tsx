@@ -28,6 +28,27 @@ export default function MessageList({
       log.current.scrollTop = log.current.scrollHeight;
   }, [latest?.id, currentUserId]);
 
+  const onScroll = () => {
+    const element = log.current;
+    if (element)
+      nearBottom.current =
+        element.scrollHeight - element.scrollTop - element.clientHeight < 80;
+  };
+
+  const onLoadOlderClick = async () => {
+    const height = log.current?.scrollHeight ?? 0;
+    const top = log.current?.scrollTop ?? 0;
+    await onLoadOlder();
+    requestAnimationFrame(() => {
+      if (log.current)
+        log.current.scrollTop = top + log.current.scrollHeight - height;
+    });
+  };
+
+  const onDeleteMessageClick = (messageId: string) => () => {
+    onDeleteMessage(messageId);
+  };
+
   return (
     <div
       className="chat-messages"
@@ -35,29 +56,14 @@ export default function MessageList({
       role="log"
       aria-label="Message history"
       aria-live="polite"
-      onScroll={() => {
-        const element = log.current;
-        if (element)
-          nearBottom.current =
-            element.scrollHeight - element.scrollTop - element.clientHeight <
-            80;
-      }}
+      onScroll={onScroll}
     >
       {hasOlder && (
         <button
           className="messaging-more"
           type="button"
           disabled={loadingOlder}
-          onClick={async () => {
-            const height = log.current?.scrollHeight ?? 0;
-            const top = log.current?.scrollTop ?? 0;
-            await onLoadOlder();
-            requestAnimationFrame(() => {
-              if (log.current)
-                log.current.scrollTop =
-                  top + log.current.scrollHeight - height;
-            });
-          }}
+          onClick={onLoadOlderClick}
         >
           {loadingOlder ? "Loading…" : "Load older messages"}
         </button>
@@ -82,7 +88,7 @@ export default function MessageList({
               className="chat-delete-message"
               type="button"
               aria-label="Delete message"
-              onClick={() => onDeleteMessage(message.id)}
+              onClick={onDeleteMessageClick(message.id)}
             >
               <span className="material-icons" aria-hidden="true">
                 delete

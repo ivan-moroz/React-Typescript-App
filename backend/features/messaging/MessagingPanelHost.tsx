@@ -82,9 +82,9 @@ export default function MessagingPanelHost({
   }, [openPanel]);
 
   useEffect(() => {
-    const openRequested = () => void openPanel();
-    window.addEventListener("messaging:open", openRequested);
-    return () => window.removeEventListener("messaging:open", openRequested);
+    const handleOpenRequested = () => void openPanel();
+    window.addEventListener("messaging:open", handleOpenRequested);
+    return () => window.removeEventListener("messaging:open", handleOpenRequested);
   }, [openPanel]);
 
   if (!snapshot || panelKey === 0) return null;

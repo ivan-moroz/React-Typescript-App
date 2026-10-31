@@ -36,6 +36,12 @@ export default function Messaging({
     dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: false });
     trigger.current?.focus();
   }, []);
+  const onUnreadChange = (count: number) => {
+    dispatch({ type: MESSAGING_ACTIONS.UNREAD_CHANGED, unread: count });
+  };
+  const onTogglePanel = () => {
+    dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: !open });
+  };
   useEffect(() => onOpenChange?.(open), [onOpenChange, open]);
   useEffect(() => {
     dispatch({
@@ -55,14 +61,14 @@ export default function Messaging({
       if (!wrapper.current?.contains(event.target as Node))
         dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: false });
     };
-    const escape = (event: KeyboardEvent) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") close();
     };
     document.addEventListener("mousedown", outside);
-    document.addEventListener("keydown", escape);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("mousedown", outside);
-      document.removeEventListener("keydown", escape);
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, close]);
   return (
@@ -75,9 +81,7 @@ export default function Messaging({
           aria-label={`Messages${unread ? `, ${unread} unread` : ""}`}
           aria-expanded={open}
           aria-haspopup="dialog"
-          onClick={() =>
-            dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: !open })
-          }
+          onClick={onTogglePanel}
         >
           <span className="material-icons" aria-hidden="true">
             chat_bubble_outline
@@ -109,9 +113,7 @@ export default function Messaging({
             user={user}
             initialData={initialData}
             active={open}
-            onUnread={(count) =>
-              dispatch({ type: MESSAGING_ACTIONS.UNREAD_CHANGED, unread: count })
-            }
+            onUnread={onUnreadChange}
             onExpired={expire}
           />
         ) : (

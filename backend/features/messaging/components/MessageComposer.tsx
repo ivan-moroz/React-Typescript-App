@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent, ChangeEvent } from "react";
 import { MAX_MESSAGE_LENGTH } from "../types/types";
 
 export default function MessageComposer({
@@ -28,17 +29,31 @@ export default function MessageComposer({
     draftInput.current?.focus();
   }, [sending]);
 
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (loading || sending || !draft.trim()) return;
+
+    restoreFocusAfterSend.current = true;
+    if (await onSend(draft)) setDraft("");
+  };
+
+  const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setDraft(event.target.value);
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.nativeEvent.isComposing
+    ) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
+  };
+
   return (
-    <form
-      className="chat-composer"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        if (loading || sending) return;
-        if (!draft.trim()) return;
-        restoreFocusAfterSend.current = true;
-        if (await onSend(draft)) setDraft("");
-      }}
-    >
+    <form className="chat-composer" onSubmit={onSubmit}>
       <label htmlFor="message-draft" className="messaging-sr-only">
         Message to {recipientName}
       </label>
@@ -51,17 +66,8 @@ export default function MessageComposer({
         value={draft}
         disabled={sending}
         autoFocus={active}
-        onChange={(event) => setDraft(event.target.value)}
-        onKeyDown={(event) => {
-          if (
-            event.key === "Enter" &&
-            !event.shiftKey &&
-            !event.nativeEvent.isComposing
-          ) {
-            event.preventDefault();
-            event.currentTarget.form?.requestSubmit();
-          }
-        }}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
       />
       <button type="submit" disabled={sending || !draft.trim() || loading}>
         {sending ? "Sending…" : "Send"}

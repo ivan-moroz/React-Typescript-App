@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 import MessagingPanel from "./components/MessagingPanel";
 import type { MessagingSnapshot } from "./types/types";
 
+function onUnreadChange(_count: number) {}
+
 export default function MessagingPageClient({
   initialMessaging,
 }: {
@@ -22,7 +24,7 @@ export default function MessagingPageClient({
           user={initialMessaging.user}
           initialData={initialMessaging}
           serverNavigation
-          onUnread={() => {}}
+          onUnread={onUnreadChange}
           onExpired={expire}
         />
       ) : (
