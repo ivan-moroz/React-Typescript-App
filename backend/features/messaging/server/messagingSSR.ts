@@ -3,6 +3,7 @@ import type {
   MessagingSnapshot,
   MessagingUser,
 } from "../types/types";
+import { createEmptyMessagingSnapshot } from "../utils/utils";
 import {
   getConversationSummary,
   listConversations,
@@ -34,13 +35,9 @@ export async function getInitialMessaging(
   user: MessagingUser | null,
   selectedId?: string,
 ): Promise<MessagingSnapshot> {
-  const snapshot: MessagingSnapshot = {
-    user: user ? { id: user.id, name: user.name } : null,
-    conversationPage: { conversations: [], unreadCount: 0, nextCursor: null },
-    selectedConversation: null,
-    messagePage: null,
-    error: "",
-  };
+  const snapshot = createEmptyMessagingSnapshot(
+    user ? { id: user.id, name: user.name } : null,
+  );
   if (!user) return snapshot;
   try {
     const page = await listConversations(user.id);

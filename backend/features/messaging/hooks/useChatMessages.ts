@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import {
+  publishMessagingMessage,
+  subscribeMessagingMessages,
+} from "../client/events";
 import { requestMessagingSync, subscribeMessagingRealtime } from "../client/realtime";
 import {
   MAX_MESSAGE_LENGTH,
@@ -236,11 +240,9 @@ export function useChatMessages(
     const handleConnectionRestore = () => {
       if (document.visibilityState === "visible") requestSync();
     };
-    const handleLocalMessage = (event: Event) => {
-      const message = (event as CustomEvent<ChatMessage>).detail;
-      if (message?.conversationId === conversationId) merge([message]);
-    };
-    window.addEventListener("messaging:message-sent", handleLocalMessage);
+    const unsubscribeLocalMessages = subscribeMessagingMessages((message) => {
+      if (message.conversationId === conversationId) merge([message]);
+    });
     window.addEventListener("online", handleConnectionRestore);
     window.addEventListener("focus", handleConnectionRestore);
     document.addEventListener("visibilitychange", handleConnectionRestore);
@@ -249,7 +251,7 @@ export function useChatMessages(
       clearTimeout(syncRetryTimer);
       controller.abort();
       unsubscribe();
-      window.removeEventListener("messaging:message-sent", handleLocalMessage);
+      unsubscribeLocalMessages();
       window.removeEventListener("online", handleConnectionRestore);
       window.removeEventListener("focus", handleConnectionRestore);
       document.removeEventListener("visibilitychange", handleConnectionRestore);
@@ -300,11 +302,7 @@ export function useChatMessages(
       return false;
     }
     merge([result.data]);
-    window.dispatchEvent(
-      new CustomEvent<ChatMessage>("messaging:message-sent", {
-        detail: result.data,
-      }),
-    );
+    publishMessagingMessage(result.data);
     return true;
   };
   const removeMessage = async (id: string) => {

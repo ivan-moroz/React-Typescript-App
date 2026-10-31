@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmationModal from '../../../../src/components/modal/ConfirmationModal';
 import { useChatMessages } from "../hooks/useChatMessages";
-import { messageTime } from "../time";
+import { messageTime } from "../utils/utils";
 import {
   MAX_MESSAGE_LENGTH,
   type ConversationSummary,

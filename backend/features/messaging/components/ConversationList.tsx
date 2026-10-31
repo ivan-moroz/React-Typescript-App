@@ -1,5 +1,5 @@
 import type { ConversationSummary } from "../types/types";
-import { messageTime } from "../time";
+import { messageTime } from "../utils/utils";
 
 export default function ConversationList({
   conversations,

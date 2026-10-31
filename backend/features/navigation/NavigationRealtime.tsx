@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  publishMessagingUnread,
+  subscribeMessagingUnread,
+} from "../messaging/client/events";
 import { requestMessagingSync, subscribeMessagingRealtime } from "../messaging/client/realtime";
+import { formatUnreadCount } from "../messaging/utils/utils";
 
 export default function NavigationRealtime({
   userId,
@@ -21,19 +26,15 @@ export default function NavigationRealtime({
       requestMessagingSync({ type: "sync-unread", requestId });
     };
 
-    const handleUnread = (event: Event) => {
-      const count = (event as CustomEvent<number>).detail;
-      if (Number.isSafeInteger(count) && count >= 0) {
-        unreadRef.current = count;
-        setUnread(count);
-      }
-    };
     const handleConnectionRestore = () => {
       if (document.visibilityState === "visible")
         refreshUnread();
     };
 
-    window.addEventListener("messaging:unread", handleUnread);
+    const unsubscribeUnread = subscribeMessagingUnread((count) => {
+      unreadRef.current = count;
+      setUnread(count);
+    });
     window.addEventListener("online", handleConnectionRestore);
     window.addEventListener("focus", handleConnectionRestore);
     document.addEventListener("visibilitychange", handleConnectionRestore);
@@ -56,7 +57,7 @@ export default function NavigationRealtime({
           // their potentially stale reply undo an optimistic live increment.
           return;
         }
-        window.dispatchEvent(new CustomEvent<number>("messaging:unread", { detail: event.unreadCount }));
+        publishMessagingUnread(event.unreadCount);
         return;
       }
       if (event.type !== "update" || event.actorId === userId) return;
@@ -65,9 +66,7 @@ export default function NavigationRealtime({
         // unread sync below corrects the count from the database.
         unreadRef.current += 1;
         receivedMessageUpdate.current = true;
-        window.dispatchEvent(new CustomEvent<number>("messaging:unread", {
-          detail: unreadRef.current,
-        }));
+        publishMessagingUnread(unreadRef.current);
         refreshUnread();
       } else if (event.kind === "message-read" || event.kind === "conversation-deleted") {
         refreshUnread();
@@ -75,7 +74,7 @@ export default function NavigationRealtime({
     });
 
     return () => {
-      window.removeEventListener("messaging:unread", handleUnread);
+      unsubscribeUnread();
       window.removeEventListener("online", handleConnectionRestore);
       window.removeEventListener("focus", handleConnectionRestore);
       document.removeEventListener("visibilitychange", handleConnectionRestore);
@@ -95,7 +94,7 @@ export default function NavigationRealtime({
       </span>
       {unread > 0 && (
         <span className="messages-link-badge">
-          {unread > 99 ? "99+" : unread}
+          {formatUnreadCount(unread)}
         </span>
       )}
     </a>

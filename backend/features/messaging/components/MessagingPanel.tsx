@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import ConfirmationModal from '../../../../src/components/modal/ConfirmationModal';
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import {
+  publishMessagingUnread,
+  subscribeMessagingMessages,
+} from "../client/events";
 import { subscribeMessagingRealtime } from "../client/realtime";
 import ConversationList from "./ConversationList";
 import ChatThread from "./ChatThread";
@@ -73,11 +77,7 @@ export default function MessagingPanel({
     }
     setError("");
     onUnread(result.data.unreadCount);
-    window.dispatchEvent(
-      new CustomEvent<number>("messaging:unread", {
-        detail: result.data.unreadCount,
-      }),
-    );
+    publishMessagingUnread(result.data.unreadCount);
     const activeIds = result.data.conversationIds ? new Set(result.data.conversationIds) : null;
     if (selected && activeIds && !activeIds.has(selected.id)) removeFromPanel(selected.id);
     setSelected((current) =>
@@ -117,11 +117,7 @@ export default function MessagingPanel({
         lastMessage: message,
       } : current);
     };
-    const handleLocalMessage = (event: Event) => {
-      const message = (event as CustomEvent<ChatMessage>).detail;
-      if (message?.conversationId) applyMessage(message);
-    };
-    window.addEventListener("messaging:message-sent", handleLocalMessage);
+    const unsubscribeLocalMessages = subscribeMessagingMessages(applyMessage);
     const unsubscribe = subscribeMessagingRealtime((event) => {
       if (event.type === "sync-inbox") {
         setConversations(event.conversations);
@@ -150,7 +146,7 @@ export default function MessagingPanel({
       clearTimeout(timer);
       controller.abort();
       unsubscribe();
-      window.removeEventListener("messaging:message-sent", handleLocalMessage);
+      unsubscribeLocalMessages();
     };
   }, [active, selected, user.id]);
 

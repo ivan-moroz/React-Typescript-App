@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { headers } from "next/headers";
-import type { IncomingMessage } from "node:http";
 import ServerNavigation from "../features/navigation/ServerNavigation";
-import { getServerNavigationProps } from "../features/navigation/server";
+import { getAppNavigationProps } from "./navigation/server-props";
 import AppProviders from "./providers";
 import "../../src/components/messaging/styles/styles.scss";
 import "../features/messaging/styles/styles.scss";
@@ -18,13 +16,7 @@ import "./loading/loading.scss";
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const requestHeaders = await headers();
-  const pathname = requestHeaders.get("x-app-pathname") ??
-    requestHeaders.get("x-next-url")?.split("?", 1)[0] ?? "";
-  const request = {
-    headers: { cookie: requestHeaders.get("cookie") ?? undefined },
-  } as IncomingMessage;
-  const navigation = await getServerNavigationProps(request, pathname);
+  const navigation = await getAppNavigationProps();
 
   return (
     <html lang="en">

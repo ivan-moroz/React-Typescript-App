@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import MessagingPanel from "./components/MessagingPanel";
+import { subscribeMessagingUnread } from "./client/events";
+import { formatUnreadCount } from "./utils/utils";
 import type { MessagingSnapshot } from "./types/types";
 
 export default function Messaging({
@@ -37,17 +39,10 @@ export default function Messaging({
   }, [initialData]);
   useEffect(() => {
     if (!user) return;
-    const handleUnread = (event: Event) => {
-      const count = (event as CustomEvent<number>).detail;
-      if (Number.isSafeInteger(count) && count >= 0) {
-        setUnread(count);
-        setError("");
-      }
-    };
-    window.addEventListener("messaging:unread", handleUnread);
-    return () => {
-      window.removeEventListener("messaging:unread", handleUnread);
-    };
+    return subscribeMessagingUnread((count) => {
+      setUnread(count);
+      setError("");
+    });
   }, [user]);
   useEffect(() => {
     if (!open) return;
@@ -81,7 +76,7 @@ export default function Messaging({
           </span>
           {unread > 0 && (
             <span className="messaging-badge" aria-hidden="true">
-              {unread > 99 ? "99+" : unread}
+              {formatUnreadCount(unread)}
             </span>
           )}
         </button>

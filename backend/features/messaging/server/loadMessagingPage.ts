@@ -1,6 +1,7 @@
 import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
 import { getSessionUserFromCookie } from "../../../lib/session";
 import type { MessagingSnapshot } from "../types/types";
+import { createEmptyMessagingSnapshot } from "../utils/utils";
 import { getInitialMessaging } from "./messagingSSR";
 
 export type MessagingPageResult =
@@ -24,13 +25,10 @@ export async function loadMessagingPage(cookie: string | undefined, query: { con
     if (error instanceof HttpError && error.status === 404) return { kind: "notFound" };
     return {
       kind: "page",
-      initialMessaging: {
+      initialMessaging: createEmptyMessagingSnapshot(
         user,
-        conversationPage: { conversations: [], unreadCount: 0, nextCursor: null },
-        selectedConversation: null,
-        messagePage: null,
-        error: ERROR_MESSAGES.MESSAGING_LOAD_FAILED,
-      },
+        ERROR_MESSAGES.MESSAGING_LOAD_FAILED,
+      ),
     };
   }
 }

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { fetchData } from "../../utils/fetchData";
+import { subscribeMessagingUnread } from "../../../backend/features/messaging/client/events";
+import { formatUnreadCount } from "../../../backend/features/messaging/utils/utils";
 
 // The SPA owns only a navigation link; the inbox and chat render in Next.js.
 export default function Messaging() {
 	const [unread, setUnread] = useState(0);
 	useEffect(() => {
+		const unsubscribeUnread = subscribeMessagingUnread(setUnread);
 		let stopped = false;
 		let busy = false;
 		let unauthorized = false;
@@ -41,6 +44,7 @@ export default function Messaging() {
 			controller?.abort();
 			clearTimeout(timer);
 			document.removeEventListener("visibilitychange", visible);
+			unsubscribeUnread();
 		};
 	}, []);
 	return (
@@ -54,7 +58,7 @@ export default function Messaging() {
 			</span>
 			{unread > 0 && (
 				<span className="messages-link-badge" aria-hidden="true">
-					{unread > 99 ? "99+" : unread}
+					{formatUnreadCount(unread)}
 				</span>
 			)}
 		</a>

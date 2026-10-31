@@ -8,17 +8,7 @@ import type {
   MessagingSnapshot,
   MessagingUser,
 } from "./types/types";
-
-const emptySnapshot = (
-  user: MessagingUser | null,
-  error = "",
-): MessagingSnapshot => ({
-  user,
-  conversationPage: { conversations: [], unreadCount: 0, nextCursor: null },
-  selectedConversation: null,
-  messagePage: null,
-  error,
-});
+import { createEmptyMessagingSnapshot } from "./utils/utils";
 
 export default function MessagingPanelHost({
   initialData,
@@ -35,16 +25,19 @@ export default function MessagingPanelHost({
     const session = await fetchData<MessagingUser | null>("/api/auth/session");
     let nextSnapshot: MessagingSnapshot;
     if (!session.success) {
-      nextSnapshot = emptySnapshot(null, session.error.message);
+      nextSnapshot = createEmptyMessagingSnapshot(null, session.error.message);
     } else if (!session.data) {
-      nextSnapshot = emptySnapshot(null);
+      nextSnapshot = createEmptyMessagingSnapshot(null);
     } else {
       const conversations = await fetchData<ConversationPage>(
         "/api/messaging/conversations",
         { errorMessage: ERROR_MESSAGES.MESSAGING_LOAD_FAILED },
       );
       if (!conversations.success) {
-        nextSnapshot = emptySnapshot(session.data, conversations.error.message);
+        nextSnapshot = createEmptyMessagingSnapshot(
+          session.data,
+          conversations.error.message,
+        );
       } else {
         const selectedId = initialData?.selectedConversation?.id;
         let selectedConversation = selectedId
@@ -62,7 +55,7 @@ export default function MessagingPanelHost({
           else selectedConversation = null;
         }
         nextSnapshot = {
-          ...emptySnapshot(session.data),
+          ...createEmptyMessagingSnapshot(session.data),
           conversationPage: conversations.data,
           selectedConversation,
           messagePage,

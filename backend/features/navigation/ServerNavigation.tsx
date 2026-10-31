@@ -1,4 +1,5 @@
 import NavigationRealtime from "./NavigationRealtime";
+import { formatUnreadCount } from "../messaging/utils/utils";
 
 type ServerNavigationProps = {
   pathname: string;
@@ -63,7 +64,7 @@ export default function ServerNavigation({
               <span className="material-icons" aria-hidden="true">chat_bubble_outline</span>
               {unreadCount > 0 && (
                 <span className="messages-link-badge">
-                  {unreadCount > 99 ? "99+" : unreadCount}
+                  {formatUnreadCount(unreadCount)}
                 </span>
               )}
             </a>
