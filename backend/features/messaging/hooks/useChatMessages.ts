@@ -35,6 +35,7 @@ export function useChatMessages(
   const sendingRef = useRef(false);
   const olderRef = useRef(false);
   const readThrough = useRef("");
+  const readRequestInFlight = useRef<string | null>(null);
   const lastInitial =
     initialPage?.messages[initialPage.messages.length - 1] ?? null;
   const latestCursor = useRef<string | null>(lastInitial?.id ?? null);
@@ -75,6 +76,7 @@ export function useChatMessages(
     if (
       !last ||
       readThrough.current === last.id ||
+      readRequestInFlight.current !== null ||
       document.visibilityState === "hidden"
     )
       return;
@@ -82,15 +84,23 @@ export function useChatMessages(
       (message) => message.senderId !== userId && !message.readAt && !message.deletedAt,
     );
     if (!unread) return;
-    const result = await fetchData(`${endpoint}/read`, {
-      method: "POST",
-      responseType: "void",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messageId: last.id }),
-      signal,
-    });
-    if (signal.aborted) return;
-    if (result.success) {
+    readRequestInFlight.current = last.id;
+    let succeeded = false;
+    try {
+      const result = await fetchData(`${endpoint}/read`, {
+        method: "POST",
+        responseType: "void",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId: last.id }),
+        signal,
+      });
+      if (signal.aborted) return;
+      if (!result.success) {
+        fail(result.error);
+        return;
+      }
+
+      succeeded = true;
       readThrough.current = last.id;
       // Only messages included in this request are considered read locally.
       const cutoff = current.current.findIndex(
@@ -104,7 +114,17 @@ export function useChatMessages(
       );
       setMessages(current.current);
       onChanged();
-    } else fail(result.error);
+    } finally {
+      if (readRequestInFlight.current === last.id)
+        readRequestInFlight.current = null;
+      if (
+        succeeded &&
+        !signal.aborted &&
+        readCursor.current?.id !== last.id
+      ) {
+        void markSeen(signal);
+      }
+    }
   };
 
   useEffect(() => {

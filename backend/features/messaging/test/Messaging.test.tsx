@@ -361,6 +361,58 @@ test("syncs a message sent from another messaging panel on the Messages page", a
   unmount();
 });
 
+test("coalesces repeated read updates while the read request is pending", async () => {
+  vi.stubGlobal("WebSocket", MockWebSocket);
+  let resolveRead!: (response: Response) => void;
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(
+    () => new Promise((resolve) => {
+      resolveRead = resolve;
+    }),
+  );
+  const onChanged = vi.fn();
+  const { unmount } = renderHook(() =>
+    useChatMessages(
+      conversationId,
+      user.id,
+      onChanged,
+      vi.fn(),
+      { messages: [incoming], hasMore: false, nextCursor: null },
+    ),
+  );
+  const socket = MockWebSocket.instances[0];
+  socket.open();
+
+  await waitFor(() => {
+    expect(
+      fetch.mock.calls.filter(([url]) => String(url).endsWith("/read")),
+    ).toHaveLength(1);
+  });
+  act(() => {
+    socket.receive({
+      type: "sync-messages",
+      conversationId,
+      messages: [incoming],
+    });
+    socket.receive({
+      type: "sync-messages",
+      conversationId,
+      messages: [incoming],
+    });
+  });
+  expect(
+    fetch.mock.calls.filter(([url]) => String(url).endsWith("/read")),
+  ).toHaveLength(1);
+
+  await act(async () => {
+    resolveRead(new Response(null, { status: 204 }));
+  });
+  expect(onChanged).toHaveBeenCalledTimes(1);
+  expect(
+    fetch.mock.calls.filter(([url]) => String(url).endsWith("/read")),
+  ).toHaveLength(1);
+  unmount();
+});
+
 test("immediately shows a panel-sent message in the Messages page thread", async () => {
   const sentMessage = { ...outgoing, content: "Sent from the panel" };
   vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json(sentMessage));
