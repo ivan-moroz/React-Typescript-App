@@ -1,50 +1,68 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import type { MessagingUser } from "../types/types";
+import {
+  conversationSearchReducer,
+  initialConversationSearchState,
+} from "../reducer/conversationSearchReducer";
+import { CONVERSATION_SEARCH_ACTIONS } from "../constants/actionConstants";
 
 export function useConversationSearch(
   active: boolean,
   onExpired: () => void,
 ) {
-  const [query, setQuery] = useState("");
-  const [users, setUsers] = useState<MessagingUser[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [error, setError] = useState("");
+  const [state, dispatch] = useReducer(
+    conversationSearchReducer,
+    initialConversationSearchState,
+  );
 
   useEffect(() => {
-    const trimmed = query.trim();
-    setUsers([]);
-    setError("");
+    const trimmed = state.query.trim();
     if (!active || trimmed.length < 2) {
-      setSearching(false);
+      dispatch({ type: CONVERSATION_SEARCH_ACTIONS.SEARCH_STOPPED });
       return;
     }
 
     const controller = new AbortController();
-    setSearching(true);
+    dispatch({ type: CONVERSATION_SEARCH_ACTIONS.SEARCH_STARTED });
     const timer = setTimeout(async () => {
       const result = await fetchData<MessagingUser[]>(
         `/api/messaging/users?q=${encodeURIComponent(trimmed)}`,
         { signal: controller.signal },
       );
       if (controller.signal.aborted) return;
-      setSearching(false);
-      if (result.success) setUsers(result.data);
-      else if (result.error.status === 401) onExpired();
-      else setError(result.error.message);
+      if (result.success)
+        dispatch({
+          type: CONVERSATION_SEARCH_ACTIONS.SEARCH_SUCCEEDED,
+          users: result.data,
+        });
+      else if (result.error.status === 401) {
+        dispatch({ type: CONVERSATION_SEARCH_ACTIONS.SEARCH_STOPPED });
+        onExpired();
+      } else {
+        dispatch({
+          type: CONVERSATION_SEARCH_ACTIONS.SEARCH_FAILED,
+          error: result.error.message,
+        });
+      }
     }, 300);
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, onExpired, active]);
+  }, [state.query, onExpired, active]);
 
   return {
-    query,
-    setQuery,
-    users,
-    searching,
-    searchError: error,
-    setSearchError: setError,
+    query: state.query,
+    setQuery: (query: string) =>
+      dispatch({ type: CONVERSATION_SEARCH_ACTIONS.QUERY_CHANGED, query }),
+    users: state.users,
+    searching: state.searching,
+    searchError: state.error,
+    setSearchError: (error: string) => {
+      if (error)
+        dispatch({ type: CONVERSATION_SEARCH_ACTIONS.SEARCH_FAILED, error });
+      else dispatch({ type: CONVERSATION_SEARCH_ACTIONS.ERROR_CLEARED });
+    },
   };
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import ConversationDeleteDialog from "./ConversationDeleteDialog";
@@ -7,6 +7,11 @@ import ConversationSearch from "./ConversationSearch";
 import ChatThread from "./ChatThread";
 import { useConversationInbox } from "../hooks/useConversationInbox";
 import { useConversationSearch } from "../hooks/useConversationSearch";
+import {
+  initialMessagingPanelState,
+  messagingPanelReducer,
+} from "../reducer/messagingPanelReducer";
+import { MESSAGING_PANEL_ACTIONS } from "../constants/actionConstants";
 import type {
   ConversationSummary,
   MessagingSnapshot,
@@ -44,12 +49,15 @@ export default function MessagingPanel({
     searchError,
     setSearchError,
   } = useConversationSearch(active, onExpired);
-  const [starting, setStarting] = useState(false);
-  const [deleting, setDeleting] = useState<ConversationSummary | null>(null);
+  const [panelState, dispatchPanel] = useReducer(
+    messagingPanelReducer,
+    initialMessagingPanelState,
+  );
+  const { starting, deleting } = panelState;
 
   const start = async (recipient: MessagingUser) => {
     if (starting) return;
-    setStarting(true);
+    dispatchPanel({ type: MESSAGING_PANEL_ACTIONS.START_BEGAN });
     setSearchError("");
     const signal = inbox.lifetime.current!.signal;
     const result = await fetchData<ConversationSummary>(
@@ -61,8 +69,8 @@ export default function MessagingPanel({
         signal,
       },
     );
+    dispatchPanel({ type: MESSAGING_PANEL_ACTIONS.START_FINISHED });
     if (signal.aborted) return;
-    setStarting(false);
     if (!result.success) {
       setSearchError(result.error.message);
       if (result.error.status === 401) onExpired();
@@ -83,7 +91,9 @@ export default function MessagingPanel({
   const deleteDialog = deleting && (
     <ConversationDeleteDialog
       conversation={deleting}
-      onClose={() => setDeleting(null)}
+      onClose={() =>
+        dispatchPanel({ type: MESSAGING_PANEL_ACTIONS.DELETE_DIALOG_CLOSED })
+      }
       onConfirm={async () => {
         const signal = inbox.lifetime.current!.signal;
         const result = await fetchData(
@@ -122,7 +132,12 @@ export default function MessagingPanel({
             else inbox.setSelected(null);
           }}
           onExpired={onExpired}
-          onDeleteConversation={() => setDeleting(selected)}
+          onDeleteConversation={() =>
+            dispatchPanel({
+              type: MESSAGING_PANEL_ACTIONS.CONVERSATION_SELECTED_FOR_DELETION,
+              conversation: selected,
+            })
+          }
           onConversationDeleted={() => removeFromPanel(selected.id)}
           onChanged={() => {
             if (inbox.lifetime.current)
@@ -153,7 +168,12 @@ export default function MessagingPanel({
         loadingMore={inbox.loadingMore}
         serverNavigation={serverNavigation}
         onSelect={inbox.setSelected}
-        onDelete={setDeleting}
+        onDelete={(conversation) =>
+          dispatchPanel({
+            type: MESSAGING_PANEL_ACTIONS.CONVERSATION_SELECTED_FOR_DELETION,
+            conversation,
+          })
+        }
         onRetry={() => {
           if (inbox.lifetime.current)
             void inbox.load(inbox.lifetime.current.signal);

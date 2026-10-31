@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import MessagingPanel from "./components/MessagingPanel";
 import { subscribeMessagingUnread } from "./client/events";
 import { formatUnreadCount } from "./utils/utils";
 import type { MessagingSnapshot } from "./types/types";
+import {
+  createInitialMessagingState,
+  messagingReducer,
+} from "./reducer/messagingReducer";
+import { MESSAGING_ACTIONS } from "./constants/actionConstants";
 
 export default function Messaging({
   initialData,
@@ -15,39 +20,40 @@ export default function Messaging({
   showTrigger?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const [user, setUser] = useState(initialData.user);
-  const [open, setOpen] = useState(initialOpen);
-  const [unread, setUnread] = useState(
-    initialData.conversationPage.unreadCount,
+  const [state, dispatch] = useReducer(
+    messagingReducer,
+    { snapshot: initialData, open: initialOpen },
+    ({ snapshot, open }) => createInitialMessagingState(snapshot, open),
   );
-  const [error, setError] = useState(initialData.error);
+  const { user, open, unread, error } = state;
   const wrapper = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
-  const expire = useCallback(() => {
-    setUser(null);
-    setUnread(0);
-  }, []);
+  const expire = useCallback(
+    () => dispatch({ type: MESSAGING_ACTIONS.SESSION_EXPIRED }),
+    [],
+  );
   const close = useCallback(() => {
-    setOpen(false);
+    dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: false });
     trigger.current?.focus();
   }, []);
   useEffect(() => onOpenChange?.(open), [onOpenChange, open]);
   useEffect(() => {
-    setUser(initialData.user);
-    setUnread(initialData.conversationPage.unreadCount);
-    setError(initialData.error);
+    dispatch({
+      type: MESSAGING_ACTIONS.SNAPSHOT_RECEIVED,
+      snapshot: initialData,
+    });
   }, [initialData]);
   useEffect(() => {
     if (!user) return;
     return subscribeMessagingUnread((count) => {
-      setUnread(count);
-      setError("");
+      dispatch({ type: MESSAGING_ACTIONS.UNREAD_CHANGED, unread: count });
     });
   }, [user]);
   useEffect(() => {
     if (!open) return;
     const outside = (event: MouseEvent) => {
-      if (!wrapper.current?.contains(event.target as Node)) setOpen(false);
+      if (!wrapper.current?.contains(event.target as Node))
+        dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: false });
     };
     const escape = (event: KeyboardEvent) => {
       if (event.key === "Escape") close();
@@ -69,7 +75,9 @@ export default function Messaging({
           aria-label={`Messages${unread ? `, ${unread} unread` : ""}`}
           aria-expanded={open}
           aria-haspopup="dialog"
-          onClick={() => setOpen((value) => !value)}
+          onClick={() =>
+            dispatch({ type: MESSAGING_ACTIONS.OPEN_CHANGED, open: !open })
+          }
         >
           <span className="material-icons" aria-hidden="true">
             chat_bubble_outline
@@ -101,7 +109,9 @@ export default function Messaging({
             user={user}
             initialData={initialData}
             active={open}
-            onUnread={setUnread}
+            onUnread={(count) =>
+              dispatch({ type: MESSAGING_ACTIONS.UNREAD_CHANGED, unread: count })
+            }
             onExpired={expire}
           />
         ) : (

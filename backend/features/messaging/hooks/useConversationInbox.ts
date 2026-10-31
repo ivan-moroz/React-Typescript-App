@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import {
@@ -13,6 +13,11 @@ import type {
   MessagingSnapshot,
   MessagingUser,
 } from "../types/types";
+import {
+  createInitialInboxState,
+  inboxReducer,
+} from "../reducer/inboxReducer";
+import { INBOX_ACTIONS } from "../constants/actionConstants";
 
 export function useConversationInbox({
   user,
@@ -29,19 +34,13 @@ export function useConversationInbox({
   active: boolean;
   serverNavigation: boolean;
 }) {
-  const [conversations, setConversations] = useState<ConversationSummary[]>(
-    initialData?.conversationPage.conversations ?? [],
+  const [state, dispatch] = useReducer(
+    inboxReducer,
+    initialData,
+    createInitialInboxState,
   );
-  const [selected, setSelected] = useState<ConversationSummary | null>(
-    initialData?.selectedConversation ?? null,
-  );
-  const [cursor, setCursor] = useState<string | null>(
-    initialData?.conversationPage.nextCursor ?? null,
-  );
-  const [loading, setLoading] = useState(!initialData);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(initialData?.error ?? "");
-  const removedIds = useRef(new Set<string>());
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const refreshInboxOnReturn = useRef(false);
   const lifetime = useRef<AbortController | null>(null);
 
@@ -51,117 +50,81 @@ export function useConversationInbox({
     return () => controller.abort();
   }, []);
 
-  const navigateServerPage = (href: string) => {
+  const navigateServerPage = useCallback((href: string) => {
     window.dispatchEvent(new CustomEvent("app:navigate", { detail: href }));
-  };
+  }, []);
 
-  const removeFromPanel = (id: string) => {
-    removedIds.current.add(id);
-    setConversations((current) => current.filter((item) => item.id !== id));
-    setSelected((current) => (current?.id === id ? null : current));
-    if (serverNavigation && selected?.id === id)
-      navigateServerPage("/messaging");
-  };
+  const removeFromPanel = useCallback(
+    (id: string) => {
+      const wasSelected = stateRef.current.selected?.id === id;
+      dispatch({ type: INBOX_ACTIONS.REMOVE, id });
+      if (serverNavigation && wasSelected)
+        navigateServerPage("/messaging");
+    },
+    [navigateServerPage, serverNavigation],
+  );
 
-  const load = async (signal: AbortSignal, next?: string) => {
-    const result = await fetchData<ConversationPage>(
-      `/api/messaging/conversations${next ? `?cursor=${next}` : ""}`,
-      { signal, errorMessage: ERROR_MESSAGES.MESSAGING_LOAD_FAILED },
-    );
-    if (signal.aborted) return;
-    setLoading(false);
-    setLoadingMore(false);
-    if (!result.success) {
-      if (result.error.status === 401) onExpired();
-      else setError(result.error.message);
-      return;
-    }
-    setError("");
-    onUnread(result.data.unreadCount);
-    publishMessagingUnread(result.data.unreadCount);
-    const activeIds = result.data.conversationIds
-      ? new Set(result.data.conversationIds)
-      : null;
-    if (selected && activeIds && !activeIds.has(selected.id))
-      removeFromPanel(selected.id);
-    setSelected((current) =>
-      current &&
-      (!activeIds || activeIds.has(current.id)) &&
-      !removedIds.current.has(current.id)
-        ? result.data.conversations.find((item) => item.id === current.id) ??
-          current
-        : null,
-    );
-    setConversations((current) => {
-      const map = new Map(
-        current
-          .filter(
-            (item) =>
-              (!activeIds || activeIds.has(item.id)) &&
-              !removedIds.current.has(item.id),
-          )
-          .map((item) => [item.id, item]),
+  const load = useCallback(
+    async (signal: AbortSignal, next?: string) => {
+      const result = await fetchData<ConversationPage>(
+        `/api/messaging/conversations${next ? `?cursor=${next}` : ""}`,
+        { signal, errorMessage: ERROR_MESSAGES.MESSAGING_LOAD_FAILED },
       );
-      result.data.conversations.forEach((item) => {
-        if (
-          (!activeIds || activeIds.has(item.id)) &&
-          !removedIds.current.has(item.id)
-        )
-          map.set(item.id, item);
+      if (signal.aborted) return;
+      if (!result.success) {
+        dispatch({
+          type: INBOX_ACTIONS.LOAD_FAILED,
+          error: result.error.status === 401 ? null : result.error.message,
+        });
+        if (result.error.status === 401) onExpired();
+        return;
+      }
+
+      const selected = stateRef.current.selected;
+      const activeIds = result.data.conversationIds
+        ? new Set(result.data.conversationIds)
+        : null;
+      if (selected && activeIds && !activeIds.has(selected.id)) {
+        if (serverNavigation) navigateServerPage("/messaging");
+      }
+      onUnread(result.data.unreadCount);
+      publishMessagingUnread(result.data.unreadCount);
+      dispatch({
+        type: INBOX_ACTIONS.LOAD_SUCCEEDED,
+        page: result.data,
+        requestedCursor: next,
       });
-      return Array.from(map.values()).sort(
-        (a, b) =>
-          b.updatedAt.localeCompare(a.updatedAt) || b.id.localeCompare(a.id),
-      );
-    });
-    if (next || conversations.length <= 30)
-      setCursor(result.data.nextCursor);
-  };
+    },
+    [navigateServerPage, onExpired, onUnread, serverNavigation],
+  );
 
   useEffect(() => {
     if (!active) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const applyMessage = (message: ChatMessage) => {
-      setConversations((current) => {
-        const next = current.map((item) =>
-          item.id !== message.conversationId
-            ? item
-            : {
-                ...item,
-                updatedAt: message.createdAt,
-                lastMessage: message,
-                unreadCount:
-                  message.senderId === user.id
-                    ? item.unreadCount
-                    : item.unreadCount + 1,
-              },
-        );
-        return next.sort(
-          (a, b) =>
-            b.updatedAt.localeCompare(a.updatedAt) || b.id.localeCompare(a.id),
-        );
+      dispatch({
+        type: INBOX_ACTIONS.MESSAGE_RECEIVED,
+        message,
+        currentUserId: user.id,
       });
-      setSelected((current) =>
-        current?.id === message.conversationId
-          ? {
-              ...current,
-              updatedAt: message.createdAt,
-              lastMessage: message,
-            }
-          : current,
-      );
     };
     const unsubscribeLocalMessages = subscribeMessagingMessages(applyMessage);
     const unsubscribe = subscribeMessagingRealtime((event) => {
       if (event.type === "sync-inbox") {
-        setConversations(event.conversations);
-        setSelected((current) =>
-          current
-            ? event.conversations.find((item) => item.id === current.id) ??
-              current
-            : null,
-        );
+        dispatch({
+          type: INBOX_ACTIONS.SYNC_INBOX,
+          conversations: event.conversations,
+        });
+        return;
+      }
+      if (
+        event.type === "update" &&
+        event.kind === "message-read" &&
+        event.actorId === user.id
+      ) {
+        if (stateRef.current.selected)
+          refreshInboxOnReturn.current = true;
         return;
       }
       if (
@@ -174,10 +137,9 @@ export function useConversationInbox({
       }
       const needsRefresh =
         event.type === "update" &&
-        event.kind !== "message-read" &&
         (event.actorId !== user.id || event.kind === "message-sent");
       if (!needsRefresh) return;
-      if (selected) {
+      if (stateRef.current.selected) {
         refreshInboxOnReturn.current = true;
         return;
       }
@@ -192,24 +154,31 @@ export function useConversationInbox({
       unsubscribe();
       unsubscribeLocalMessages();
     };
-  }, [active, selected, user.id]);
+  }, [active, load, user.id]);
 
   useEffect(() => {
-    if (!active || selected || !refreshInboxOnReturn.current || !lifetime.current)
+    if (
+      !active ||
+      state.selected ||
+      !refreshInboxOnReturn.current ||
+      !lifetime.current
+    )
       return;
     refreshInboxOnReturn.current = false;
     void load(lifetime.current.signal);
-  }, [active, selected]);
+  }, [active, load, state.selected]);
 
   return {
-    conversations,
-    selected,
-    setSelected,
-    cursor,
-    loading,
-    loadingMore,
-    setLoadingMore,
-    error,
+    conversations: state.conversations,
+    selected: state.selected,
+    setSelected: (conversation: ConversationSummary | null) =>
+      dispatch({ type: INBOX_ACTIONS.SELECT, conversation }),
+    cursor: state.cursor,
+    loading: state.loading,
+    loadingMore: state.loadingMore,
+    setLoadingMore: (loading: boolean) =>
+      dispatch({ type: INBOX_ACTIONS.SET_LOADING_MORE, loading }),
+    error: state.error,
     load,
     removeFromPanel,
     lifetime,

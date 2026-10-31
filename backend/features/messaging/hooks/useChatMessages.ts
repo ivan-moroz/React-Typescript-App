@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import {
@@ -11,6 +11,11 @@ import {
   type ChatMessage,
   type MessagePage,
 } from "../types/types";
+import {
+  chatMessagesReducer,
+  createInitialChatMessagesState,
+} from "../reducer/chatMessagesReducer";
+import { CHAT_MESSAGES_ACTIONS } from "../constants/actionConstants";
 
 export function useChatMessages(
   conversationId: string,
@@ -21,16 +26,14 @@ export function useChatMessages(
   active = true,
   onConversationDeleted?: () => void,
 ) {
-  const [messages, setMessages] = useState<ChatMessage[]>(
-    initialPage?.messages ?? [],
+  const [state, dispatch] = useReducer(
+    chatMessagesReducer,
+    initialPage,
+    createInitialChatMessagesState,
   );
+  const { hasOlder } = state;
   const current = useRef<ChatMessage[]>(initialPage?.messages ?? []);
   const deletedIds = useRef(new Set(initialPage?.messages.filter(message => message.deletedAt).map(message => message.id) ?? []));
-  const [loading, setLoading] = useState(!initialPage);
-  const [loadingOlder, setLoadingOlder] = useState(false);
-  const [hasOlder, setHasOlder] = useState(initialPage?.hasMore ?? false);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
   const initialized = useRef(Boolean(initialPage));
   const sendingRef = useRef(false);
   const olderRef = useRef(false);
@@ -64,12 +67,19 @@ export function useChatMessages(
       (a, b) =>
         a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
     );
-    setMessages(current.current);
+    dispatch({
+      type: CHAT_MESSAGES_ACTIONS.MESSAGES_UPDATED,
+      messages: current.current,
+    });
   };
   const fail = (failure: Error & { status?: number }) => {
     if (failure.status === 401) onExpired();
     else if (failure.status === 404 && onConversationDeleted) onConversationDeleted();
-    else setError(failure.message);
+    else
+      dispatch({
+        type: CHAT_MESSAGES_ACTIONS.LOAD_FAILED,
+        error: failure.message,
+      });
   };
   const markSeen = async (signal: AbortSignal) => {
     const last = readCursor.current;
@@ -112,7 +122,10 @@ export function useChatMessages(
           ? { ...message, readAt: now }
           : message,
       );
-      setMessages(current.current);
+      dispatch({
+        type: CHAT_MESSAGES_ACTIONS.MESSAGES_UPDATED,
+        messages: current.current,
+      });
       onChanged();
     } finally {
       if (readRequestInFlight.current === last.id)
@@ -172,13 +185,14 @@ export function useChatMessages(
         { signal: controller.signal },
       );
       if (controller.signal.aborted) return;
-      setLoading(false);
       if (!result.success) {
         fail(result.error);
         return;
       }
-      setError("");
-      if (!initialized.current) setHasOlder(result.data.hasMore);
+      dispatch({
+        type: CHAT_MESSAGES_ACTIONS.LOAD_FINISHED,
+        hasOlder: !initialized.current ? result.data.hasMore : undefined,
+      });
       initialized.current = true;
       const fetchedLatest =
         result.data.messages[result.data.messages.length - 1];
@@ -190,7 +204,10 @@ export function useChatMessages(
       merge(result.data.messages);
       await markSeen(controller.signal);
     };
-    if (!initialPage) timer = setTimeout(() => void refresh(), 0);
+    if (!initialPage) {
+      dispatch({ type: CHAT_MESSAGES_ACTIONS.LOAD_STARTED });
+      timer = setTimeout(() => void refresh(), 0);
+    }
     const unsubscribe = subscribeMessagingRealtime((event) => {
       if (event.type === "connected") {
         requestSync();
@@ -281,7 +298,7 @@ export function useChatMessages(
   const loadOlder = async () => {
     if (olderRef.current || !hasOlder || !current.current.length) return;
     olderRef.current = true;
-    setLoadingOlder(true);
+    dispatch({ type: CHAT_MESSAGES_ACTIONS.LOAD_OLDER_STARTED });
     const signal = lifetime.current!.signal;
     const result = await fetchData<MessagePage>(
       `${endpoint}/messages?before=${current.current[0].id}`,
@@ -289,23 +306,27 @@ export function useChatMessages(
     );
     if (signal.aborted) return;
     olderRef.current = false;
-    setLoadingOlder(false);
     if (!result.success) {
       fail(result.error);
       return;
     }
-    setHasOlder(result.data.hasMore);
+    dispatch({
+      type: CHAT_MESSAGES_ACTIONS.LOAD_OLDER_FINISHED,
+      hasOlder: result.data.hasMore,
+    });
     merge(result.data.messages);
   };
   const send = async (text: string): Promise<boolean> => {
     if (sendingRef.current) return false;
     if (!text.trim() || text.trim().length > MAX_MESSAGE_LENGTH) {
-      setError(ERROR_MESSAGES.MESSAGING_CONTENT_INVALID);
+      dispatch({
+        type: CHAT_MESSAGES_ACTIONS.LOAD_FAILED,
+        error: ERROR_MESSAGES.MESSAGING_CONTENT_INVALID,
+      });
       return false;
     }
     sendingRef.current = true;
-    setSending(true);
-    setError("");
+    dispatch({ type: CHAT_MESSAGES_ACTIONS.SEND_STARTED });
     const signal = lifetime.current!.signal;
     const result = await fetchData<ChatMessage>(`${endpoint}/messages`, {
       method: "POST",
@@ -316,7 +337,7 @@ export function useChatMessages(
     });
     if (signal.aborted) return false;
     sendingRef.current = false;
-    setSending(false);
+    dispatch({ type: CHAT_MESSAGES_ACTIONS.SEND_FINISHED });
     if (!result.success) {
       fail(result.error);
       return false;
@@ -335,12 +356,12 @@ export function useChatMessages(
     onChanged();
   };
   return {
-    messages,
-    loading,
-    loadingOlder,
-    hasOlder,
-    sending,
-    error,
+    messages: state.messages,
+    loading: state.loading,
+    loadingOlder: state.loadingOlder,
+    hasOlder: state.hasOlder,
+    sending: state.sending,
+    error: state.error,
     loadOlder,
     send,
     removeMessage,
