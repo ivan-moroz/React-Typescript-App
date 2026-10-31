@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import ConfirmationModal from '../../../../src/components/modal/ConfirmationModal';
 import { fetchData } from "../../../../src/utils/fetchData";
 import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import {
@@ -7,8 +6,11 @@ import {
   subscribeMessagingMessages,
 } from "../client/events";
 import { subscribeMessagingRealtime } from "../client/realtime";
-import ConversationList from "./ConversationList";
+import ConversationDeleteDialog from "./ConversationDeleteDialog";
+import ConversationInbox from "./ConversationInbox";
+import ConversationSearch from "./ConversationSearch";
 import ChatThread from "./ChatThread";
+import { useConversationSearch } from "../hooks/useConversationSearch";
 import type {
   ChatMessage,
   ConversationPage,
@@ -47,10 +49,14 @@ export default function MessagingPanel({
   const [loading, setLoading] = useState(!initialData);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(initialData?.error ?? "");
-  const [query, setQuery] = useState("");
-  const [users, setUsers] = useState<MessagingUser[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState("");
+  const {
+    query,
+    setQuery,
+    users,
+    searching,
+    searchError,
+    setSearchError,
+  } = useConversationSearch(active, onExpired);
   const [starting, setStarting] = useState(false);
   const [deleting, setDeleting] = useState<ConversationSummary | null>(null);
   const removedIds = useRef(new Set<string>());
@@ -156,33 +162,6 @@ export default function MessagingPanel({
     void load(lifetime.current.signal);
   }, [active, selected]);
 
-  useEffect(() => {
-    const trimmed = query.trim();
-    setUsers([]);
-    setSearchError("");
-    if (!active || trimmed.length < 2) {
-      setSearching(false);
-      return;
-    }
-    const controller = new AbortController();
-    setSearching(true);
-    const timer = setTimeout(async () => {
-      const result = await fetchData<MessagingUser[]>(
-        `/api/messaging/users?q=${encodeURIComponent(trimmed)}`,
-        { signal: controller.signal },
-      );
-      if (controller.signal.aborted) return;
-      setSearching(false);
-      if (result.success) setUsers(result.data);
-      else if (result.error.status === 401) onExpired();
-      else setSearchError(result.error.message);
-    }, 300);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query, onExpired, active]);
-
   const start = async (recipient: MessagingUser) => {
     if (starting) return;
     setStarting(true);
@@ -218,16 +197,20 @@ export default function MessagingPanel({
     setSelected(current => current?.id === id ? null : current);
     if (serverNavigation && selected?.id === id) navigateServerPage("/messaging");
   };
-  const deleteDialog = deleting && <ConfirmationModal title="Delete conversation"
-    message={`Delete the conversation with ${deleting.user?.name ?? 'this user'} for both participants? All messages will be permanently removed.`}
-    confirmLabel="Delete" onClose={() => setDeleting(null)} onConfirm={async () => {
+  const deleteDialog = deleting && (
+    <ConversationDeleteDialog
+      conversation={deleting}
+      onClose={() => setDeleting(null)}
+      onConfirm={async () => {
       const signal = lifetime.current!.signal;
       const result = await fetchData(`/api/messaging/conversations/${deleting.id}`, { method: 'DELETE', responseType: 'void', signal, errorMessage: ERROR_MESSAGES.CONVERSATION_DELETE_FAILED });
       if (signal.aborted) return;
       if (!result.success) throw result.error;
       removeFromPanel(deleting.id);
       await load(signal);
-    }} />;
+      }}
+    />
+  );
 
   if (selected)
     return (
@@ -257,80 +240,33 @@ export default function MessagingPanel({
 
   return (
     <div className="messaging-body">
-      <label className="messaging-search">
-        Start a conversation
-        <input
-          type="search"
-          placeholder="Search users by name"
-          maxLength={100}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          autoFocus={active}
-        />
-      </label>
-      {query.trim().length >= 2 && (
-        <div className="messaging-search-results">
-          {searching ? (
-            <p role="status">Searching…</p>
-          ) : users.length === 0 && !searchError ? (
-            <p>No users found.</p>
-          ) : null}
-          {searchError && <p role="alert">{searchError}</p>}
-          {users.map((recipient) => (
-            <button
-              type="button"
-              key={recipient.id}
-              disabled={starting}
-              onClick={() => void start(recipient)}
-            >
-              {recipient.name}
-              <span>Start chat</span>
-            </button>
-          ))}
-        </div>
-      )}
-      {loading && (
-        <p role="status" className="messaging-empty">
-          Loading conversations…
-        </p>
-      )}
-      {error && (
-        <div className="messaging-error">
-          <p role="alert">{error}</p>
-          <button
-            type="button"
-            onClick={() => {
-              if (lifetime.current) void load(lifetime.current.signal);
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      )}
-      {!loading && !error && conversations.length === 0 && (
-        <p className="messaging-empty">
-          No conversations yet. Search for a user to say hello.
-        </p>
-      )}
-      <ConversationList
-        conversations={conversations}
-        onSelect={setSelected}
-        serverNavigation={serverNavigation}
-        onDelete={setDeleting}
+      <ConversationSearch
+        query={query}
+        users={users}
+        searching={searching}
+        error={searchError}
+        starting={starting}
+        active={active}
+        onQueryChange={setQuery}
+        onStart={(recipient) => void start(recipient)}
       />
-      {cursor && (
-        <button
-          className="messaging-more"
-          type="button"
-          disabled={loadingMore}
-          onClick={() => {
-            setLoadingMore(true);
-            void load(lifetime.current!.signal, cursor);
-          }}
-        >
-          {loadingMore ? "Loading…" : "Older conversations"}
-        </button>
-      )}
+      <ConversationInbox
+        loading={loading}
+        error={error}
+        conversations={conversations}
+        cursor={cursor}
+        loadingMore={loadingMore}
+        serverNavigation={serverNavigation}
+        onSelect={setSelected}
+        onDelete={setDeleting}
+        onRetry={() => {
+          if (lifetime.current) void load(lifetime.current.signal);
+        }}
+        onLoadOlder={() => {
+          setLoadingMore(true);
+          void load(lifetime.current!.signal, cursor ?? undefined);
+        }}
+      />
       {deleteDialog}
     </div>
   );

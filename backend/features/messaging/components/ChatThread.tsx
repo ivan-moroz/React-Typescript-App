@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmationModal from '../../../../src/components/modal/ConfirmationModal';
 import { useChatMessages } from "../hooks/useChatMessages";
-import { messageTime } from "../utils/utils";
-import {
-  MAX_MESSAGE_LENGTH,
-  type ConversationSummary,
-  type MessagePage,
-  type MessagingUser,
+import type {
+  ConversationSummary,
+  MessagePage,
+  MessagingUser,
 } from "../types/types";
+import MessageComposer from "./MessageComposer";
+import MessageList from "./MessageList";
 
 export default function ChatThread({
   conversation,
@@ -50,14 +50,6 @@ export default function ChatThread({
     onConversationDeleted,
   );
   const [deletingMessage, setDeletingMessage] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
-  const log = useRef<HTMLDivElement>(null);
-  const nearBottom = useRef(true);
-  const latest = messages[messages.length - 1];
-  useEffect(() => {
-    if (log.current && (nearBottom.current || latest?.senderId === user.id))
-      log.current.scrollTop = log.current.scrollHeight;
-  }, [latest?.id, user.id]);
 
   return (
     <div className="chat-thread">
@@ -79,97 +71,23 @@ export default function ChatThread({
           {error}
         </p>
       )}
-      <div
-        className="chat-messages"
-        ref={log}
-        role="log"
-        aria-label="Message history"
-        aria-live="polite"
-        onScroll={() => {
-          const element = log.current;
-          if (element)
-            nearBottom.current =
-              element.scrollHeight - element.scrollTop - element.clientHeight <
-              80;
-        }}
-      >
-        {hasOlder && (
-          <button
-            className="messaging-more"
-            type="button"
-            disabled={loadingOlder}
-            onClick={async () => {
-              const height = log.current?.scrollHeight ?? 0;
-              const top = log.current?.scrollTop ?? 0;
-              await loadOlder();
-              requestAnimationFrame(() => {
-                if (log.current)
-                  log.current.scrollTop =
-                    top + log.current.scrollHeight - height;
-              });
-            }}
-          >
-            {loadingOlder ? "Loading…" : "Load older messages"}
-          </button>
-        )}
-        {loading && <p role="status">Loading messages…</p>}
-        {!loading && messages.length === 0 && (
-          <p className="messaging-empty">
-            Say hello to start the conversation.
-          </p>
-        )}
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`chat-message ${message.senderId === user.id ? "is-mine" : "is-theirs"}`}
-          >
-            <p>{message.deletedAt ? <em>Message deleted</em> : message.content}</p>
-            <time dateTime={message.createdAt}>
-              {messageTime(message.createdAt)}
-            </time>
-            {message.senderId === user.id && !message.deletedAt && <button className="chat-delete-message" type="button" aria-label="Delete message" onClick={() => setDeletingMessage(message.id)}><span className="material-icons" aria-hidden="true">delete</span></button>}
-          </div>
-        ))}
-      </div>
+      <MessageList
+        messages={messages}
+        currentUserId={user.id}
+        loading={loading}
+        loadingOlder={loadingOlder}
+        hasOlder={hasOlder}
+        onLoadOlder={loadOlder}
+        onDeleteMessage={setDeletingMessage}
+      />
       {conversation.user ? (
-        <form
-          className="chat-composer"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            if (loading || sending) return;
-            if (await send(draft)) setDraft("");
-          }}
-        >
-          <label htmlFor="message-draft" className="messaging-sr-only">
-            Message to {conversation.user.name}
-          </label>
-          <textarea
-            id="message-draft"
-            placeholder="Write a message…"
-            maxLength={MAX_MESSAGE_LENGTH}
-            rows={2}
-            value={draft}
-            disabled={sending}
-            autoFocus={active}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (
-                event.key === "Enter" &&
-                !event.shiftKey &&
-                !event.nativeEvent.isComposing
-              ) {
-                event.preventDefault();
-                event.currentTarget.form?.requestSubmit();
-              }
-            }}
-          />
-          <button type="submit" disabled={sending || !draft.trim() || loading}>
-            {sending ? "Sending…" : "Send"}
-          </button>
-          <small>
-            {draft.length}/{MAX_MESSAGE_LENGTH} · Shift+Enter for a new line
-          </small>
-        </form>
+        <MessageComposer
+          recipientName={conversation.user.name}
+          sending={sending}
+          loading={loading}
+          active={active}
+          onSend={send}
+        />
       ) : (
         <p className="messaging-empty">This user is no longer available.</p>
       )}
