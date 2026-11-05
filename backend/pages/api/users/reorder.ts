@@ -2,6 +2,7 @@ import { ERROR_MESSAGES } from "../../../../src/constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../lib/prisma';
+import { canRequestPeopleAccess } from '../../../lib/userAccess';
 
 type User = {
   id: number;
@@ -29,6 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   if (req.method !== 'PUT') {
     res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
+    return;
+  }
+
+  if (!(await canRequestPeopleAccess(req))) {
+    res.status(404).json({ message: ERROR_MESSAGES.NOT_FOUND });
     return;
   }
 

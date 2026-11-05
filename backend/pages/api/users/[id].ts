@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../lib/prisma';
 import { hashPassword } from '../../../lib/password';
+import { canRequestPeopleAccess } from '../../../lib/userAccess';
 
 type UserResponse =
   | {
@@ -25,6 +26,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
+    return;
+  }
+
+  if (
+    ['GET', 'PUT', 'DELETE'].includes(req.method ?? '') &&
+    !(await canRequestPeopleAccess(req))
+  ) {
+    res.status(404).json({ message: ERROR_MESSAGES.NOT_FOUND });
     return;
   }
 

@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../lib/prisma';
 import { hashPassword } from '../../lib/password';
+import { canRequestPeopleAccess } from '../../lib/userAccess';
 
 type UserPayload = {
   name: string;
@@ -58,6 +59,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (req.method === 'GET') {
+    if (!(await canRequestPeopleAccess(req))) {
+      res.status(404).json({ message: ERROR_MESSAGES.NOT_FOUND });
+      return;
+    }
     try {
       const offset = Number(req.query.offset ?? 0);
       const requestedLimit = Number(req.query.limit ?? DEFAULT_PAGE_SIZE);

@@ -4,7 +4,13 @@ import ServerNavigation from '../features/navigation/ServerNavigation';
 import { getServerNavigationProps } from '../features/navigation/server';
 
 type NavigationDocumentProps = DocumentInitialProps & {
-  navigation: { pathname: string; from: string; user: { id: number; name: string } | null; unreadCount: number };
+  navigation: {
+    pathname: string;
+    from: string;
+    user: { id: number; name: string } | null;
+    unreadCount: number;
+    canViewPeople: boolean;
+  };
 };
 
 export default function AppDocument({ navigation }: NavigationDocumentProps) {

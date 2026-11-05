@@ -7,6 +7,7 @@ type ServerNavigationProps = {
   from: string;
   user: { id: number; name: string } | null;
   unreadCount: number;
+  canViewPeople?: boolean;
   liveUpdates?: boolean;
 };
 
@@ -25,8 +26,12 @@ export default function ServerNavigation({
   from,
   user,
   unreadCount,
+  canViewPeople = false,
   liveUpdates = false,
 }: ServerNavigationProps) {
+  const visibleLinks = links.filter(
+    ([href]) => href !== "/users" || canViewPeople,
+  );
   return (
     <nav className="app-navigation">
       <div className="navigation-inner">
@@ -35,7 +40,7 @@ export default function ServerNavigation({
           <span>STUDIO</span>
         </a>
         <div className="navigation-links">
-          {links.map(([href, label]) => (
+          {visibleLinks.map(([href, label]) => (
             <a key={href} href={href} aria-current={pathname === href ? "page" : undefined}>
               {label}
             </a>

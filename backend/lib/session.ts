@@ -15,7 +15,7 @@ export function sessionCookie(user: { id: number; passwordHash: string }, secure
 
 export const clearSessionCookie = `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
 
-export async function getSessionUserFromCookie(cookieHeader?: string) {
+async function getSessionUserRecordFromCookie(cookieHeader?: string) {
   const token = cookieHeader?.split(';').map(value => value.trim())
     .find(value => value.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
   if (!token) return null;
@@ -24,11 +24,25 @@ export async function getSessionUserFromCookie(cookieHeader?: string) {
   const [id, expires, signed] = parts;
   if (!/^\d+$/.test(id) || !Number.isSafeInteger(Number(id)) || Number(id) < 1 ||
       !/^\d+$/.test(expires) || Number(expires) <= Date.now() / 1000 || !/^[a-f0-9]{64}$/.test(signed)) return null;
-  const user = await prisma.user.findUnique({ where: { id: Number(id) }, select: { id: true, name: true, passwordHash: true } });
+  const user = await prisma.user.findUnique({ where: { id: Number(id) }, select: { id: true, name: true, email: true, passwordHash: true } });
   if (!user || !timingSafeEqual(Buffer.from(signed, 'hex'), Buffer.from(signature(`${id}.${expires}`, user.passwordHash), 'hex'))) return null;
-  return { id: user.id, name: user.name };
+  return user;
+}
+
+export async function getSessionUserFromCookie(cookieHeader?: string) {
+  const user = await getSessionUserRecordFromCookie(cookieHeader);
+  return user ? { id: user.id, name: user.name } : null;
+}
+
+export async function getSessionUserWithEmailFromCookie(cookieHeader?: string) {
+  const user = await getSessionUserRecordFromCookie(cookieHeader);
+  return user ? { id: user.id, name: user.name, email: user.email } : null;
 }
 
 export async function getSessionUser(req: IncomingMessage) {
   return getSessionUserFromCookie(req.headers.cookie);
+}
+
+export async function getSessionUserWithEmail(req: IncomingMessage) {
+  return getSessionUserWithEmailFromCookie(req.headers.cookie);
 }
