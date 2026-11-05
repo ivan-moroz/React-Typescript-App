@@ -1,5 +1,6 @@
 import "../../src/components/messaging/styles/styles.scss";
 import MessagingPanelHost from "../features/messaging/MessagingPanelHost";
+import RegistrationModalHost from "../features/users/RegistrationModalHost";
 import type { MessagingSnapshot } from "../features/messaging/types/types";
 import { createEmptyMessagingSnapshot } from "../features/messaging/utils/utils";
 import "../features/messaging/styles/styles.scss";
@@ -15,17 +16,21 @@ import "../features/navigation/styles/styles.scss";
 
 export default function App({ Component, pageProps, router }: AppProps) {
   const ssrPage = ["/assets", "/users", "/messaging"].includes(router.pathname);
-  if (!ssrPage) return <Component {...pageProps} />;
   const snapshot: MessagingSnapshot =
     pageProps.initialMessaging ?? createEmptyMessagingSnapshot(null);
   return (
     <ModalProvider>
-      <div className="page-wrapper">
+      <RegistrationModalHost />
+      {ssrPage ? (
+        <>
+          <div className="page-wrapper">
+            <Component {...pageProps} />
+          </div>
+          <MessagingPanelHost initialData={snapshot} />
+        </>
+      ) : (
         <Component {...pageProps} />
-      </div>
-      <MessagingPanelHost
-        initialData={snapshot}
-      />
+      )}
     </ModalProvider>
   );
 }

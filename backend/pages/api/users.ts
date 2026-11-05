@@ -36,9 +36,16 @@ function setCors(res: NextApiResponse) {
 function isValidUserPayload(payload: Partial<UserPayload>): payload is UserPayload {
   return (
     typeof payload.name === 'string' &&
+    payload.name.trim().length > 0 &&
     typeof payload.email === 'string' &&
+    payload.email.trim().length > 0 &&
     typeof payload.age === 'number' &&
-    typeof payload.city === 'string'
+    Number.isInteger(payload.age) &&
+    payload.age > 0 &&
+    typeof payload.city === 'string' &&
+    payload.city.trim().length > 0 &&
+    typeof payload.password === 'string' &&
+    payload.password.length > 0
   );
 }
 

@@ -10,6 +10,7 @@ import ConfirmationModal from "../../../src/components/modal/ConfirmationModal";
 import { initialState, reducer } from "./reducer/reducer";
 import { ActionType, User } from "./types/types";
 import Table, { type TableColumn } from "../../../src/components/table/Table";
+import { USERS_CHANGED_EVENT } from "./constants/events";
 
 const PAGE_SIZE = 10;
 
@@ -69,6 +70,10 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 
 	useEffect(() => {
 		if (initialUsers === undefined) void loadUsers(true);
+		const handleUsersChanged = () => void loadUsers(true);
+		window.addEventListener(USERS_CHANGED_EVENT, handleUsersChanged);
+		return () =>
+			window.removeEventListener(USERS_CHANGED_EVENT, handleUsersChanged);
 	}, []);
 
 	useEffect(() => {

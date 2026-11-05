@@ -95,6 +95,20 @@
 		}
 	}
 
+	> .register-button {
+		background: transparent;
+		border: 1px solid $color-surface;
+		border-radius: 4px;
+		color: $color-off-white;
+		font-size: $font-size-medium;
+		padding: 7px 10px;
+
+		&:hover {
+			background: $color-charcoal;
+			color: $color-white;
+		}
+	}
+
 	.authenticated-user {
 		align-items: center;
 		display: flex;

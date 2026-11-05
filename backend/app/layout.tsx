@@ -29,8 +29,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         />
       </head>
       <body>
-        <ServerNavigation {...navigation} liveUpdates />
-        <AppProviders userId={navigation.user?.id ?? null}>{children}</AppProviders>
+        <AppProviders userId={navigation.user?.id ?? null}>
+          <ServerNavigation {...navigation} liveUpdates />
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

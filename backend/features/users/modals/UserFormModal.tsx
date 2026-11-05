@@ -4,9 +4,19 @@ import React, { useState } from "react";
 import Modal from "../../../../src/components/modal/Modal";
 import type { ModalControls } from "../../../../src/components/modal/ModalProvider";
 import type { User, UserFormState } from "../types/types";
-type Props = ModalControls & { user?: User; onSaved: () => Promise<void> };
-export default function UserFormModal({ user, onSaved, onClose }: Props) {
+type Props = ModalControls & {
+	user?: User;
+	isRegistration?: boolean;
+	onSaved: () => Promise<void>;
+};
+export default function UserFormModal({
+	user,
+	isRegistration = false,
+	onSaved,
+	onClose,
+}: Props) {
 	const isEditingUser = user !== undefined;
+	const isRegistering = isRegistration && !isEditingUser;
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [formError, setFormError] = useState("");
 	const [userForm, setUserForm] = useState<UserFormState>(() => ({
@@ -81,7 +91,9 @@ export default function UserFormModal({ user, onSaved, onClose }: Props) {
 	return (
 		<Modal
 			isOpen
-			title={isEditingUser ? "Edit user" : "Create user"}
+			title={
+				isEditingUser ? "Edit user" : isRegistering ? "Register" : "Create user"
+			}
 			onClose={onClose}
 			footer={
 				<>
@@ -97,7 +109,9 @@ export default function UserFormModal({ user, onSaved, onClose }: Props) {
 							? "Saving..."
 							: isEditingUser
 								? "Update User"
-								: "Save User"}
+								: isRegistering
+									? "Register"
+									: "Save User"}
 					</button>
 				</>
 			}

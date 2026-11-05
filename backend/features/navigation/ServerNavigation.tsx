@@ -1,4 +1,5 @@
 import NavigationRealtime from "./NavigationRealtime";
+import RegisterButton from "./RegisterButton";
 import { formatUnreadCount } from "../messaging/utils/utils";
 
 type ServerNavigationProps = {
@@ -50,7 +51,10 @@ export default function ServerNavigation({
               </form>
             </div>
           ) : (
-            <a href={`/login?from=${encodeURIComponent(from)}`}>Login</a>
+            <>
+              <a href={`/login?from=${encodeURIComponent(from)}`}>Login</a>
+              <RegisterButton />
+            </>
           )}
           {user && liveUpdates ? (
             <NavigationRealtime userId={user.id} unreadCount={unreadCount} />

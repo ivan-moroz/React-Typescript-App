@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import Users from "../Users";
 import { ModalProvider } from "../../../../src/components/modal/ModalProvider";
+import { USERS_CHANGED_EVENT } from "../constants/events";
 
 const render = (ui: React.ReactNode) =>
 	renderBase(<ModalProvider>{ui}</ModalProvider>);
@@ -135,6 +136,7 @@ describe("Users Component", () => {
 		fireEvent.change(screen.getByPlaceholderText("Name"), {
 			target: { value: "John" },
 		});
+
 		fireEvent.change(screen.getByPlaceholderText("Email"), {
 			target: { value: "john@example.com" },
 		});
@@ -153,6 +155,29 @@ describe("Users Component", () => {
 		await waitFor(() => {
 			expect(screen.getByText("John")).toBeInTheDocument();
 		});
+	});
+
+	test("refreshes the users table after registration from the navigation", async () => {
+		const registeredUser = {
+			id: 6,
+			name: "Registered User",
+			email: "registered@example.com",
+			age: 31,
+			city: "Kyiv",
+		};
+		const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+		fetchMock.mockResolvedValueOnce({
+			ok: true,
+			json: async () => [...mockUsers, registeredUser],
+		} as Response);
+
+		render(<Users initialUsers={mockUsers} />);
+		await act(async () => {
+			window.dispatchEvent(new Event(USERS_CHANGED_EVENT));
+		});
+
+		expect(await screen.findByText("Registered User")).toBeInTheDocument();
+		expect(fetchMock).toHaveBeenCalledWith("/api/users?offset=0&limit=10");
 	});
 
 	test("shows a clear error when adding a user with an email address already in use", async () => {
