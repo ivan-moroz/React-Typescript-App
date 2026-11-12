@@ -1,9 +1,8 @@
 "use client";
 
-import { ModalProvider } from "../../src/components/modal/ModalProvider";
-import { fetchData } from "../../src/utils/fetchData";
+import { ModalProvider } from "../features/shared/modal/ModalProvider";
+import { fetchData } from "../lib/fetchData";
 import MessagingPanelHost from "../features/messaging/MessagingPanelHost";
-import RegistrationModalHost from "../features/users/RegistrationModalHost";
 import { subscribeMessagingRealtime } from "../features/messaging/client/realtime";
 import NavigationCurrentPage from "./navigation/navigation-current";
 import { useRouter } from "next/navigation";
@@ -99,7 +98,6 @@ export default function AppProviders({
   return (
     <ModalProvider>
       <MessagingRealtimeBridge userId={userId} />
-      <RegistrationModalHost />
       {children}
       <NavigationCurrentPage />
       <MessagingPanelHost />

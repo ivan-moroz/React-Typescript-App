@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "downlevelIteration": true,
     "lib": [
       "dom",
       "dom.iterable",
@@ -22,6 +23,15 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
+    "backend/features/**/*.ts",
+    "backend/features/**/*.tsx",
+    "backend/constants/**/*.ts",
+    "backend/lib/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "backend/**/*.test.ts",
+    "backend/**/*.test.tsx",
+    "backend/**/*.stories.tsx"
   ]
 }

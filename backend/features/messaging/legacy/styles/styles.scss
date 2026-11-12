@@ -1,0 +1,21 @@
+@use "../../../../app/styles/colors" as *;
+@use "../../../../app/styles/font-sizes" as *;
+
+.messages-link {
+	position: relative;
+	display: inline-flex;
+	padding: 8px;
+	border-radius: 4px;
+	background: $color-charcoal;
+	color: $color-off-white;
+}
+.messages-link-badge {
+	position: absolute;
+	top: -6px;
+	right: -8px;
+	background: $color-red;
+	color: $color-white;
+	border-radius: 12px;
+	padding: 2px 5px;
+	font-size: $font-size-small;
+}

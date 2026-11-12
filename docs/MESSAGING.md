@@ -25,7 +25,7 @@ For production, build and start the Next.js application:
 
 ```powershell
 npm run build
-npm run start:backend
+npm run start
 ```
 
 ## Database
@@ -90,8 +90,8 @@ Created:
 - `backend/features/messaging/server/messagingSSR.ts`
 - `backend/app/messaging/page.tsx`
 - `backend/test/MessagingSSR.test.tsx`
-- `src/components/messaging/Messaging.tsx`
-- `src/components/messaging/styles/styles.scss`
+- `backend/features/messaging/legacy/Messaging.tsx`
+- `backend/features/messaging/legacy/styles/styles.scss`
 - `backend/pages/api/auth/session.ts`
 - `backend/pages/api/messaging/[[...route]].ts`
 - `backend/test/MessagingApi.test.ts`
@@ -117,13 +117,11 @@ Modified:
 - `backend/app/users/page.tsx`
 - `backend/app/messaging/page.tsx`
 - `backend/features/navigation/ServerNavigation.tsx`
-- `src/pages/Login.tsx`
-- `src/App.tsx`
+- `backend/features/auth/Login.tsx`
 - `backend/features/navigation/styles/styles.scss`
 - `vite.config.ts`
 - `backend/pages/api/auth/logout.ts`
-- `src/constants/errors.ts`
-- `src/main.tsx`
+- `backend/constants/errors.ts`
 - `README.md`
 
 ## Deleting messages and conversations

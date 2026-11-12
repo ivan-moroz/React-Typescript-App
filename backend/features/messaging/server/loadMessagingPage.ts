@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES, HttpError } from "../../../constants/errors";
 import { getSessionUserFromCookie } from "../../../lib/session";
 import type { MessagingSnapshot } from "../types/types";
 import { createEmptyMessagingSnapshot } from "../utils/utils";

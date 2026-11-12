@@ -1,4 +1,4 @@
-import PuzzlePage from "../../../src/pages/Puzzle";
+import PuzzlePage from "../../features/puzzle/PuzzlePage";
 
 export default function PuzzleRoute() {
   return <PuzzlePage />;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchData } from "../../../src/utils/fetchData";
-import { ERROR_MESSAGES } from "../../../src/constants/errors";
+import { fetchData } from "../../lib/fetchData";
+import { ERROR_MESSAGES } from "../../constants/errors";
 import Messaging from "./Messaging";
 import type {
   ConversationPage,

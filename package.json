@@ -5,13 +5,12 @@
   "type": "module",
   "scripts": {
     "dev:backend": "node backend/server.mjs --dev",
-    "dev:vite": "vite",
-    "build": "vite build",
+    "build": "next build backend",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build:backend": "next build backend",
     "start:backend": "node backend/server.mjs",
-    "preview": "vite preview",
+    "start": "node backend/server.mjs",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -25,7 +24,6 @@
     "pg": "^8.23.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.13.0",
     "sass": "^1.93.2",
     "ws": "^8.22.0"
   },

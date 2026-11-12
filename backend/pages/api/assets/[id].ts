@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES } from "../../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { extname } from 'node:path';
 

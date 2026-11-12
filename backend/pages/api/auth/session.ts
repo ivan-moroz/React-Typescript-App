@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSessionUser } from "../../../lib/session";
-import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES } from "../../../constants/errors";
 
 export default async function handler(
   req: NextApiRequest,

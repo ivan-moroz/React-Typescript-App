@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES } from "../../../constants/errors";
 import prisma from "../../../lib/prisma";
 import { getSessionUserFromCookie } from "../../../lib/session";
 import type { Asset, AuthenticatedUser } from "../assetHelpers";

@@ -13,7 +13,7 @@ import {
   unreadCount,
 } from "../../../features/messaging/server/messaging";
 import { publishMessagingUpdate } from "../../../features/messaging/server/realtime";
-import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES, HttpError } from "../../../constants/errors";
 
 export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

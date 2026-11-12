@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from "react";
-import { fetchData } from "../../../../src/utils/fetchData";
+import { fetchData } from "../../../lib/fetchData";
 import type { MessagingUser } from "../types/types";
 import {
   conversationSearchReducer,

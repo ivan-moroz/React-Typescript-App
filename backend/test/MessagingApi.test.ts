@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import handler from "../pages/api/messaging/[[...route]]";
 import { getSessionUser } from "../lib/session";
-import { ERROR_MESSAGES } from "../../src/constants/errors";
+import { ERROR_MESSAGES } from "../constants/errors";
 
 const db = vi.hoisted(() => ({
   user: { findUnique: vi.fn(), findMany: vi.fn() },

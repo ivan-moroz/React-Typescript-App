@@ -1,3 +1,3 @@
-import RouteLoading from "../../../src/components/routing/RouteLoading";
+import RouteLoading from "./RouteLoading";
 
 export { RouteLoading };

@@ -1,11 +1,11 @@
 "use client";
 
-import { fetchData } from "../../../src/utils/fetchData";
-import { ERROR_MESSAGES } from "../../../src/constants/errors";
+import { fetchData } from "../../lib/fetchData";
+import { ERROR_MESSAGES } from "../../constants/errors";
 import { useEffect, useMemo, useState } from "react";
 
-import ConfirmationModal from "../../../src/components/modal/ConfirmationModal";
-import { useModal } from "../../../src/components/modal/useModal";
+import ConfirmationModal from "../shared/modal/ConfirmationModal";
+import { useModal } from "../shared/modal/useModal";
 import AssetCard from "./components/AssetCard";
 import AssetEditorModal from "./components/modals/AssetEditorModal";
 import AssetPreviewModal from "./components/modals/AssetPreviewModal";

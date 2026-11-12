@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES } from "../../../constants/errors";
 import prisma from "../../../lib/prisma";
 import type { User } from "../types/types";
 

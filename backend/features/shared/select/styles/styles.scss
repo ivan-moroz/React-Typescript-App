@@ -1,0 +1,92 @@
+@use "../../../../app/styles/colors" as *;
+@use "../../../../app/styles/font-sizes" as *;
+
+.select {
+	position: relative;
+	background: $color-charcoal;
+	border: 1px solid $color-surface;
+	border-radius: 6px;
+	cursor: pointer;
+
+	&:focus {
+		outline: 2px solid $color-red;
+	}
+
+	&-value {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		user-select: none;
+		padding: 8px;
+	}
+
+	&-multi-values {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	&-tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 6px;
+		background: $color-charcoal;
+		border-radius: 4px;
+		font-size: $font-size-medium;
+	}
+
+	&-tag-remove {
+		border: none;
+		background: $color-transparent;
+		color: $color-light-gray;
+		cursor: pointer;
+		padding: 0;
+		display: inline-flex;
+		align-items: center;
+
+		.material-icons {
+			font-size: $font-size-medium;
+			line-height: 1;
+		}
+	}
+
+	&-arrow {
+		font-size: $font-size-large;
+		color: $color-light-gray;
+		transition: transform 0.2s ease;
+
+		&.open {
+			transform: rotate(180deg);
+		}
+	}
+
+	&-options {
+		position: absolute;
+		width: 100%;
+		top: 100%;
+		left: 0;
+		margin: 4px 0 0;
+		padding: 0;
+		list-style: none;
+		border: 1px solid $color-surface;
+		background: $color-charcoal;
+		max-height: 150px;
+		overflow-y: auto;
+		z-index: 10;
+
+		.option {
+			padding: 8px;
+
+			&:hover,
+			&.highlighted {
+				background: $color-surface;
+			}
+
+			&.selected {
+				background: $color-charcoal;
+			}
+		}
+	}
+}

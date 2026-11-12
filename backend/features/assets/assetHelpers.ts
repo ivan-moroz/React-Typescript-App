@@ -1,5 +1,5 @@
-import { fetchData, type FetchResult } from "../../../src/utils/fetchData";
-import { ERROR_MESSAGES } from "../../../src/constants/errors";
+import { fetchData, type FetchResult } from "../../lib/fetchData";
+import { ERROR_MESSAGES } from "../../constants/errors";
 export type Authorization = "INTERNAL" | "PUBLIC";
 export type Asset = {
 	id: string;

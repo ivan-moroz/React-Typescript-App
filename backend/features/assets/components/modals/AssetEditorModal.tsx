@@ -1,7 +1,7 @@
-import { ERROR_MESSAGES } from "../../../../../src/constants/errors";
+import { ERROR_MESSAGES } from "../../../../constants/errors";
 import { ChangeEvent, DragEvent, FormEvent, useRef, useState } from "react";
-import Modal from "../../../../../src/components/modal/Modal";
-import type { ModalControls } from "../../../../../src/components/modal/ModalProvider";
+import Modal from "../../../shared/modal/Modal";
+import type { ModalControls } from "../../../shared/modal/ModalProvider";
 import {
 	Asset,
 	AssetForm,

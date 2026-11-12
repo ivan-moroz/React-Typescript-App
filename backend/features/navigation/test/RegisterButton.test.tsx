@@ -5,9 +5,12 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { ModalProvider } from "../../../../src/components/modal/ModalProvider";
+import { ModalProvider } from "../../shared/modal/ModalProvider";
 import ServerNavigation from "../ServerNavigation";
-import RegistrationModalHost from "../../users/RegistrationModalHost";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 test("opens the user registration modal and submits to the users API", async () => {
   const fetch = vi
@@ -21,7 +24,6 @@ test("opens the user registration modal and submits to the users API", async () 
 
   render(
     <ModalProvider>
-      <RegistrationModalHost />
       <ServerNavigation
         pathname="/"
         from="/"

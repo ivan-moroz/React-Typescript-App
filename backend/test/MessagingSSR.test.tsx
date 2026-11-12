@@ -7,7 +7,7 @@ import { getInitialMessaging } from "../features/messaging/server/messagingSSR";
 import { loadMessagingPage } from "../features/messaging/server/loadMessagingPage";
 import { getSessionUserFromCookie } from "../lib/session";
 import { getConversationSummary, listConversations, listMessages } from "../features/messaging/server/messaging";
-import { ERROR_MESSAGES, HttpError } from "../../src/constants/errors";
+import { ERROR_MESSAGES, HttpError } from "../constants/errors";
 
 vi.mock("../lib/session", () => ({ getSessionUserFromCookie: vi.fn() }));
 vi.mock("../features/messaging/server/messaging", () => ({ getConversationSummary: vi.fn(), listConversations: vi.fn(), listMessages: vi.fn() }));

@@ -1,7 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { ModalProvider } from "../../src/components/modal/ModalProvider";
+import { ModalProvider } from "../features/shared/modal/ModalProvider";
 import AssetsPage from "../features/assets/AssetsPage";
 import { loadAssetsPage } from "../features/assets/server/loadAssetsPage";
 import UsersPage from "../features/users/UsersPage";

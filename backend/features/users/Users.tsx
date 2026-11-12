@@ -1,16 +1,15 @@
 "use client";
 
-import { fetchData } from "../../../src/utils/fetchData";
-import { ERROR_MESSAGES } from "../../../src/constants/errors";
+import { fetchData } from "../../lib/fetchData";
+import { ERROR_MESSAGES } from "../../constants/errors";
 import React, { useEffect, useReducer, useRef, useState } from "react";
 
-import { useModal } from "../../../src/components/modal/useModal";
+import { useModal } from "../shared/modal/useModal";
 import UserFormModal from "./modals/UserFormModal";
-import ConfirmationModal from "../../../src/components/modal/ConfirmationModal";
+import ConfirmationModal from "../shared/modal/ConfirmationModal";
 import { initialState, reducer } from "./reducer/reducer";
 import { ActionType, User } from "./types/types";
-import Table, { type TableColumn } from "../../../src/components/table/Table";
-import { USERS_CHANGED_EVENT } from "./constants/events";
+import Table, { type TableColumn } from "../shared/table/Table";
 
 const PAGE_SIZE = 10;
 
@@ -33,6 +32,15 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 	useEffect(() => {
 		usersRef.current = state.users;
 	}, [state.users]);
+
+	useEffect(() => {
+		if (initialUsers === undefined) return;
+		usersRef.current = initialUsers;
+		dispatch({ type: ActionType.SET_USERS, payload: initialUsers });
+		setHasMoreUsers(initialUsers.length === PAGE_SIZE);
+		setIsLoading(false);
+		setError(initialError);
+	}, [initialUsers, initialError]);
 
 	const loadUsers = async (reset = false): Promise<void> => {
 		if (isFetchingUsersRef.current || (!reset && !hasMoreUsers)) {
@@ -70,10 +78,6 @@ function UsersTable({ initialUsers, initialError = "" }: UsersTableProps) {
 
 	useEffect(() => {
 		if (initialUsers === undefined) void loadUsers(true);
-		const handleUsersChanged = () => void loadUsers(true);
-		window.addEventListener(USERS_CHANGED_EVENT, handleUsersChanged);
-		return () =>
-			window.removeEventListener(USERS_CHANGED_EVENT, handleUsersChanged);
 	}, []);
 
 	useEffect(() => {

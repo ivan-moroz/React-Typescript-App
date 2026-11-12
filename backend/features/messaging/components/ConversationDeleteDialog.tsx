@@ -1,4 +1,4 @@
-import ConfirmationModal from "../../../../src/components/modal/ConfirmationModal";
+import ConfirmationModal from "../../shared/modal/ConfirmationModal";
 import type { ConversationSummary } from "../types/types";
 
 export default function ConversationDeleteDialog({

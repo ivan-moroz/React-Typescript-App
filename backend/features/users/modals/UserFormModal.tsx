@@ -1,8 +1,8 @@
-import { fetchData } from "../../../../src/utils/fetchData";
-import { ERROR_MESSAGES } from "../../../../src/constants/errors";
+import { fetchData } from "../../../lib/fetchData";
+import { ERROR_MESSAGES } from "../../../constants/errors";
 import React, { useState } from "react";
-import Modal from "../../../../src/components/modal/Modal";
-import type { ModalControls } from "../../../../src/components/modal/ModalProvider";
+import Modal from "../../shared/modal/Modal";
+import type { ModalControls } from "../../shared/modal/ModalProvider";
 import type { User, UserFormState } from "../types/types";
 type Props = ModalControls & {
 	user?: User;

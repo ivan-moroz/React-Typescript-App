@@ -1,4 +1,4 @@
-import CalculatorPage from "../../../src/pages/Calculator";
+import CalculatorPage from "../../features/calculator/CalculatorPage";
 
 export default function CalculatorRoute() {
   return <CalculatorPage />;

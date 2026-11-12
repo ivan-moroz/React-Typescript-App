@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import ConfirmationModal from '../../../../src/components/modal/ConfirmationModal';
+import ConfirmationModal from '../../shared/modal/ConfirmationModal';
 import { useChatMessages } from "../hooks/useChatMessages";
 import type {
   ConversationSummary,

@@ -1,5 +1,5 @@
-@use "../../../../src/styles/colors" as *;
-@use "../../../../src/styles/font-sizes" as *;
+@use "../../../app/styles/colors" as *;
+@use "../../../app/styles/font-sizes" as *;
 
 .app-navigation {
 	background: rgba($color-dark, 0.96);

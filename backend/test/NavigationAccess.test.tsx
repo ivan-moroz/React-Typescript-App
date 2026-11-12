@@ -1,6 +1,7 @@
 import type { IncomingMessage } from "node:http";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { ModalProvider } from "../features/shared/modal/ModalProvider";
 import { adminUser } from "../constants/admin";
 import prisma from "../lib/prisma";
 import { getSessionUserWithEmail } from "../lib/session";
@@ -15,6 +16,9 @@ vi.mock("../lib/session", () => ({ getSessionUserWithEmail: vi.fn() }));
 vi.mock("../features/messaging/server/messaging", () => ({
   unreadCount: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -28,7 +32,11 @@ test("shows People navigation when no users exist", async () => {
   vi.mocked(prisma.user.count).mockResolvedValue(0);
   const props = await getServerNavigationProps(undefined, "/users");
 
-  render(<ServerNavigation {...props} />);
+  render(
+    <ModalProvider>
+      <ServerNavigation {...props} />
+    </ModalProvider>,
+  );
 
   expect(screen.getByRole("link", { name: "People" })).toBeInTheDocument();
 });
@@ -45,7 +53,11 @@ test("hides People navigation from non-admin users", async () => {
     "/users",
   );
 
-  render(<ServerNavigation {...props} />);
+  render(
+    <ModalProvider>
+      <ServerNavigation {...props} />
+    </ModalProvider>,
+  );
 
   expect(screen.queryByRole("link", { name: "People" })).not.toBeInTheDocument();
 });
@@ -61,7 +73,11 @@ test("shows People navigation to the configured admin", async () => {
     "/users",
   );
 
-  render(<ServerNavigation {...props} />);
+  render(
+    <ModalProvider>
+      <ServerNavigation {...props} />
+    </ModalProvider>,
+  );
 
   expect(screen.getByRole("link", { name: "People" })).toBeInTheDocument();
   expect(prisma.user.count).not.toHaveBeenCalled();

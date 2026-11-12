@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../../../lib/prisma";
-import { ERROR_MESSAGES, HttpError } from "../../../../src/constants/errors";
+import { ERROR_MESSAGES, HttpError } from "../../../constants/errors";
 import { messageSelect } from "./messageSelect";
 
 export async function requireConversation(userId: number, id: string) {
