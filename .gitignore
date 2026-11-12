@@ -23,7 +23,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/backend/.next/
-/backend/.next-dev/
-/backend/.next-turbo-dev/
+/.next/
+.next-turbo-dev/
+/.next-dev/
+/.next-turbo-dev/
+/tsconfig.tsbuildinfo
 /storybook-static/

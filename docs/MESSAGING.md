@@ -1,6 +1,6 @@
 # Private messaging
 
-The Next.js App Router renders the shared site navigation and messaging pages. Internal navigation keeps the shared shell mounted and loads only the destination content. The messaging icon opens the panel in place without changing the current URL; the panel links to the full `/messaging` inbox. The complete messaging interface lives in `backend/features/messaging`; it supports searching names, starting a conversation, reading and paginating history, and sending plain-text messages.
+The Next.js App Router renders the shared site navigation and messaging pages. Internal navigation keeps the shared shell mounted and loads only the destination content. The messaging icon opens the panel in place without changing the current URL; the panel links to the full `/messaging` inbox. The complete messaging interface lives in `features/messaging`; it supports searching names, starting a conversation, reading and paginating history, and sending plain-text messages.
 
 ## Setup
 
@@ -18,7 +18,7 @@ The included migration is `prisma/migrations/20261030000000_add_messaging/migrat
 Start the full application for development:
 
 ```powershell
-npm run dev
+npm run dev:backend
 ```
 
 For production, build and start the Next.js application:
@@ -56,9 +56,9 @@ Message pagination uses `(createdAt, id)` ordering, validates that the cursor be
 
 ## Server rendering
 
-`backend/app/messaging/page.tsx` authenticates the cookie and loads conversations, unread counts, and optionally message history on the server. Open `/messaging?conversation=UUID` for server-rendered chat history. Conversation links on the full inbox request that route. Anonymous visitors redirect to login; inaccessible conversations return 404. Responses are private and uncached.
+`app/messaging/page.tsx` authenticates the cookie and loads conversations, unread counts, and optionally message history on the server. Open `/messaging?conversation=UUID` for server-rendered chat history. Conversation links on the full inbox request that route. Anonymous visitors redirect to login; inaccessible conversations return 404. Responses are private and uncached.
 
-`backend/features/messaging/server/messagingSSR.ts` reads Prisma through the existing messaging service, serializes dates, and strips session secrets. The initial inbox and badge render into HTML before JavaScript; selected history hydrates without refetching it on mount. Later updates arrive over the authenticated WebSocket connection. Timestamps explicitly use UTC to avoid timezone hydration differences. Errors in messaging do not break page rendering.
+`features/messaging/server/messagingSSR.ts` reads Prisma through the existing messaging service, serializes dates, and strips session secrets. The initial inbox and badge render into HTML before JavaScript; selected history hydrates without refetching it on mount. Later updates arrive over the authenticated WebSocket connection. Timestamps explicitly use UTC to avoid timezone hydration differences. Errors in messaging do not break page rendering.
 
 ## Updates and UI
 
@@ -70,15 +70,14 @@ The chat receive cursor is independent of locally sent messages, preventing inco
 
 ```powershell
 npm test
-npx tsc --noEmit --incremental false -p backend/tsconfig.json
+npx tsc --noEmit --incremental false
 npx prisma validate
-npm run build:backend
 npm run build:backend
 ```
 
-`backend/test/MessagingSSR.test.tsx` verifies server-loaded history, JSON serialization, header HTML, hydration without initial refetches, login redirects, private conversation access, and server errors.
+`features/messaging/test/MessagingSSR.test.tsx` verifies server-loaded history, JSON serialization, header HTML, hydration without initial refetches, login redirects, private conversation access, and server errors.
 
-`backend/test/MessagingApi.test.ts` verifies authentication, membership, sender identity, private search, validation, pagination, read boundaries, duplicate-pair keys, origin checks, WebSocket update publishing, and sanitized server failures. `backend/features/messaging/test/realtime.test.ts` verifies shared WebSocket connections and reconnects. `backend/features/messaging/test/Messaging.test.tsx` verifies conversations, sending, safe rendering, search, anonymous state, live deletion updates, and a concurrent-send receive-cursor regression.
+`features/messaging/test/MessagingApi.test.ts` verifies authentication, membership, sender identity, private search, validation, pagination, read boundaries, duplicate-pair keys, origin checks, WebSocket update publishing, and sanitized server failures. `features/messaging/test/realtime.test.ts` verifies shared WebSocket connections and reconnects. `features/messaging/test/Messaging.test.tsx` verifies conversations, sending, safe rendering, search, anonymous state, live deletion updates, and a concurrent-send receive-cursor regression.
 
 After migration, test with two different accounts in separate browser profiles: start a conversation, exchange messages, close one panel to check the badge, reopen to clear unread state, and load older history. API tests mock Prisma; live PostgreSQL and desktop/mobile browser integration still require this check.
 
@@ -86,40 +85,40 @@ After migration, test with two different accounts in separate browser profiles: 
 
 Created:
 
-- `backend/features/messaging/server/messaging.ts`
-- `backend/features/messaging/server/messagingSSR.ts`
-- `backend/app/messaging/page.tsx`
-- `backend/test/MessagingSSR.test.tsx`
-- `backend/pages/api/auth/session.ts`
-- `backend/pages/api/messaging/[[...route]].ts`
-- `backend/test/MessagingApi.test.ts`
+- `features/messaging/server/messaging.ts`
+- `features/messaging/server/messagingSSR.ts`
+- `app/messaging/page.tsx`
+- `features/messaging/test/MessagingSSR.test.tsx`
+- `app/api/auth/session/route.ts`
+- `app/api/messaging/[[...route]]/route.ts`
+- `features/messaging/test/MessagingApi.test.ts`
 - `prisma/migrations/20261030000000_add_messaging/migration.sql`
-- `backend/features/messaging/ui/Messaging.tsx`
-- `backend/features/messaging/client/hooks/`: `useChatMessages.ts`
-- `backend/features/messaging/client/realtime.ts`
-- `backend/features/messaging/server/realtime.ts`
-- `backend/server.mjs`
-- `backend/features/messaging/ui/`: `MessagingPanel.tsx`, `ConversationList.tsx`, `ChatThread.tsx`
-- `backend/features/messaging/test/Messaging.test.tsx`
-- `backend/features/messaging/model/types.ts`
-- `backend/features/messaging/styles/messaging.scss`
-- `backend/features/navigation/ui/ServerNavigation.tsx`
-- `backend/features/navigation/server.ts`
+- `features/messaging/ui/Messaging.tsx`
+- `features/messaging/client/hooks/`: `useChatMessages.ts`
+- `features/messaging/client/realtime.ts`
+- `features/messaging/server/realtime.ts`
+- `server.mjs`
+- `features/messaging/ui/`: `MessagingPanel.tsx`, `ConversationList.tsx`, `ChatThread.tsx`
+- `features/messaging/test/Messaging.test.tsx`
+- `features/messaging/model/types.ts`
+- `features/messaging/styles/messaging.scss`
+- `features/navigation/ui/ServerNavigation.tsx`
+- `features/navigation/server.ts`
 
 Modified:
 
 - `prisma/schema.prisma`
-- `backend/app/layout.tsx`
-- `backend/app/providers.tsx`
-- `backend/app/assets/page.tsx`
-- `backend/app/users/page.tsx`
-- `backend/app/messaging/page.tsx`
-- `backend/features/navigation/ui/ServerNavigation.tsx`
-- `backend/features/auth/ui/Login.tsx`
-- `backend/features/navigation/styles/navigation.scss`
+- `app/layout.tsx`
+- `app/providers.tsx`
+- `app/assets/page.tsx`
+- `app/users/page.tsx`
+- `app/messaging/page.tsx`
+- `features/navigation/ui/ServerNavigation.tsx`
+- `features/auth/ui/Login.tsx`
+- `features/navigation/styles/navigation.scss`
 - `vite.config.ts`
-- `backend/pages/api/auth/logout.ts`
-- `backend/constants/errors.ts`
+- `app/api/auth/logout/route.ts`
+- `constants/errors.ts`
 - `README.md`
 
 ## Deleting messages and conversations

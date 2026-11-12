@@ -8,11 +8,11 @@ Private user-to-user messaging is available from the header chat bubble. See [Me
 
 ## Application structure
 
-- `backend/app` contains App Router routes, layouts, loading UI, and error boundaries. Route pages stay thin and delegate feature work.
-- `backend/features/<feature>` groups each feature's UI, model, server/client code, styles, and tests.
-- `backend/shared/ui` and `backend/shared/lib` contain code reused across features.
-- `backend/server` contains database, authentication, and access-control code.
-- `backend/pages/api` holds the existing Pages Router API handlers while they are migrated incrementally to App Router Route Handlers.
+- `app` contains App Router routes, layouts, loading UI, and error boundaries. Route pages stay thin and delegate feature work.
+- `features/<feature>` groups each feature's UI, model, server/client code, styles, and tests.
+- `shared/ui` and `shared/lib` contain code reused across features.
+- `server` contains database, authentication, and access-control code.
+- `app/api` contains App Router Route Handlers; supporting server-side API logic lives under `server/api`.
 
 For local use only — clone it and lets continue working with AI. Good luck!
 
@@ -45,19 +45,13 @@ Default connection string in `.env.example` uses:
 
 In the project directory, you can run:
 
-### `npm run dev`
+### `npm run dev:backend`
 
 Starts the Next.js application and custom Node.js server at [http://localhost:3001](http://localhost:3001). The App Router renders each application page on the server and hydrates interactive controls in the browser. Assets and Users load their initial data directly from Prisma.
 
 Login issues a signed HttpOnly session cookie so the server can load the current user's own and public assets. Sessions expire after 24 hours; log in again after upgrading from the browser-storage-only login. Logout clears the cookie.
 
-By default it runs at [http://localhost:5173](http://localhost:5173).
-
-### `npm run dev:backend`
-
-Alias for `npm run dev`.
-
-Development uses Turbopack with an isolated `backend/.next-turbo-dev` cache. After switching from the old Webpack server, stop the old backend process, restart `npm run dev:backend`, and close/reopen app tabs once so they load the new development runtime. Production builds still use `backend/.next`.
+Development uses Turbopack with an isolated `.next-turbo-dev` cache. Production builds use `.next`.
 
 User API routes:
 - `GET /api/users?offset=0&limit=10` (returns a page of users; defaults to 10)
@@ -70,15 +64,18 @@ User API routes:
 Asset API routes (assets are stored in PostgreSQL and scoped to the logged-in user's ID):
 - `GET /api/assets?userId=:userId`
 - `POST /api/assets`
-- `GET /api/assets/:id?userId=:userId` (streams the stored file)
+- `GET /api/assets/:id?userId=:userId` (streams the stored file and supports byte ranges)
+- `PUT /api/assets/:id/file?userId=:userId` (uploads a file in bounded chunks)
 - `DELETE /api/assets/:id`
+
+Asset files can be up to 1 GB and are uploaded and downloaded as streams.
 
 ToDo API routes (tasks are stored in PostgreSQL and scoped to the logged-in user):
 - `GET /api/todo`
 - `POST /api/todo` with `{ "text": "..." }`
 - `DELETE /api/todo?id=:id`
 
-The asset API accepts files up to 10 MB and stores their binary data in the `assets` table. Run `npm run prisma:generate` and apply the included migration before starting the backend.
+Run `npm run prisma:generate` and apply the included migrations before starting the application.
 
 After applying the password migration, every existing user can log in with their email address and the initial password `12345`. Passwords are stored as salted hashes. New users must provide a password; when editing a user, leave the password field blank to retain the current password.
 

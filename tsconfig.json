@@ -1,37 +1,43 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "downlevelIteration": true,
+    "target": "ES2022",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+    "noEmit": true,
+    "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "noImplicitThis": true,
-    "jsx": "react-jsx"
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "backend/features/**/*.ts",
-    "backend/features/**/*.tsx",
-    "backend/constants/**/*.ts",
-    "backend/lib/**/*.ts"
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next-turbo-dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "backend/**/*.test.ts",
-    "backend/**/*.test.tsx",
-    "backend/**/*.stories.tsx"
+    ".next",
+    ".next-dev",
+    ".next-turbo-dev",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.stories.tsx"
   ]
 }
