@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { longestSequence, mergeSequence, parseNumbers } from "./solver";
+import { longestSequence, mergeSequence, parseNumbers } from "./model/solver";
 
 function bruteForce(numbers: string[]): number {
   let best = 0;

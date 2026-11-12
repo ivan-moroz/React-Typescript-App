@@ -1,8 +1,8 @@
 "use client";
 
 import { ModalProvider } from "../shared/ui/modal/ModalProvider";
-import { fetchData } from "../lib/fetchData";
-import MessagingPanelHost from "../features/messaging/MessagingPanelHost";
+import { fetchData } from "../shared/lib/fetchData";
+import MessagingPanelHost from "../features/messaging/ui/MessagingPanelHost";
 import { subscribeMessagingRealtime } from "../features/messaging/client/realtime";
 import NavigationCurrentPage from "./navigation/navigation-current";
 import { useRouter } from "next/navigation";

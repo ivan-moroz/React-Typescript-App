@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import HomePage from "../Home";
+import HomePage from "../ui/Home";
 
 test("hides the People feature card by default", () => {
 	render(<HomePage />);

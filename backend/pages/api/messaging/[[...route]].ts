@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSessionUser } from "../../../lib/session";
+import { getSessionUser } from "../../../server/auth/session";
 import {
   createConversation,
   deleteConversation,

@@ -1,7 +1,7 @@
 import { ERROR_MESSAGES } from "../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSessionUser } from "../../lib/session";
-import prisma from "../../lib/prisma";
+import { getSessionUser } from "../../server/auth/session";
+import prisma from "../../server/db/prisma";
 
 type Todo = {
   id: number;

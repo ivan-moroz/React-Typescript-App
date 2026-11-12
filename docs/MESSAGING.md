@@ -94,16 +94,16 @@ Created:
 - `backend/pages/api/messaging/[[...route]].ts`
 - `backend/test/MessagingApi.test.ts`
 - `prisma/migrations/20261030000000_add_messaging/migration.sql`
-- `backend/features/messaging/`: `Messaging.tsx`, `time.ts`
-- `backend/features/messaging/hooks/`: `useChatMessages.ts`
+- `backend/features/messaging/ui/Messaging.tsx`
+- `backend/features/messaging/client/hooks/`: `useChatMessages.ts`
 - `backend/features/messaging/client/realtime.ts`
 - `backend/features/messaging/server/realtime.ts`
 - `backend/server.mjs`
-- `backend/features/messaging/components/`: `MessagingPanel.tsx`, `ConversationList.tsx`, `ChatThread.tsx`
+- `backend/features/messaging/ui/`: `MessagingPanel.tsx`, `ConversationList.tsx`, `ChatThread.tsx`
 - `backend/features/messaging/test/Messaging.test.tsx`
-- `backend/features/messaging/types/types.ts`
-- `backend/features/messaging/styles/styles.scss`
-- `backend/features/navigation/ServerNavigation.tsx`
+- `backend/features/messaging/model/types.ts`
+- `backend/features/messaging/styles/messaging.scss`
+- `backend/features/navigation/ui/ServerNavigation.tsx`
 - `backend/features/navigation/server.ts`
 
 Modified:
@@ -114,9 +114,9 @@ Modified:
 - `backend/app/assets/page.tsx`
 - `backend/app/users/page.tsx`
 - `backend/app/messaging/page.tsx`
-- `backend/features/navigation/ServerNavigation.tsx`
-- `backend/features/auth/Login.tsx`
-- `backend/features/navigation/styles/styles.scss`
+- `backend/features/navigation/ui/ServerNavigation.tsx`
+- `backend/features/auth/ui/Login.tsx`
+- `backend/features/navigation/styles/navigation.scss`
 - `vite.config.ts`
 - `backend/pages/api/auth/logout.ts`
 - `backend/constants/errors.ts`

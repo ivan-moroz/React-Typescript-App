@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import PuzzlePage from "../PuzzlePage";
-import { longestSequence } from "../solver";
+import PuzzlePage from "../ui/PuzzlePage";
+import { longestSequence } from "../model/solver";
 
 afterEach(() => vi.unstubAllGlobals());
 

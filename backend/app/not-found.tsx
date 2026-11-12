@@ -1,4 +1,4 @@
-import NotFoundPage from "../features/common/NotFound";
+import NotFoundPage from "../shared/ui/NotFound";
 
 export default function NotFound() {
   return <NotFoundPage />;

@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import LoginPage from "../Login";
+import LoginPage from "../ui/Login";
 
 describe("LoginPage", () => {
 	test("shows the login page when sessionStorage has a stale user", () => {

@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import UsersPage from "../../features/users/UsersPage";
+import UsersPage from "../../features/users/ui/UsersPage";
 import { loadUsersPage } from "../../features/users/server/loadUsersPage";
 import RouteLoading from "../loading/RouteLoading";
-import { getSessionUserWithEmailFromCookie } from "../../lib/session";
-import { canAccessPeople } from "../../lib/userAccess";
+import { getSessionUserWithEmailFromCookie } from "../../server/auth/session";
+import { canAccessPeople } from "../../server/access/userAccess";
+import "../../features/users/styles/users.scss";
+import "../../features/users/styles/users.scss";
 
 export const dynamic = "force-dynamic";
 

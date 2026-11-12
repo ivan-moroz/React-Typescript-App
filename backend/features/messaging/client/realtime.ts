@@ -7,8 +7,8 @@ export type MessagingUpdateKind =
 
 export type MessagingRealtimeEvent =
   | { type: "connected"; reconnected: boolean }
-  | { type: "sync-inbox"; conversations: import("../types/types").ConversationSummary[]; unreadCount: number }
-  | { type: "sync-messages"; conversationId: string; messages: import("../types/types").ChatMessage[]; deletedMessageIds?: string[] }
+  | { type: "sync-inbox"; conversations: import("../model/types").ConversationSummary[]; unreadCount: number }
+  | { type: "sync-messages"; conversationId: string; messages: import("../model/types").ChatMessage[]; deletedMessageIds?: string[] }
   | { type: "unread-count"; unreadCount: number; requestId?: number }
   | { type: "sync-error" }
   | {
@@ -16,7 +16,7 @@ export type MessagingRealtimeEvent =
       conversationId: string;
       actorId: number;
       kind: MessagingUpdateKind;
-      message?: import("../types/types").ChatMessage;
+      message?: import("../model/types").ChatMessage;
     };
 
 type Listener = (event: MessagingRealtimeEvent) => void;
@@ -157,7 +157,7 @@ function connect() {
   });
 }
 
-function isChatMessage(value: unknown): value is import("../types/types").ChatMessage {
+function isChatMessage(value: unknown): value is import("../model/types").ChatMessage {
   if (!value || typeof value !== "object") return false;
   const message = value as Record<string, unknown>;
   return typeof message.id === "string" &&
@@ -168,7 +168,7 @@ function isChatMessage(value: unknown): value is import("../types/types").ChatMe
     (typeof message.readAt === "string" || message.readAt === null);
 }
 
-function isConversationSummary(value: unknown): value is import("../types/types").ConversationSummary {
+function isConversationSummary(value: unknown): value is import("../model/types").ConversationSummary {
   if (!value || typeof value !== "object") return false;
   const conversation = value as Record<string, unknown>;
   const user = conversation.user;

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { clearSessionCookie } from '../../../lib/session';
+import { clearSessionCookie } from '../../../server/auth/session';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

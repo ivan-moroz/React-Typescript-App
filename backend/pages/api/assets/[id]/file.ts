@@ -1,7 +1,7 @@
 import { ERROR_MESSAGES } from "../../../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import prisma from '../../../../lib/prisma';
+import prisma from '../../../../server/db/prisma';
 
 const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 const CHUNK_SIZE = 8 * 1024 * 1024;

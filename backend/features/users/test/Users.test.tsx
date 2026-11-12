@@ -6,7 +6,7 @@ import {
 	screen,
 	waitFor,
 } from "@testing-library/react";
-import Users from "../Users";
+import Users from "../ui/Users";
 import { ModalProvider } from "../../../shared/ui/modal/ModalProvider";
 
 const render = (ui: React.ReactNode) =>

@@ -6,6 +6,14 @@ Already implemented infinite scrolling, modals, drag-and-drop reordering of user
 
 Private user-to-user messaging is available from the header chat bubble. See [Messaging setup, API, files, and testing](docs/MESSAGING.md) for the required migration and operation details.
 
+## Application structure
+
+- `backend/app` contains App Router routes, layouts, loading UI, and error boundaries. Route pages stay thin and delegate feature work.
+- `backend/features/<feature>` groups each feature's UI, model, server/client code, styles, and tests.
+- `backend/shared/ui` and `backend/shared/lib` contain code reused across features.
+- `backend/server` contains database, authentication, and access-control code.
+- `backend/pages/api` holds the existing Pages Router API handlers while they are migrated incrementally to App Router Route Handlers.
+
 For local use only — clone it and lets continue working with AI. Good luck!
 
 ## PostgreSQL + Prisma setup

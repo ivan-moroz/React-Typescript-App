@@ -1,8 +1,8 @@
 import { ERROR_MESSAGES } from "../../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import prisma from '../../../lib/prisma';
-import { canRequestPeopleAccess } from '../../../lib/userAccess';
+import prisma from '../../../server/db/prisma';
+import { canRequestPeopleAccess } from '../../../server/access/userAccess';
 
 type User = {
   id: number;

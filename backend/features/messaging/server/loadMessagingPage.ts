@@ -1,7 +1,7 @@
 import { ERROR_MESSAGES, HttpError } from "../../../constants/errors";
-import { getSessionUserFromCookie } from "../../../lib/session";
-import type { MessagingSnapshot } from "../types/types";
-import { createEmptyMessagingSnapshot } from "../utils/utils";
+import { getSessionUserFromCookie } from "../../../server/auth/session";
+import type { MessagingSnapshot } from "../model/types";
+import { createEmptyMessagingSnapshot } from "../model/utils";
 import { getInitialMessaging } from "./messagingSSR";
 
 export type MessagingPageResult =

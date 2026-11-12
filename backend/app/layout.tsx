@@ -1,16 +1,20 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import ServerNavigation from "../features/navigation/ServerNavigation";
+import ServerNavigation from "../features/navigation/ui/ServerNavigation";
 import { getAppNavigationProps } from "./navigation/server-props";
 import AppProviders from "./providers";
-import "../features/messaging/styles/styles.scss";
+import "../features/messaging/styles/messaging.scss";
 import "./styles/index.scss";
 import "./styles/App.scss";
-import "../features/assets/styles/styles.scss";
-import "../features/users/styles/styles.scss";
 import "../shared/ui/modal/styles/styles.scss";
 import "../shared/ui/select/styles/styles.scss";
-import "../features/navigation/styles/styles.scss";
+import "../features/navigation/styles/navigation.scss";
 import "./loading/loading.scss";
+
+export const metadata: Metadata = {
+  title: "V Studio",
+  icons: { icon: "/favicon.svg" },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +24,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <title>V Studio</title>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -30,7 +32,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <AppProviders userId={navigation.user?.id ?? null}>
           <ServerNavigation {...navigation} liveUpdates />
-          {children}
+          <div className="page-wrapper">{children}</div>
         </AppProviders>
       </body>
     </html>

@@ -1,4 +1,4 @@
-import prisma from "../../../lib/prisma";
+import prisma from "../../../server/db/prisma";
 
 export type MessagingUpdateKind =
   | "conversation-created"
@@ -12,7 +12,7 @@ export type MessagingUpdate = {
   conversationId: string;
   actorId: number;
   kind: MessagingUpdateKind;
-  message?: import("../types/types").ChatMessage;
+  message?: import("../model/types").ChatMessage;
 };
 
 declare global {

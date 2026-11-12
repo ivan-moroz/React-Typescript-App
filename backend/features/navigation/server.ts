@@ -1,18 +1,17 @@
-import type { IncomingMessage } from "node:http";
 import { unreadCount } from "../messaging/server/messaging";
-import { getSessionUserWithEmail } from "../../lib/session";
-import { canAccessPeople } from "../../lib/userAccess";
+import { getSessionUserWithEmailFromCookie } from "../../server/auth/session";
+import { canAccessPeople } from "../../server/access/userAccess";
 
-export async function getServerNavigationProps(req: IncomingMessage | undefined, asPath: string) {
+export async function getServerNavigationProps(cookieHeader: string | undefined, asPath: string) {
   const pathname = asPath.split(/[?#]/, 1)[0] || "/";
   const from = asPath.startsWith("/") && !asPath.startsWith("//") ? asPath : "/";
   let user: { id: number; name: string } | null = null;
   let email: string | undefined;
   let canViewPeople = false;
   let count = 0;
-  if (req) {
+  if (cookieHeader) {
     try {
-      const sessionUser = await getSessionUserWithEmail(req);
+      const sessionUser = await getSessionUserWithEmailFromCookie(cookieHeader);
       user = sessionUser ? { id: sessionUser.id, name: sessionUser.name } : null;
       email = sessionUser?.email;
     } catch {

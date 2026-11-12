@@ -1,0 +1,212 @@
+@use "../../../app/styles/colors.scss" as *;
+@use "../../../app/styles/font-sizes.scss" as *;
+
+.app-navigation {
+	background: rgba($color-dark, 0.96);
+	border-bottom: 1px solid $color-charcoal;
+	padding: 0 3.4%;
+	position: sticky;
+	top: 0;
+	z-index: 50;
+}
+
+.navigation-inner {
+	align-items: center;
+	display: flex;
+	gap: clamp(18px, 3vw, 46px);
+	margin: 0 auto;
+	max-width: 1600px;
+	min-height: 74px;
+}
+
+.brand-mark {
+	align-items: center;
+	color: $color-red;
+	display: inline-flex;
+	flex: 0 0 auto;
+	font-size: $font-size-medium;
+	font-weight: 900;
+	gap: 8px;
+	letter-spacing: 0.12em;
+	text-decoration: none;
+
+	&:hover {
+		color: $color-red;
+	}
+}
+
+.brand-icon {
+	align-items: center;
+	background: $color-red;
+	border-radius: 5px;
+	color: $color-white;
+	display: inline-flex;
+	font-size: $font-size-medium;
+	height: 30px;
+	justify-content: center;
+	letter-spacing: 0;
+	width: 30px;
+}
+
+.navigation-links {
+	align-items: center;
+	display: flex;
+	gap: 4px;
+	min-width: 0;
+
+	a {
+		border-radius: 20px;
+		color: $color-light-gray;
+		font-size: $font-size-medium;
+		padding: 9px 13px;
+		text-decoration: none;
+		transition:
+			background-color 160ms ease,
+			color 160ms ease;
+		white-space: nowrap;
+
+		&:hover {
+			background: $color-charcoal;
+			color: $color-white;
+		}
+
+		&[aria-current="page"] {
+			background: $color-surface;
+			color: $color-white;
+			font-weight: 700 !important;
+		}
+	}
+}
+
+.header-account {
+	align-items: center;
+	display: flex;
+	gap: 14px;
+	margin-left: auto;
+	white-space: nowrap;
+
+	> a {
+		color: $color-off-white;
+		font-size: $font-size-medium;
+		text-decoration: none;
+
+		&:hover {
+			color: $color-white;
+		}
+	}
+
+	> .register-button {
+		background: transparent;
+		border: 1px solid $color-surface;
+		border-radius: 4px;
+		color: $color-off-white;
+		font-size: $font-size-medium;
+		padding: 7px 10px;
+
+		&:hover {
+			background: $color-charcoal;
+			color: $color-white;
+		}
+	}
+
+	.authenticated-user {
+		align-items: center;
+		display: flex;
+		gap: 12px;
+		color: $color-off-white;
+
+		button {
+			background: $color-charcoal;
+			border: 1px solid $color-surface;
+			color: $color-off-white;
+			font-size: $font-size-small;
+			padding: 7px 10px;
+
+			&:hover {
+				background: $color-surface;
+			}
+		}
+	}
+}
+
+.messages-link {
+	align-items: center;
+	background: $color-charcoal;
+	border-radius: 4px;
+	color: $color-off-white;
+	display: inline-flex;
+	padding: 8px;
+	position: relative;
+	text-decoration: none;
+
+	&:hover {
+		color: $color-white;
+	}
+}
+
+.messages-link-badge {
+	background: $color-red;
+	border-radius: 12px;
+	color: $color-white;
+	font-size: $font-size-small;
+	font-weight: 700;
+	min-width: 18px;
+	padding: 2px 5px;
+	position: absolute;
+	right: -8px;
+	text-align: center;
+	top: -6px;
+}
+
+@media (max-width: 1100px) {
+	.app-navigation {
+		padding: 0 20px;
+	}
+
+	.navigation-inner {
+		flex-wrap: wrap;
+		gap: 8px 18px;
+		padding: 12px 0;
+	}
+
+	.navigation-links {
+		order: 3;
+		flex-wrap: wrap;
+		overflow: visible;
+		width: 100%;
+		gap: 2px 4px;
+	}
+
+	.header-account {
+		margin-left: auto;
+	}
+}
+
+@media (max-width: 520px) {
+	.app-navigation {
+		padding: 0 12px;
+	}
+
+	.navigation-inner {
+		gap: 8px;
+	}
+
+	.navigation-links {
+		justify-content: flex-start;
+		margin: 0;
+		padding: 0;
+
+		a {
+			font-size: $font-size-small;
+			padding: 7px 9px;
+		}
+	}
+
+	.header-account {
+		gap: 8px;
+
+		.authenticated-user {
+			gap: 7px;
+		}
+	}
+}

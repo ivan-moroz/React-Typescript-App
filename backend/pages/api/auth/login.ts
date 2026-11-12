@@ -2,9 +2,9 @@ import { ERROR_MESSAGES } from "../../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { TLSSocket } from 'node:tls';
 
-import prisma from '../../../lib/prisma';
-import { verifyPassword } from '../../../lib/password';
-import { sessionCookie } from '../../../lib/session';
+import prisma from '../../../server/db/prisma';
+import { verifyPassword } from '../../../server/auth/password';
+import { sessionCookie } from '../../../server/auth/session';
 
 type Response = { id: number; name: string; email: string } | { message: string };
 

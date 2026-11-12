@@ -1,6 +1,6 @@
-import prisma from "../../../lib/prisma";
+import prisma from "../../../server/db/prisma";
 import { ERROR_MESSAGES, HttpError } from "../../../constants/errors";
-import { MAX_MESSAGE_LENGTH } from "../types/types";
+import { MAX_MESSAGE_LENGTH } from "../model/types";
 import { requireConversation } from "./conversations";
 import { messageSelect } from "./messageSelect";
 

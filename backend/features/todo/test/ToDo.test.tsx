@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import ToDo from "../ToDo";
+import ToDo from "../ui/ToDo";
 
 describe("ToDo Component", () => {
 	beforeEach(() => {

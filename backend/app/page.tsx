@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
-import HomePage from "../features/home/Home";
+import HomePage from "../features/home/ui/Home";
 import { adminUser } from "../constants/admin";
-import { getSessionUserWithEmailFromCookie } from "../lib/session";
+import { getSessionUserWithEmailFromCookie } from "../server/auth/session";
 
 export default async function HomeRoute() {
   const cookieStore = await cookies();

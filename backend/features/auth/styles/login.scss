@@ -1,5 +1,5 @@
-@use "../../../app/styles/colors" as *;
-@use "../../../app/styles/font-sizes" as *;
+@use "../../../app/styles/colors.scss" as *;
+@use "../../../app/styles/font-sizes.scss" as *;
 
 .login-page form {
   display: grid;

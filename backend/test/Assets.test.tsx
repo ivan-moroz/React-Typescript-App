@@ -6,7 +6,7 @@ import {
 	within,
 } from "@testing-library/react";
 import { ModalProvider } from "../shared/ui/modal/ModalProvider";
-import AssetsPage from "../features/assets/AssetsPage";
+import AssetsPage from "../features/assets/ui/AssetsPage";
 
 const asset = {
 	id: "a1",

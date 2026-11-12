@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import handler from "../pages/api/todo";
-import { getSessionUser } from "../lib/session";
+import { getSessionUser } from "../server/auth/session";
 
 const db = vi.hoisted(() => ({
   todo: { findMany: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
 }));
-vi.mock("../lib/prisma", () => ({ default: db }));
-vi.mock("../lib/session", () => ({ getSessionUser: vi.fn() }));
+vi.mock("../server/db/prisma", () => ({ default: db }));
+vi.mock("../server/auth/session", () => ({ getSessionUser: vi.fn() }));
 
 async function request(method = "GET", body?: unknown, query: Record<string, unknown> = {}) {
   const req = {

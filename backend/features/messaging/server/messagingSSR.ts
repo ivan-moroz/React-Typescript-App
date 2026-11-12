@@ -2,8 +2,8 @@ import { ERROR_MESSAGES, HttpError } from "../../../constants/errors";
 import type {
   MessagingSnapshot,
   MessagingUser,
-} from "../types/types";
-import { createEmptyMessagingSnapshot } from "../utils/utils";
+} from "../model/types";
+import { createEmptyMessagingSnapshot } from "../model/utils";
 import {
   getConversationSummary,
   listConversations,

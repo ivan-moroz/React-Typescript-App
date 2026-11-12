@@ -1,9 +1,9 @@
 import { ERROR_MESSAGES } from "../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import prisma from '../../lib/prisma';
-import { hashPassword } from '../../lib/password';
-import { canRequestPeopleAccess } from '../../lib/userAccess';
+import prisma from '../../server/db/prisma';
+import { hashPassword } from '../../server/auth/password';
+import { canRequestPeopleAccess } from '../../server/access/userAccess';
 
 type UserPayload = {
   name: string;

@@ -1,15 +1,15 @@
 import { act, render, screen } from "@testing-library/react";
 import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import MessagingPageClient from "../features/messaging/MessagingPageClient";
-import Messaging from "../features/messaging/Messaging";
+import MessagingPageClient from "../features/messaging/ui/MessagingPageClient";
+import Messaging from "../features/messaging/ui/Messaging";
 import { getInitialMessaging } from "../features/messaging/server/messagingSSR";
 import { loadMessagingPage } from "../features/messaging/server/loadMessagingPage";
-import { getSessionUserFromCookie } from "../lib/session";
+import { getSessionUserFromCookie } from "../server/auth/session";
 import { getConversationSummary, listConversations, listMessages } from "../features/messaging/server/messaging";
 import { ERROR_MESSAGES, HttpError } from "../constants/errors";
 
-vi.mock("../lib/session", () => ({ getSessionUserFromCookie: vi.fn() }));
+vi.mock("../server/auth/session", () => ({ getSessionUserFromCookie: vi.fn() }));
 vi.mock("../features/messaging/server/messaging", () => ({ getConversationSummary: vi.fn(), listConversations: vi.fn(), listMessages: vi.fn() }));
 
 const user = { id: 1, name: "Jane", passwordHash: "never-send-this-to-the-browser" };

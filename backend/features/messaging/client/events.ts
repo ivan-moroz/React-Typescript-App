@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../types/types";
+import type { ChatMessage } from "../model/types";
 
 const UNREAD_EVENT = "messaging:unread";
 const MESSAGE_SENT_EVENT = "messaging:message-sent";

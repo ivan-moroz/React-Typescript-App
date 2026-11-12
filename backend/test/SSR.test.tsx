@@ -2,15 +2,15 @@ import { act, render, screen } from "@testing-library/react";
 import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { ModalProvider } from "../shared/ui/modal/ModalProvider";
-import AssetsPage from "../features/assets/AssetsPage";
+import AssetsPage from "../features/assets/ui/AssetsPage";
 import { loadAssetsPage } from "../features/assets/server/loadAssetsPage";
-import UsersPage from "../features/users/UsersPage";
+import UsersPage from "../features/users/ui/UsersPage";
 import { loadUsersPage } from "../features/users/server/loadUsersPage";
-import { getSessionUserFromCookie } from "../lib/session";
-import prisma from "../lib/prisma";
+import { getSessionUserFromCookie } from "../server/auth/session";
+import prisma from "../server/db/prisma";
 
-vi.mock("../lib/prisma", () => ({ default: { user: { findMany: vi.fn(), findUnique: vi.fn() }, asset: { findMany: vi.fn() } } }));
-vi.mock("../lib/session", () => ({ getSessionUserFromCookie: vi.fn() }));
+vi.mock("../server/db/prisma", () => ({ default: { user: { findMany: vi.fn(), findUnique: vi.fn() }, asset: { findMany: vi.fn() } } }));
+vi.mock("../server/auth/session", () => ({ getSessionUserFromCookie: vi.fn() }));
 
 const user = { id: 1, name: "Jane" };
 const asset = { id: "a1", name: "Server photo", description: "", authorization: "INTERNAL" as const, type: "image/png", size: 100, createdAt: "2026-01-01T00:00:00.000Z", userId: 1 };

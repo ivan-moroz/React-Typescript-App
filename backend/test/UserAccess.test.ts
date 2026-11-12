@@ -1,8 +1,8 @@
 import { adminUser } from "../constants/admin";
-import prisma from "../lib/prisma";
-import { canAccessPeople } from "../lib/userAccess";
+import prisma from "../server/db/prisma";
+import { canAccessPeople } from "../server/access/userAccess";
 
-vi.mock("../lib/prisma", () => ({
+vi.mock("../server/db/prisma", () => ({
   default: { user: { count: vi.fn() } },
 }));
 

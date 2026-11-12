@@ -1,7 +1,7 @@
 import { ERROR_MESSAGES } from "../../../constants/errors";
-import prisma from "../../../lib/prisma";
-import { getSessionUserFromCookie } from "../../../lib/session";
-import type { Asset, AuthenticatedUser } from "../assetHelpers";
+import prisma from "../../../server/db/prisma";
+import { getSessionUserFromCookie } from "../../../server/auth/session";
+import type { Asset, AuthenticatedUser } from "../model/assetHelpers";
 
 export type LoadedAssetsPage = {
   initialUser: AuthenticatedUser | null;

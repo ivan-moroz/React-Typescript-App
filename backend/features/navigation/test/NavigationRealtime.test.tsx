@@ -1,5 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
-import NavigationRealtime from "../NavigationRealtime";
+import NavigationRealtime from "../ui/NavigationRealtime";
 
 test("updates the unread badge through React state", () => {
   const { unmount } = render(

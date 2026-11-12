@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import handler from "../pages/api/messaging/[[...route]]";
-import { getSessionUser } from "../lib/session";
+import { getSessionUser } from "../server/auth/session";
 import { ERROR_MESSAGES } from "../constants/errors";
 
 const db = vi.hoisted(() => ({
@@ -23,8 +23,8 @@ const db = vi.hoisted(() => ({
   conversationParticipant: { updateMany: vi.fn() },
   $transaction: vi.fn(),
 }));
-vi.mock("../lib/prisma", () => ({ default: db }));
-vi.mock("../lib/session", () => ({ getSessionUser: vi.fn() }));
+vi.mock("../server/db/prisma", () => ({ default: db }));
+vi.mock("../server/auth/session", () => ({ getSessionUser: vi.fn() }));
 const conversationId = "11111111-1111-4111-8111-111111111111";
 const messageId = "22222222-2222-4222-8222-222222222222";
 const now = new Date("2026-10-28T10:00:00.000Z");

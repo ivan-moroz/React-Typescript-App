@@ -2,7 +2,7 @@ import { ERROR_MESSAGES } from "../../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { extname } from 'node:path';
 
-import prisma from '../../../lib/prisma';
+import prisma from '../../../server/db/prisma';
 
 type ErrorResponse = { message: string };
 type Authorization = 'INTERNAL' | 'PUBLIC';

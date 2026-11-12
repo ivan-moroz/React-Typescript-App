@@ -1,4 +1,4 @@
-import { fetchData } from '../lib/fetchData';
+import { fetchData } from '../shared/lib/fetchData';
 import { ERROR_MESSAGES } from '../constants/errors';
 
 afterEach(() => vi.restoreAllMocks());

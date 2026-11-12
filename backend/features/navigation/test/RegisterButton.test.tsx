@@ -6,7 +6,7 @@ import {
   within,
 } from "@testing-library/react";
 import { ModalProvider } from "../../../shared/ui/modal/ModalProvider";
-import ServerNavigation from "../ServerNavigation";
+import ServerNavigation from "../ui/ServerNavigation";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),

@@ -1,3 +1,4 @@
+import "../../features/auth/styles/login.scss";
 import LoginRouteClient from "./LoginRouteClient";
 
 type SearchParams = { from?: string | string[] };

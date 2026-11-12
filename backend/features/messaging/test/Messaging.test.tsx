@@ -7,10 +7,10 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import Messaging from "../Messaging";
-import ChatThread from '../components/ChatThread';
-import { useChatMessages } from "../hooks/useChatMessages";
-import type { ChatMessage, MessagingSnapshot } from "../types/types";
+import Messaging from "../ui/Messaging";
+import ChatThread from '../ui/ChatThread';
+import { useChatMessages } from "../client/hooks/useChatMessages";
+import type { ChatMessage, MessagingSnapshot } from "../model/types";
 
 const conversationId = "11111111-1111-4111-8111-111111111111";
 const user = { id: 1, name: "Jane" };

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import MessagingPageClient from "../../features/messaging/MessagingPageClient";
+import MessagingPageClient from "../../features/messaging/ui/MessagingPageClient";
 import { loadMessagingPage } from "../../features/messaging/server/loadMessagingPage";
 import RouteLoading from "../loading/RouteLoading";
 

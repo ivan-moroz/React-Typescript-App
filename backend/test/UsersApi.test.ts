@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import handler from "../pages/api/users";
-import { getSessionUserWithEmail } from "../lib/session";
+import { getSessionUserWithEmail } from "../server/auth/session";
 import { adminUser } from "../constants/admin";
 import listUserHandler from "../pages/api/users/[id]";
 import reorderUsersHandler from "../pages/api/users/reorder";
@@ -15,8 +15,8 @@ const db = vi.hoisted(() => ({
   $transaction: vi.fn(),
 }));
 
-vi.mock("../lib/prisma", () => ({ default: db }));
-vi.mock("../lib/session", () => ({ getSessionUserWithEmail: vi.fn() }));
+vi.mock("../server/db/prisma", () => ({ default: db }));
+vi.mock("../server/auth/session", () => ({ getSessionUserWithEmail: vi.fn() }));
 
 async function request(method: string, body?: unknown) {
   const req = {

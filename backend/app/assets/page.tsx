@@ -1,8 +1,10 @@
 import { Suspense } from "react";
-import AssetsPage from "../../features/assets/AssetsPage";
+import AssetsPage from "../../features/assets/ui/AssetsPage";
 import { loadAssetsPage } from "../../features/assets/server/loadAssetsPage";
 import { headers } from "next/headers";
 import RouteLoading from "../loading/RouteLoading";
+import "../../features/assets/styles/assets.scss";
+import "../../features/assets/styles/assets.scss";
 
 export const dynamic = "force-dynamic";
 

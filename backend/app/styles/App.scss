@@ -1,5 +1,5 @@
-@use "./colors" as *;
-@use "./font-sizes" as *;
+@use "./colors.scss" as *;
+@use "./font-sizes.scss" as *;
 
 .page-wrapper {
 	min-height: calc(100vh - 74px);

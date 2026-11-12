@@ -1,6 +1,6 @@
 import { ERROR_MESSAGES } from "../../../constants/errors";
-import prisma from "../../../lib/prisma";
-import type { User } from "../types/types";
+import prisma from "../../../server/db/prisma";
+import type { User } from "../model/types";
 
 export async function loadUsersPage(): Promise<{ initialUsers: User[]; initialError?: string }> {
   try {
