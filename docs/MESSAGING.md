@@ -24,8 +24,8 @@ npm run dev
 For production, build and start the Next.js application:
 
 ```powershell
-npm run build
-npm run start
+npm run build:backend
+npm run start:backend
 ```
 
 ## Database
@@ -72,7 +72,7 @@ The chat receive cursor is independent of locally sent messages, preventing inco
 npm test
 npx tsc --noEmit --incremental false -p backend/tsconfig.json
 npx prisma validate
-npm run build
+npm run build:backend
 npm run build:backend
 ```
 

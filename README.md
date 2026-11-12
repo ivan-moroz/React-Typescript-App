@@ -78,9 +78,9 @@ After applying the password migration, every existing user can log in with their
 
 Runs tests with Vitest.
 
-### `npm run build`
+### `npm run build:backend`
 
-Builds the SSR application for production. Run `npm run start` to serve Next.js pages, APIs, and messaging WebSockets with the persistent custom Node.js server.
+Builds the SSR application for production. Run `npm run start:backend` to serve Next.js pages, APIs, and messaging WebSockets with the persistent custom Node.js server.
 
 Storybook
 
