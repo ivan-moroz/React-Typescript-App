@@ -129,6 +129,35 @@
 	}
 }
 
+.messages-link {
+	align-items: center;
+	background: $color-charcoal;
+	border-radius: 4px;
+	color: $color-off-white;
+	display: inline-flex;
+	padding: 8px;
+	position: relative;
+	text-decoration: none;
+
+	&:hover {
+		color: $color-white;
+	}
+}
+
+.messages-link-badge {
+	background: $color-red;
+	border-radius: 12px;
+	color: $color-white;
+	font-size: $font-size-small;
+	font-weight: 700;
+	min-width: 18px;
+	padding: 2px 5px;
+	position: absolute;
+	right: -8px;
+	text-align: center;
+	top: -6px;
+}
+
 @media (max-width: 1100px) {
 	.app-navigation {
 		padding: 0 20px;

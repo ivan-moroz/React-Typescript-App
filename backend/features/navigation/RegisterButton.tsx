@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useModal } from "../shared/modal/useModal";
+import { useModal } from "../../shared/ui/modal/useModal";
 import UserFormModal from "../users/modals/UserFormModal";
 
 export default function RegisterButton() {

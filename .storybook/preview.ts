@@ -1,6 +1,6 @@
 import '../backend/app/styles/index.scss';
-import '../backend/features/shared/modal/styles/styles.scss';
-import '../backend/features/shared/select/styles/styles.scss';
+import '../backend/shared/ui/modal/styles/styles.scss';
+import '../backend/shared/ui/select/styles/styles.scss';
 
 import type {Preview} from '@storybook/react-vite';
 

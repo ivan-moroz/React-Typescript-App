@@ -4,8 +4,8 @@ import { fetchData } from "../../lib/fetchData";
 import { ERROR_MESSAGES } from "../../constants/errors";
 import { useEffect, useMemo, useState } from "react";
 
-import ConfirmationModal from "../shared/modal/ConfirmationModal";
-import { useModal } from "../shared/modal/useModal";
+import ConfirmationModal from "../../shared/ui/modal/ConfirmationModal";
+import { useModal } from "../../shared/ui/modal/useModal";
 import AssetCard from "./components/AssetCard";
 import AssetEditorModal from "./components/modals/AssetEditorModal";
 import AssetPreviewModal from "./components/modals/AssetPreviewModal";

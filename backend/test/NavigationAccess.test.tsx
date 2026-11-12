@@ -1,7 +1,7 @@
 import type { IncomingMessage } from "node:http";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { ModalProvider } from "../features/shared/modal/ModalProvider";
+import { ModalProvider } from "../shared/ui/modal/ModalProvider";
 import { adminUser } from "../constants/admin";
 import prisma from "../lib/prisma";
 import { getSessionUserWithEmail } from "../lib/session";

@@ -1,6 +1,6 @@
 "use client";
 
-import { ModalProvider } from "../features/shared/modal/ModalProvider";
+import { ModalProvider } from "../shared/ui/modal/ModalProvider";
 import { fetchData } from "../lib/fetchData";
 import MessagingPanelHost from "../features/messaging/MessagingPanelHost";
 import { subscribeMessagingRealtime } from "../features/messaging/client/realtime";

@@ -1,5 +1,4 @@
 import type { IncomingMessage } from "node:http";
-import ServerNavigation from "./ServerNavigation";
 import { unreadCount } from "../messaging/server/messaging";
 import { getSessionUserWithEmail } from "../../lib/session";
 import { canAccessPeople } from "../../lib/userAccess";

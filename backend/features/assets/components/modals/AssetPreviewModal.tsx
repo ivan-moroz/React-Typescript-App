@@ -1,5 +1,5 @@
-import Modal from "../../../shared/modal/Modal";
-import type { ModalControls } from "../../../shared/modal/ModalProvider";
+import Modal from "../../../../shared/ui/modal/Modal";
+import type { ModalControls } from "../../../../shared/ui/modal/ModalProvider";
 import type { Asset, AuthenticatedUser } from "../../assetHelpers";
 type Props = ModalControls & {
 	previewAsset: Asset;

@@ -2,14 +2,13 @@ import type { ReactNode } from "react";
 import ServerNavigation from "../features/navigation/ServerNavigation";
 import { getAppNavigationProps } from "./navigation/server-props";
 import AppProviders from "./providers";
-import "../features/messaging/legacy/styles/styles.scss";
 import "../features/messaging/styles/styles.scss";
 import "./styles/index.scss";
 import "./styles/App.scss";
 import "../features/assets/styles/styles.scss";
 import "../features/users/styles/styles.scss";
-import "../features/shared/modal/styles/styles.scss";
-import "../features/shared/select/styles/styles.scss";
+import "../shared/ui/modal/styles/styles.scss";
+import "../shared/ui/select/styles/styles.scss";
 import "../features/navigation/styles/styles.scss";
 import "./loading/loading.scss";
 

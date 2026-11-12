@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import AssetsPage from "../../features/assets/AssetsPage";
 import { loadAssetsPage } from "../../features/assets/server/loadAssetsPage";
 import { headers } from "next/headers";
-import { RouteLoading } from "../loading/route-loading";
+import RouteLoading from "../loading/RouteLoading";
 
 export const dynamic = "force-dynamic";
 

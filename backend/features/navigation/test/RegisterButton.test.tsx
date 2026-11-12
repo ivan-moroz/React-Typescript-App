@@ -5,7 +5,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { ModalProvider } from "../../shared/modal/ModalProvider";
+import { ModalProvider } from "../../../shared/ui/modal/ModalProvider";
 import ServerNavigation from "../ServerNavigation";
 
 vi.mock("next/navigation", () => ({

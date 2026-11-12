@@ -4,12 +4,12 @@ import { fetchData } from "../../lib/fetchData";
 import { ERROR_MESSAGES } from "../../constants/errors";
 import React, { useEffect, useReducer, useRef, useState } from "react";
 
-import { useModal } from "../shared/modal/useModal";
+import { useModal } from "../../shared/ui/modal/useModal";
 import UserFormModal from "./modals/UserFormModal";
-import ConfirmationModal from "../shared/modal/ConfirmationModal";
+import ConfirmationModal from "../../shared/ui/modal/ConfirmationModal";
 import { initialState, reducer } from "./reducer/reducer";
 import { ActionType, User } from "./types/types";
-import Table, { type TableColumn } from "../shared/table/Table";
+import Table, { type TableColumn } from "../../shared/ui/table/Table";
 
 const PAGE_SIZE = 10;
 

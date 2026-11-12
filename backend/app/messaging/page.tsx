@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import MessagingPageClient from "../../features/messaging/MessagingPageClient";
 import { loadMessagingPage } from "../../features/messaging/server/loadMessagingPage";
-import { RouteLoading } from "../loading/route-loading";
+import RouteLoading from "../loading/RouteLoading";
 
 export const dynamic = "force-dynamic";
 

@@ -90,8 +90,6 @@ Created:
 - `backend/features/messaging/server/messagingSSR.ts`
 - `backend/app/messaging/page.tsx`
 - `backend/test/MessagingSSR.test.tsx`
-- `backend/features/messaging/legacy/Messaging.tsx`
-- `backend/features/messaging/legacy/styles/styles.scss`
 - `backend/pages/api/auth/session.ts`
 - `backend/pages/api/messaging/[[...route]].ts`
 - `backend/test/MessagingApi.test.ts`
@@ -106,7 +104,7 @@ Created:
 - `backend/features/messaging/types/types.ts`
 - `backend/features/messaging/styles/styles.scss`
 - `backend/features/navigation/ServerNavigation.tsx`
-- `backend/features/navigation/server.tsx`
+- `backend/features/navigation/server.ts`
 
 Modified:
 
