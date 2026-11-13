@@ -116,7 +116,7 @@ Modified:
 - `features/navigation/ui/ServerNavigation.tsx`
 - `features/auth/ui/Login.tsx`
 - `features/navigation/styles/navigation.scss`
-- `vite.config.ts`
+- `vitest.config.ts`
 - `app/api/auth/logout/route.ts`
 - `constants/errors.ts`
 - `README.md`
