@@ -2,6 +2,18 @@
 
 The Next.js App Router renders the shared site navigation and messaging pages. Internal navigation keeps the shared shell mounted and loads only the destination content. The messaging icon opens the panel in place without changing the current URL; the panel links to the full `/messaging` inbox. The complete messaging interface lives in `features/messaging`; it supports searching names, starting a conversation, reading and paginating history, and sending plain-text messages.
 
+## Local AI chat (Ollama)
+
+The robot icon beside the private-messaging icon opens an AI chat for signed-in users. The panel reuses the messaging composer, message list, and styles. AI history is held in browser memory and is not stored in PostgreSQL.
+
+Install Ollama for Windows from [ollama.com/download](https://ollama.com/download), make sure its local service is running, and download the default small model:
+
+```powershell
+ollama pull qwen2.5:3b
+```
+
+The backend calls Ollama at `http://127.0.0.1:11434` using model `qwen2.5:3b` by default. Set `OLLAMA_BASE_URL` and/or `OLLAMA_MODEL` in `.env` to override these values. The Ollama connection is server-side; the browser communicates only with the authenticated, same-origin `POST /api/ai/chat` endpoint. The endpoint accepts up to 20 recent user/assistant messages and returns `{ "message": "..." }`. It returns 503 when the local Ollama service is unavailable.
+
 ## Setup
 
 Stop running Next.js/backend processes before regenerating Prisma on Windows; a running process can lock `query_engine-windows.dll.node` and cause `EPERM`.

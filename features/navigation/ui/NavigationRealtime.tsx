@@ -7,6 +7,7 @@ import {
 } from "../../messaging/client/events";
 import { requestMessagingSync, subscribeMessagingRealtime } from "../../messaging/client/realtime";
 import { formatUnreadCount } from "../../messaging/model/utils";
+import AIChatTrigger from "../../ai/ui/AIChatTrigger";
 
 export default function NavigationRealtime({
   userId,
@@ -83,20 +84,23 @@ export default function NavigationRealtime({
   }, [userId]);
 
   return (
-    <a
-      href="/messaging"
-      className="messages-link"
-      aria-label={`Messages${unread ? `, ${unread} unread` : ""}`}
-      data-open-messaging-panel
-    >
-      <span className="material-icons" aria-hidden="true">
-        chat_bubble_outline
-      </span>
-      {unread > 0 && (
-        <span className="messages-link-badge">
-          {formatUnreadCount(unread)}
+    <>
+      <a
+        href="/messaging"
+        className="messages-link"
+        aria-label={`Messages${unread ? `, ${unread} unread` : ""}`}
+        data-open-messaging-panel
+      >
+        <span className="material-icons" aria-hidden="true">
+          chat_bubble_outline
         </span>
-      )}
-    </a>
+        {unread > 0 && (
+          <span className="messages-link-badge">
+            {formatUnreadCount(unread)}
+          </span>
+        )}
+      </a>
+      <AIChatTrigger />
+    </>
   );
 }

@@ -144,6 +144,12 @@
 	}
 }
 
+.ai-chat-trigger {
+	border: 0;
+	cursor: pointer;
+	font: inherit;
+}
+
 .messages-link-badge {
 	background: $color-red;
 	border-radius: 12px;

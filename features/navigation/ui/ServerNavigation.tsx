@@ -1,5 +1,6 @@
 import NavigationRealtime from "./NavigationRealtime";
 import RegisterButton from "./RegisterButton";
+import AIChatTrigger from "../../ai/ui/AIChatTrigger";
 import { formatUnreadCount } from "../../messaging/model/utils";
 
 type ServerNavigationProps = {
@@ -64,19 +65,22 @@ export default function ServerNavigation({
           {user && liveUpdates ? (
             <NavigationRealtime userId={user.id} unreadCount={unreadCount} />
           ) : (
-            <a
-              href="/messaging"
-              className="messages-link"
-              aria-label={`Messages${unreadCount ? `, ${unreadCount} unread` : ""}`}
-              data-open-messaging-panel
-            >
-              <span className="material-icons" aria-hidden="true">chat_bubble_outline</span>
-              {unreadCount > 0 && (
-                <span className="messages-link-badge">
-                  {formatUnreadCount(unreadCount)}
-                </span>
-              )}
-            </a>
+            <>
+              <a
+                href="/messaging"
+                className="messages-link"
+                aria-label={`Messages${unreadCount ? `, ${unreadCount} unread` : ""}`}
+                data-open-messaging-panel
+              >
+                <span className="material-icons" aria-hidden="true">chat_bubble_outline</span>
+                {unreadCount > 0 && (
+                  <span className="messages-link-badge">
+                    {formatUnreadCount(unreadCount)}
+                  </span>
+                )}
+              </a>
+              {user && <AIChatTrigger />}
+            </>
           )}
         </div>
       </div>

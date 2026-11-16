@@ -10,6 +10,11 @@ export default function MessageList({
   hasOlder,
   onLoadOlder,
   onDeleteMessage,
+  historyLabel = "Message history",
+  loadingMessage = "Loading messages…",
+  loadingAtEnd = false,
+  emptyMessage = "Say hello to start the conversation.",
+  allowDelete = true,
 }: {
   messages: ChatMessage[];
   currentUserId: number;
@@ -18,6 +23,11 @@ export default function MessageList({
   hasOlder: boolean;
   onLoadOlder: () => Promise<void>;
   onDeleteMessage: (id: string) => void;
+  historyLabel?: string;
+  loadingMessage?: string;
+  loadingAtEnd?: boolean;
+  emptyMessage?: string;
+  allowDelete?: boolean;
 }) {
   const log = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -54,7 +64,7 @@ export default function MessageList({
       className="chat-messages"
       ref={log}
       role="log"
-      aria-label="Message history"
+      aria-label={historyLabel}
       aria-live="polite"
       onScroll={onScroll}
     >
@@ -68,9 +78,9 @@ export default function MessageList({
           {loadingOlder ? "Loading…" : "Load older messages"}
         </button>
       )}
-      {loading && <p role="status">Loading messages…</p>}
+      {loading && !loadingAtEnd && <p role="status">{loadingMessage}</p>}
       {!loading && messages.length === 0 && (
-        <p className="messaging-empty">Say hello to start the conversation.</p>
+        <p className="messaging-empty">{emptyMessage}</p>
       )}
       {messages.map((message) => (
         <div
@@ -89,7 +99,8 @@ export default function MessageList({
               </span>
             )}
           </time>
-          {message.senderId === currentUserId &&
+          {allowDelete &&
+            message.senderId === currentUserId &&
             !message.deletedAt &&
             !message.pending && (
             <button
@@ -105,6 +116,7 @@ export default function MessageList({
           )}
         </div>
       ))}
+      {loading && loadingAtEnd && <p role="status">{loadingMessage}</p>}
     </div>
   );
 }

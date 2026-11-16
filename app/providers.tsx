@@ -3,6 +3,7 @@
 import { ModalProvider } from "../shared/ui/modal/ModalProvider";
 import { fetchData } from "../shared/lib/fetchData";
 import MessagingPanelHost from "../features/messaging/ui/MessagingPanelHost";
+import AIChatPanelHost from "../features/ai/ui/AIChatPanelHost";
 import { subscribeMessagingRealtime } from "../features/messaging/client/realtime";
 import NavigationCurrentPage from "./navigation/navigation-current";
 import { useRouter } from "next/navigation";
@@ -101,6 +102,7 @@ export default function AppProviders({
       {children}
       <NavigationCurrentPage />
       <MessagingPanelHost />
+      {userId !== null && <AIChatPanelHost />}
     </ModalProvider>
   );
 }

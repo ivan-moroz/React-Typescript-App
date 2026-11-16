@@ -8,12 +8,16 @@ export default function MessageComposer({
   loading,
   active,
   onSend,
+  inputId = "message-draft",
+  placeholder = "Write a message…",
 }: {
   recipientName: string;
   sending: boolean;
   loading: boolean;
   active: boolean;
   onSend: (text: string) => Promise<boolean>;
+  inputId?: string;
+  placeholder?: string;
 }) {
   const [draft, setDraft] = useState("");
   const draftInput = useRef<HTMLTextAreaElement>(null);
@@ -54,12 +58,12 @@ export default function MessageComposer({
 
   return (
     <form className="chat-composer" onSubmit={onSubmit}>
-      <label htmlFor="message-draft" className="messaging-sr-only">
+      <label htmlFor={inputId} className="messaging-sr-only">
         Message to {recipientName}
       </label>
       <textarea
-        id="message-draft"
-        placeholder="Write a message…"
+        id={inputId}
+        placeholder={placeholder}
         maxLength={MAX_MESSAGE_LENGTH}
         rows={2}
         ref={draftInput}
