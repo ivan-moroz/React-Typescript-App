@@ -2,17 +2,17 @@
 
 The Next.js App Router renders the shared site navigation and messaging pages. Internal navigation keeps the shared shell mounted and loads only the destination content. The messaging icon opens the panel in place without changing the current URL; the panel links to the full `/messaging` inbox. The complete messaging interface lives in `features/messaging`; it supports searching names, starting a conversation, reading and paginating history, and sending plain-text messages.
 
-## Local AI chat (Ollama)
+## Local AI chat
 
-The robot icon beside the private-messaging icon opens an AI chat for signed-in users. The panel reuses the messaging composer, message list, and styles. AI history is held in browser memory and is not stored in PostgreSQL.
+The robot icon beside the private-messaging icon opens a local language-model chat for signed-in users. The panel reuses the messaging composer, message list, and styles. Chat history is held in browser memory and is not stored in PostgreSQL.
 
-Install Ollama for Windows from [ollama.com/download](https://ollama.com/download), make sure its local service is running, and download the default small model:
+The project implements and trains a small word-token neural language model using TypeScript, Node.js, and TensorFlow.js. It predicts the next token from a learned 24-token context using trainable embeddings and dense neural layers. It starts with randomly initialized weights and learns from question-and-answer examples in `server/ai/training-data.json`; it does not use Ollama, Python, pretrained weights, or a hosted AI service. This is a tiny educational model, not a general-purpose large language model, so its answers are limited to patterns in the small training set. By default training runs for 50 epochs; set `$env:TINY_LLM_EPOCHS = 80` before the command to train longer.
 
-```powershell
-ollama pull qwen2.5:3b
-```
+After chnging the server/ai/training-data.json run to train model:
+node_modules\.bin\tsx.cmd server\ai\train.ts
 
-The backend calls Ollama at `http://127.0.0.1:11434` using model `qwen2.5:3b` by default. Set `OLLAMA_BASE_URL` and/or `OLLAMA_MODEL` in `.env` to override these values. The Ollama connection is server-side; the browser communicates only with the authenticated, same-origin `POST /api/ai/chat` endpoint. The endpoint accepts up to 20 recent user/assistant messages and returns `{ "message": "..." }`. It returns 503 when the local Ollama service is unavailable.
+
+Training runs on CPU and saves learned weights to `.models/tiny-language-model.json`, which is ignored by Git. Add or edit question-and-answer examples in the training data, run the command again, then restart the backend to load the updated weights. The authenticated, same-origin `POST /api/ai/chat` endpoint accepts up to 20 recent user/assistant messages and returns `{ "message": "..." }`; it returns 503 if the model has not been trained yet. No database migration or Python installation is needed.
 
 ## Setup
 

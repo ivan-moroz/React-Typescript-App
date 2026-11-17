@@ -1,12 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import handler from "./chat";
 import { getSessionUser } from "../../auth/session";
-import { generateAssistantMessage } from "../../ai/llmProvider";
+import {
+  generateAssistantMessage,
+  LlmModelUnavailableError,
+} from "../../ai/languageModel";
 
 vi.mock("../../auth/session", () => ({ getSessionUser: vi.fn() }));
-vi.mock("../../ai/llmProvider", async () => {
-  const actual = await vi.importActual<typeof import("../../ai/llmProvider")>(
-    "../../ai/llmProvider",
+vi.mock("../../ai/languageModel", async () => {
+  const actual = await vi.importActual<typeof import("../../ai/languageModel")>(
+    "../../ai/languageModel",
   );
   return {
     ...actual,
@@ -78,7 +81,7 @@ test.each([
   expect(generateAssistantMessage).not.toHaveBeenCalled();
 });
 
-test("passes validated messages to Ollama and returns the assistant response", async () => {
+test("passes validated messages to the local language model", async () => {
   const messages = [
     { role: "user", content: "Hi" },
     { role: "assistant", content: "Hello" },
@@ -93,16 +96,15 @@ test("passes validated messages to Ollama and returns the assistant response", a
   expect(res.json).toHaveBeenCalledWith({ message: "Doing well." });
 });
 
-test("returns a clear service unavailable response when Ollama is offline", async () => {
-  const { LlmServiceUnavailableError } = await import("../../ai/llmProvider");
+test("returns a clear service unavailable response before model training", async () => {
   vi.mocked(generateAssistantMessage).mockRejectedValue(
-    new LlmServiceUnavailableError(),
+    new LlmModelUnavailableError(),
   );
   const res = await request({ messages: [{ role: "user", content: "Hi" }] });
 
   expect(res.status).toHaveBeenCalledWith(503);
   expect(res.json).toHaveBeenCalledWith({
     message:
-      "Local AI service is unavailable. Make sure Ollama is running and try again.",
+      "The local language model is not trained. Run the documented training command and try again.",
   });
 });

@@ -2,15 +2,15 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getSessionUser } from "../../auth/session";
 import {
   generateAssistantMessage,
-  LlmServiceUnavailableError,
+  LlmModelUnavailableError,
   type ChatMessage,
-} from "../../ai/llmProvider";
+} from "../../ai/languageModel";
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_LENGTH = 4_000;
 const MAX_TOTAL_LENGTH = 24_000;
 const SERVICE_UNAVAILABLE =
-  "Local AI service is unavailable. Make sure Ollama is running and try again.";
+  "The local language model is not trained. Run the documented training command and try again.";
 
 function validMessages(value: unknown): value is ChatMessage[] {
   if (!Array.isArray(value) || value.length === 0 || value.length > MAX_MESSAGES) {
@@ -84,7 +84,7 @@ export default async function handler(
     const message = await generateAssistantMessage(req.body.messages);
     res.status(200).json({ message });
   } catch (error) {
-    if (error instanceof LlmServiceUnavailableError) {
+    if (error instanceof LlmModelUnavailableError) {
       res.status(503).json({ message: SERVICE_UNAVAILABLE });
       return;
     }

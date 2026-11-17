@@ -11,7 +11,7 @@ const MAX_HISTORY_MESSAGES = 20;
 const MAX_LOCAL_MESSAGES = 100;
 const AI_SENDER_ID = 0;
 const CURRENT_USER_ID = 1;
-const AI_CONVERSATION_ID = "ollama-ai-chat";
+const AI_CONVERSATION_ID = "local-language-model-chat";
 
 export default function AIChatPanelHost() {
   const [open, setOpen] = useState(false);
@@ -153,8 +153,8 @@ export default function AIChatPanelHost() {
         aria-label="AI chat"
         aria-busy={sending}
       >
-        <header className="chat-heading">
-          <h3>Ollama AI</h3>
+        <header className="chat-heading ai-chat-heading">
+          <h3>Local language model</h3>
           <button
             type="button"
             aria-label="Close AI chat"
@@ -173,7 +173,7 @@ export default function AIChatPanelHost() {
           onLoadOlder={async () => {}}
           onDeleteMessage={() => {}}
           historyLabel="AI chat history"
-          loadingMessage="AI is thinking…"
+          loadingMessage="Generating an answer…"
           loadingAtEnd
           emptyMessage="Ask the AI assistant a question."
           allowDelete={false}

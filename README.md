@@ -6,13 +6,7 @@ Already implemented infinite scrolling, modals, drag-and-drop reordering of user
 
 Private user-to-user messaging is available from the header chat bubble. See [Messaging setup, API, files, and testing](docs/MESSAGING.md) for the required migration and operation details.
 
-An authenticated local AI chat is available from the adjacent robot icon. It uses Ollama on the server and keeps conversation history in the browser only. Install Ollama, then download the default model:
-
-```powershell
-ollama pull qwen2.5:3b
-```
-
-The server connects to `http://127.0.0.1:11434` by default. Override `OLLAMA_BASE_URL` or `OLLAMA_MODEL` in `.env` if needed. See [Local AI chat setup](docs/MESSAGING.md#local-ai-chat-ollama) for details.
+An authenticated local AI chat is available from the adjacent robot icon. It uses a small word-token neural language model trained by the project with TypeScript, Node.js, and TensorFlow.js. See [Local AI chat setup](docs/MESSAGING.md#local-ai-chat) for training instructions and limitations.
 
 ## Application structure
 

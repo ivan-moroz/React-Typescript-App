@@ -125,6 +125,9 @@
     font-size: $font-size-large;
   }
 }
+.ai-chat-heading {
+  justify-content: space-between;
+}
 .messaging-heading button,
 .chat-heading button {
   display: inline-flex;

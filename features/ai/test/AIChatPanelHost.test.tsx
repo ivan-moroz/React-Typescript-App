@@ -63,7 +63,7 @@ test("shows the sent message before the AI thinking indicator", async () => {
   const history = screen.getByRole("log", { name: "AI chat history" });
   expect(within(history).getByText("Hello AI")).toBeInTheDocument();
   expect(within(history).getByRole("status")).toHaveTextContent(
-    "AI is thinking…",
+    "Generating an answer…",
   );
   expect(history.lastElementChild).toBe(within(history).getByRole("status"));
   expect(fetch).toHaveBeenCalledOnce();
