@@ -1,12 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import handler from "./chat";
-import { getSessionUser } from "../../auth/session";
 import {
   generateAssistantMessage,
   LlmModelUnavailableError,
 } from "../../ai/languageModel";
 
-vi.mock("../../auth/session", () => ({ getSessionUser: vi.fn() }));
 vi.mock("../../ai/languageModel", async () => {
   const actual = await vi.importActual<typeof import("../../ai/languageModel")>(
     "../../ai/languageModel",
@@ -19,7 +17,7 @@ vi.mock("../../ai/languageModel", async () => {
 
 async function request(
   body: unknown,
-  options: { user?: { id: number; name: string } | null; origin?: string } = {},
+  options: { origin?: string } = {},
 ) {
   const req = {
     method: "POST",
@@ -35,11 +33,6 @@ async function request(
     setHeader: vi.fn(),
   };
   res.status.mockReturnValue(res);
-  if ("user" in options) {
-    vi.mocked(getSessionUser).mockResolvedValue(options.user ?? null);
-  } else {
-    vi.mocked(getSessionUser).mockResolvedValue({ id: 7, name: "Ada" });
-  }
   await handler(req, res as unknown as NextApiResponse<{ message: string }>);
   return res;
 }
@@ -48,13 +41,15 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-test("requires a validated session before processing a chat", async () => {
-  const res = await request(
-    { messages: [{ role: "user", content: "Hi" }] },
-    { user: null },
-  );
-  expect(res.status).toHaveBeenCalledWith(401);
-  expect(generateAssistantMessage).not.toHaveBeenCalled();
+test("allows anonymous visitors to chat with the local model", async () => {
+  vi.mocked(generateAssistantMessage).mockResolvedValue("Hello!");
+  const res = await request({ messages: [{ role: "user", content: "Hi" }] });
+
+  expect(res.status).toHaveBeenCalledWith(200);
+  expect(res.json).toHaveBeenCalledWith({ message: "Hello!" });
+  expect(generateAssistantMessage).toHaveBeenCalledWith([
+    { role: "user", content: "Hi" },
+  ]);
   expect(res.setHeader).toHaveBeenCalledWith("Cache-Control", "private, no-store");
 });
 

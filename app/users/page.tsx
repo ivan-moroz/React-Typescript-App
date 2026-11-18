@@ -6,7 +6,6 @@ import { loadUsersPage } from "../../features/users/server/loadUsersPage";
 import RouteLoading from "../loading/RouteLoading";
 import { getSessionUserWithEmailFromCookie } from "../../server/auth/session";
 import { canAccessPeople } from "../../server/access/userAccess";
-import "../../features/users/styles/users.scss";
 
 export const dynamic = "force-dynamic";
 

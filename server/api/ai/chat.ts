@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSessionUser } from "../../auth/session";
 import {
   generateAssistantMessage,
   LlmModelUnavailableError,
@@ -51,12 +50,6 @@ export default async function handler(
   }
 
   try {
-    const user = await getSessionUser(req);
-    if (!user) {
-      res.status(401).json({ message: "Please log in to continue." });
-      return;
-    }
-
     if (req.headers.origin) {
       let validOrigin = false;
       try {

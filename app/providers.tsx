@@ -102,7 +102,7 @@ export default function AppProviders({
       {children}
       <NavigationCurrentPage />
       <MessagingPanelHost />
-      {userId !== null && <AIChatPanelHost />}
+      <AIChatPanelHost />
     </ModalProvider>
   );
 }

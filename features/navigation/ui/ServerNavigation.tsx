@@ -79,7 +79,7 @@ export default function ServerNavigation({
                   </span>
                 )}
               </a>
-              {user && <AIChatTrigger />}
+              <AIChatTrigger />
             </>
           )}
         </div>

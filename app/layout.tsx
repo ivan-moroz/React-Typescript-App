@@ -4,6 +4,7 @@ import ServerNavigation from "../features/navigation/ui/ServerNavigation";
 import { getAppNavigationProps } from "./navigation/server-props";
 import AppProviders from "./providers";
 import "../features/messaging/styles/messaging.scss";
+import "../features/users/styles/users.scss";
 import "./styles/index.scss";
 import "./styles/App.scss";
 import "../shared/ui/modal/styles/styles.scss";

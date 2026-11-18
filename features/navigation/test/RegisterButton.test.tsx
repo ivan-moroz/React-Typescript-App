@@ -33,6 +33,7 @@ test("opens the user registration modal and submits to the users API", async () 
     </ModalProvider>,
   );
   expect(screen.getByRole("link", { name: "Login" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Open AI chat" })).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Register" }));
 
   expect(screen.getByRole("dialog", { name: "Register" })).toBeInTheDocument();

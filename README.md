@@ -6,7 +6,7 @@ Already implemented infinite scrolling, modals, drag-and-drop reordering of user
 
 Private user-to-user messaging is available from the header chat bubble. See [Messaging setup, API, files, and testing](docs/MESSAGING.md) for the required migration and operation details.
 
-An authenticated local AI chat is available from the adjacent robot icon. It uses a small word-token neural language model trained by the project with TypeScript, Node.js, and TensorFlow.js. See [Local AI chat setup](docs/MESSAGING.md#local-ai-chat) for training instructions and limitations.
+A local AI chat is available to signed-in and anonymous visitors from the robot icon. It uses a small word-token neural language model trained by the project with TypeScript, Node.js, and TensorFlow.js. See [Local AI chat setup](docs/MESSAGING.md#local-ai-chat) for training instructions and limitations.
 
 ## Application structure
 

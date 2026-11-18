@@ -4,7 +4,7 @@ The Next.js App Router renders the shared site navigation and messaging pages. I
 
 ## Local AI chat
 
-The robot icon beside the private-messaging icon opens a local language-model chat for signed-in users. The panel reuses the messaging composer, message list, and styles. Chat history is held in browser memory and is not stored in PostgreSQL.
+The robot icon beside the private-messaging icon opens a local language-model chat for signed-in and anonymous visitors. The panel reuses the messaging composer, message list, and styles. Chat history is held in browser memory and is not stored in PostgreSQL.
 
 The project implements and trains a small word-token neural language model using TypeScript, Node.js, and TensorFlow.js. It predicts the next token from a learned 24-token context using trainable embeddings and dense neural layers. It starts with randomly initialized weights and learns from question-and-answer examples in `server/ai/training-data.json`; it does not use Ollama, Python, pretrained weights, or a hosted AI service. This is a tiny educational model, not a general-purpose large language model, so its answers are limited to patterns in the small training set. By default training runs for 50 epochs; set `$env:TINY_LLM_EPOCHS = 80` before the command to train longer.
 
@@ -12,7 +12,7 @@ After chnging the server/ai/training-data.json run to train model:
 node_modules\.bin\tsx.cmd server\ai\train.ts
 
 
-Training runs on CPU and saves learned weights to `.models/tiny-language-model.json`, which is ignored by Git. Add or edit question-and-answer examples in the training data, run the command again, then restart the backend to load the updated weights. The authenticated, same-origin `POST /api/ai/chat` endpoint accepts up to 20 recent user/assistant messages and returns `{ "message": "..." }`; it returns 503 if the model has not been trained yet. No database migration or Python installation is needed.
+Training runs on CPU and saves learned weights to `.models/tiny-language-model.json`, which is ignored by Git. Add or edit question-and-answer examples in the training data, run the command again, then restart the backend to load the updated weights. The `POST /api/ai/chat` endpoint is available without signing in, accepts up to 20 recent user/assistant messages, and returns `{ "message": "..." }`; it validates the request origin when provided and returns 503 if the model has not been trained yet. No database migration or Python installation is needed.
 
 ## Setup
 
