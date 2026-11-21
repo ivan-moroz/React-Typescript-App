@@ -24,9 +24,9 @@ class MockWebSocket extends EventTarget {
     );
   }
 
-  close() {
+  close(code = 1000) {
     this.readyState = 3;
-    this.dispatchEvent(new Event("close"));
+    this.dispatchEvent(new CloseEvent("close", { code }));
   }
 }
 
@@ -68,7 +68,7 @@ test("shares one authenticated connection and delivers update events to subscrib
   expect(socket.readyState).toBe(3);
 });
 
-test("reconnects with capped-backoff scheduling and signals reconnection", () => {
+test("reconnects with capped-backoff scheduling and signals reconnection", async () => {
   vi.useFakeTimers();
   vi.stubGlobal("WebSocket", MockWebSocket);
   const listener = vi.fn();
@@ -76,7 +76,8 @@ test("reconnects with capped-backoff scheduling and signals reconnection", () =>
   MockWebSocket.instances[0].open();
   MockWebSocket.instances[0].close();
 
-  vi.advanceTimersByTime(1000);
+  await vi.advanceTimersByTimeAsync(0);
+  await vi.advanceTimersByTimeAsync(1000);
   const reconnectedSocket = MockWebSocket.instances[1];
   reconnectedSocket.open();
 
@@ -84,5 +85,19 @@ test("reconnects with capped-backoff scheduling and signals reconnection", () =>
     type: "connected",
     reconnected: true,
   });
+  unsubscribe();
+});
+
+test("stops reconnecting and reports an expired session after an unauthorized close", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("WebSocket", MockWebSocket);
+  const listener = vi.fn();
+  const unsubscribe = subscribeMessagingRealtime(listener);
+
+  MockWebSocket.instances[0].close(4401);
+  expect(listener).toHaveBeenCalledWith({ type: "session-expired" });
+
+  await vi.advanceTimersByTimeAsync(10_000);
+  expect(MockWebSocket.instances).toHaveLength(1);
   unsubscribe();
 });

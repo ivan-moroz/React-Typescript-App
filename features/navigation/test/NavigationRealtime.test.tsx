@@ -1,6 +1,10 @@
 import { act, render, screen } from "@testing-library/react";
 import NavigationRealtime from "../ui/NavigationRealtime";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 test("updates the unread badge through React state", () => {
   const { unmount } = render(
     <NavigationRealtime userId={1} unreadCount={1} />,

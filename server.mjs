@@ -178,6 +178,13 @@ function rejectUpgrade(socket, status = 400, message = "Bad Request") {
   socket.destroy();
 }
 
+function rejectUnauthenticatedUpgrade(request, socket, head) {
+  if (socket.destroyed) return;
+  websocketServer.handleUpgrade(request, socket, head, (client) => {
+    client.close(4401, "Unauthorized");
+  });
+}
+
 server.on("upgrade", async (request, socket, head) => {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
   if (url.pathname !== "/api/messaging/socket") {
@@ -205,14 +212,16 @@ server.on("upgrade", async (request, socket, head) => {
         : {},
     });
     if (!session.ok) {
-      console.warn(`[messaging-ws] rejected session status=${session.status}`);
-      rejectUpgrade(socket, 401, "Unauthorized");
+      if (session.status === 401) {
+        rejectUnauthenticatedUpgrade(request, socket, head);
+      } else {
+        rejectUpgrade(socket, 503, "Service Unavailable");
+      }
       return;
     }
     const user = await session.json();
     if (!user || !Number.isSafeInteger(user.id) || user.id < 1) {
-      console.warn("[messaging-ws] rejected invalid session user");
-      rejectUpgrade(socket, 401, "Unauthorized");
+      rejectUnauthenticatedUpgrade(request, socket, head);
       return;
     }
     if (socket.destroyed) return;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   publishMessagingUnread,
@@ -16,6 +17,7 @@ export default function NavigationRealtime({
   userId: number;
   unreadCount: number;
 }) {
+  const router = useRouter();
   const [unread, setUnread] = useState(unreadCount);
   const unreadRef = useRef(unreadCount);
   const unreadRequestId = useRef(0);
@@ -40,6 +42,10 @@ export default function NavigationRealtime({
     window.addEventListener("focus", handleConnectionRestore);
     document.addEventListener("visibilitychange", handleConnectionRestore);
     const unsubscribe = subscribeMessagingRealtime((event) => {
+      if (event.type === "session-expired") {
+        router.refresh();
+        return;
+      }
       if (event.type === "connected") {
         receivedMessageUpdate.current = false;
         refreshUnread();
@@ -81,7 +87,7 @@ export default function NavigationRealtime({
       document.removeEventListener("visibilitychange", handleConnectionRestore);
       unsubscribe();
     };
-  }, [userId]);
+  }, [router, userId]);
 
   return (
     <>

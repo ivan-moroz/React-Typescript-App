@@ -7,6 +7,7 @@ export type MessagingUpdateKind =
 
 export type MessagingRealtimeEvent =
   | { type: "connected"; reconnected: boolean }
+  | { type: "session-expired" }
   | { type: "sync-inbox"; conversations: import("../model/types").ConversationSummary[]; unreadCount: number }
   | { type: "sync-messages"; conversationId: string; messages: import("../model/types").ChatMessage[]; deletedMessageIds?: string[] }
   | { type: "unread-count"; unreadCount: number; requestId?: number }
@@ -38,6 +39,7 @@ let socket: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectAttempt = 0;
 let hasConnected = false;
+let sessionExpired = false;
 
 function notify(event: MessagingRealtimeEvent) {
   listeners.forEach((listener) => listener(event));
@@ -46,6 +48,7 @@ function notify(event: MessagingRealtimeEvent) {
 function connect() {
   if (typeof WebSocket === "undefined") return;
   if (
+    sessionExpired ||
     listeners.size === 0 ||
     (socket && socket.readyState <= WebSocket.OPEN)
   ) {
@@ -147,9 +150,14 @@ function connect() {
       console.error("Could not parse a messaging WebSocket event.", error);
     }
   });
-  connection.addEventListener("close", () => {
+  connection.addEventListener("close", (event) => {
     if (socket !== connection) return;
     socket = null;
+    if (event.code === 4401) {
+      sessionExpired = true;
+      notify({ type: "session-expired" });
+      return;
+    }
     scheduleReconnect();
   });
   connection.addEventListener("error", () => {
@@ -191,6 +199,7 @@ function scheduleReconnect() {
 }
 
 export function subscribeMessagingRealtime(listener: Listener) {
+  if (listeners.size === 0) sessionExpired = false;
   listeners.add(listener);
   if (reconnectTimer) {
     clearTimeout(reconnectTimer);
@@ -209,8 +218,10 @@ export function subscribeMessagingRealtime(listener: Listener) {
     reconnectTimer = null;
     reconnectAttempt = 0;
     hasConnected = false;
-    socket?.close();
+    sessionExpired = false;
+    const activeSocket = socket;
     socket = null;
+    activeSocket?.close();
   };
 }
 
@@ -218,7 +229,7 @@ export function requestMessagingSync(request:
   | { type: "sync-unread"; requestId?: number }
   | { type: "sync-messages"; conversationId: string; after: string | null; from: string | null }
 ) {
-  if (typeof WebSocket === "undefined") return;
+  if (typeof WebSocket === "undefined" || sessionExpired) return;
   if (socket?.readyState !== WebSocket.OPEN) {
     // A sync request can be triggered while a tab is waking from suspension
     // or after dev-server HMR closed the socket. Re-establish the transport;
