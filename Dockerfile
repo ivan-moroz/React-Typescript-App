@@ -11,6 +11,7 @@ RUN npm ci
 
 COPY . .
 RUN npx prisma generate
+RUN npx tsx server/ai/train.ts
 RUN npm run build:backend
 
 ENV NODE_ENV=production
