@@ -57,31 +57,43 @@ export default function UserFormModal({
 		}
 
 		setIsSubmitting(true);
-		const result = await fetchData(
-			isEditingUser ? `/api/users/${user?.id}` : "/api/users",
-			{
-				method: isEditingUser ? "PUT" : "POST",
-				responseType: "void",
-				errorMessage: isEditingUser ? ERROR_MESSAGES.USER_UPDATE_FAILED : ERROR_MESSAGES.USER_ADD_FAILED,
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					name: userForm.name.trim(),
-					email: userForm.email.trim(),
-					age: parsedAge,
-					city: userForm.city.trim(),
-					...(userForm.password
-						? { password: userForm.password }
-						: {}),
-				}),
-			},
-		);
+		const body = JSON.stringify({
+			name: userForm.name.trim(),
+			email: userForm.email.trim(),
+			age: parsedAge,
+			city: userForm.city.trim(),
+			...(userForm.password ? { password: userForm.password } : {}),
+		});
+		const result = isRegistering
+			? await fetchData<{ id: number; name: string; email: string }>(
+					"/api/auth/register",
+					{
+						method: "POST",
+						errorMessage: ERROR_MESSAGES.USER_ADD_FAILED,
+						headers: { "Content-Type": "application/json" },
+						body,
+					},
+				)
+			: await fetchData(
+					isEditingUser ? `/api/users/${user?.id}` : "/api/users",
+					{
+						method: isEditingUser ? "PUT" : "POST",
+						responseType: "void",
+						errorMessage: isEditingUser
+							? ERROR_MESSAGES.USER_UPDATE_FAILED
+							: ERROR_MESSAGES.USER_ADD_FAILED,
+						headers: { "Content-Type": "application/json" },
+						body,
+					},
+				);
 
 		if (!result.success) {
 			setIsSubmitting(false);
 			setFormError(result.error.message);
 			return;
+		}
+		if (isRegistering && result.data) {
+			sessionStorage.setItem("authenticatedUser", JSON.stringify(result.data));
 		}
 		await onSaved();
 		onClose();

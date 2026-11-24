@@ -10,6 +10,7 @@
     "build:backend": "next build",
     "start:backend": "node server.mjs",
     "test": "vitest run",
+    "train": "npx tsx server/ai/train.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
