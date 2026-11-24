@@ -12,8 +12,8 @@ export default function AssetPreviewModal({
 	openEdit,
 	onClose,
 }: Props) {
-	const previewUrl = (id: string) => `/api/assets/${id}?userId=${user.id}`;
-	const downloadUrl = (id: string) => `${previewUrl(id)}&download=1`;
+	const previewUrl = (id: string) => `/api/assets/${id}`;
+	const downloadUrl = (id: string) => `${previewUrl(id)}?download=1`;
 	return (
 		<Modal
 			isOpen

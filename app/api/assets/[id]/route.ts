@@ -1,6 +1,7 @@
 import { ERROR_MESSAGES } from "../../../../constants/errors";
 import { extname } from "node:path";
 import prisma from "../../../../server/db/prisma";
+import { getSessionUserFromCookie } from "../../../../server/auth/session";
 import { runApiHandler } from "../../../../server/api/runApiHandler";
 import handler from "../../../../server/api/assets/[id]";
 
@@ -26,11 +27,6 @@ function requestedRange(
     : null;
 }
 
-function userIdFrom(value: string | null): number | null {
-  const userId = value === null ? NaN : Number(value);
-  return Number.isInteger(userId) && userId > 0 ? userId : null;
-}
-
 function corsHeaders(): Headers {
   return new Headers({
     "Access-Control-Allow-Origin": "*",
@@ -41,11 +37,11 @@ function corsHeaders(): Headers {
 
 export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
-  const userId = userIdFrom(new URL(request.url).searchParams.get("userId"));
+  const user = await getSessionUserFromCookie(request.headers.get("cookie") ?? undefined);
   const headers = corsHeaders();
-  if (!id || !userId) {
+  if (!id) {
     return Response.json(
-      { message: ERROR_MESSAGES.ASSET_ID_AND_USER_REQUIRED },
+      { message: ERROR_MESSAGES.ASSET_NOT_FOUND },
       { status: 400, headers },
     );
   }
@@ -53,7 +49,9 @@ export async function GET(request: Request, context: RouteContext) {
   let asset;
   try {
     asset = await prisma.asset.findFirst({
-      where: { id, OR: [{ userId }, { authorization: "PUBLIC" }] },
+      where: user
+        ? { id, OR: [{ userId: user.id }, { authorization: "PUBLIC" }] }
+        : { id, authorization: "PUBLIC" },
     });
   } catch {
     return Response.json(

@@ -28,7 +28,7 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 			return;
 		}
 		const loadAssets = async () => {
-			const result = await fetchData<Asset[]>(`/api/assets?userId=${user.id}`, {
+			const result = await fetchData<Asset[]>("/api/assets", {
 				errorMessage: ERROR_MESSAGES.ASSETS_FETCH_FAILED,
 			});
 			setIsLoading(false);
@@ -74,8 +74,6 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 			responseType: "void",
 			errorMessage: ERROR_MESSAGES.ASSET_REMOVE_FAILED,
 			method: "DELETE",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ userId: user.id }),
 		});
 		if (!result.success) throw result.error;
 		setAssets((current) => current.filter((asset) => asset.id !== id));
@@ -89,9 +87,9 @@ export default function AssetsPage({ initialAssets, initialUser, initialError = 
 			onConfirm: () => handleDelete(asset.id),
 		});
 	const previewUrl = (id: string) =>
-		user ? `/api/assets/${id}?userId=${user.id}` : "";
+		user ? `/api/assets/${id}` : "";
 	const downloadUrl = (id: string) =>
-		user ? `/api/assets/${id}?userId=${user.id}&download=1` : "";
+		user ? `/api/assets/${id}?download=1` : "";
 
 	return (
 		<main className="assets-page">

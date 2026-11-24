@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { extname } from 'node:path';
 
 import prisma from '../../../server/db/prisma';
+import { getSessionUser } from '../../../server/auth/session';
 
 const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 
@@ -29,11 +30,6 @@ function setCors(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
-function userIdFrom(value: unknown): number | null {
-  const userId = typeof value === 'string' ? Number(value) : value;
-  return typeof userId === 'number' && Number.isInteger(userId) && userId > 0 ? userId : null;
 }
 
 function isAuthorization(value: unknown): value is AssetSummary['authorization'] {
@@ -65,16 +61,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return;
   }
 
-  const userId = userIdFrom(req.method === 'GET' ? req.query.userId : req.body?.userId);
-  if (!userId) {
-    res.status(400).json({ message: ERROR_MESSAGES.ASSET_USER_ID_REQUIRED });
+  const user = await getSessionUser(req);
+  if (req.method === 'POST' && !user) {
+    res.status(401).json({ message: ERROR_MESSAGES.UNAUTHORIZED });
     return;
   }
 
   if (req.method === 'GET') {
     try {
       const assets = await prisma.asset.findMany({
-        where: { OR: [{ userId }, { authorization: 'PUBLIC' }] },
+        where: user
+          ? { OR: [{ userId: user.id }, { authorization: 'PUBLIC' }] }
+          : { authorization: 'PUBLIC' },
         orderBy: { createdAt: 'desc' },
         select: { id: true, name: true, description: true, authorization: true, mimeType: true, size: true, createdAt: true, userId: true },
       });
@@ -100,7 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     try {
       const asset = await prisma.asset.create({
-        data: { userId, name: name.trim(), description, authorization, fileExtension: fileExtension(originalFileName), mimeType: type || 'application/octet-stream', size, data: fileData, storageMode: fileData ? 'INLINE' : 'CHUNKED' },
+        data: { userId: user!.id, name: name.trim(), description, authorization, fileExtension: fileExtension(originalFileName), mimeType: type || 'application/octet-stream', size, data: fileData, storageMode: fileData ? 'INLINE' : 'CHUNKED' },
         select: { id: true, name: true, description: true, authorization: true, mimeType: true, size: true, createdAt: true, userId: true },
       });
       res.status(201).json(toSummary(asset));

@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { extname } from 'node:path';
 
 import prisma from '../../../server/db/prisma';
+import { getSessionUser } from '../../../server/auth/session';
 
 type ErrorResponse = { message: string };
 type Authorization = 'INTERNAL' | 'PUBLIC';
@@ -13,11 +14,6 @@ function setCors(res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
-function userIdFrom(value: unknown): number | null {
-  const userId = typeof value === 'string' ? Number(value) : value;
-  return typeof userId === 'number' && Number.isInteger(userId) && userId > 0 ? userId : null;
 }
 
 function isAuthorization(value: unknown): value is Authorization {
@@ -47,16 +43,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
+  if (!['GET', 'PUT', 'DELETE'].includes(req.method ?? '')) {
+    res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED });
+    return;
+  }
   const id = typeof req.query.id === 'string' ? req.query.id : null;
-  const userId = userIdFrom(req.method === 'GET' ? req.query.userId : req.body?.userId);
-  if (!id || !userId) {
-    res.status(400).json({ message: ERROR_MESSAGES.ASSET_ID_AND_USER_REQUIRED });
+  if (!id) {
+    res.status(400).json({ message: ERROR_MESSAGES.ASSET_NOT_FOUND });
+    return;
+  }
+  const user = await getSessionUser(req);
+  if (req.method !== 'GET' && !user) {
+    res.status(401).json({ message: ERROR_MESSAGES.UNAUTHORIZED });
     return;
   }
 
   if (req.method === 'GET') {
     try {
-      const asset = await prisma.asset.findFirst({ where: { id, OR: [{ userId }, { authorization: 'PUBLIC' }] } });
+      const asset = await prisma.asset.findFirst({
+        where: user
+          ? { id, OR: [{ userId: user.id }, { authorization: 'PUBLIC' }] }
+          : { id, authorization: 'PUBLIC' },
+      });
       if (!asset) {
         res.status(404).json({ message: ERROR_MESSAGES.ASSET_NOT_FOUND });
         return;
@@ -103,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'DELETE') {
     try {
-      const deleted = await prisma.asset.deleteMany({ where: { id, userId } });
+      const deleted = await prisma.asset.deleteMany({ where: { id, userId: user!.id } });
       if (!deleted.count) {
         res.status(404).json({ message: ERROR_MESSAGES.ASSET_NOT_FOUND });
         return;
@@ -134,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const updated = await prisma.asset.updateMany({
-        where: { id, userId },
+        where: { id, userId: user!.id },
         data: { name: name.trim(), description, authorization, ...fileUpdate },
       });
       if (!updated.count) {

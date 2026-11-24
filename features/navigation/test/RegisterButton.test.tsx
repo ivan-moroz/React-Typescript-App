@@ -12,12 +12,12 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
-test("opens the user registration modal and submits to the users API", async () => {
+test("registers through the auth API and stores the signed-in user", async () => {
   const fetch = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValue(
       Response.json(
-        [{ id: 8, name: "Alex", email: "alex@example.com", age: 30, city: "Kyiv" }],
+        { id: 8, name: "Alex", email: "alex@example.com" },
         { status: 201 },
       ),
     );
@@ -60,9 +60,10 @@ test("opens the user registration modal and submits to the users API", async () 
 
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
-      "/api/users",
+      "/api/auth/register",
       expect.objectContaining({
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "Alex",
           email: "alex@example.com",
@@ -73,5 +74,8 @@ test("opens the user registration modal and submits to the users API", async () 
       }),
     );
   });
+  expect(sessionStorage.getItem("authenticatedUser")).toBe(
+    JSON.stringify({ id: 8, name: "Alex", email: "alex@example.com" }),
+  );
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });

@@ -44,7 +44,6 @@ export function getCurrentUser(): AuthenticatedUser | null {
 }
 
 export async function saveAsset(
-	userId: number,
 	form: AssetForm,
 	asset?: Asset,
 ): Promise<FetchResult<Asset | undefined>> {
@@ -60,7 +59,6 @@ export async function saveAsset(
 		errorMessage: asset ? ERROR_MESSAGES.ASSET_UPDATE_FAILED : ERROR_MESSAGES.ASSET_CREATE_FAILED,
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
-			userId,
 			name: form.name,
 			description: form.description,
 			authorization: form.authorization,
@@ -79,7 +77,7 @@ export async function saveAsset(
 	}
 	if (form.file) {
 		const upload = await fetchData(
-			`/api/assets/${saved.id}/file?userId=${userId}`,
+			`/api/assets/${saved.id}/file`,
 			{
 				method: "PUT",
 				responseType: "void",

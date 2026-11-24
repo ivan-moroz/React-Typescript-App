@@ -48,7 +48,7 @@ test("replaces preview with editor, saves edits, and refreshes the library", asy
 		within(screen.getByRole("dialog")).getByRole("link", {
 			name: "Download",
 		}),
-	).toHaveAttribute("href", "/api/assets/a1?userId=1&download=1");
+	).toHaveAttribute("href", "/api/assets/a1?download=1");
 	fireEvent.click(
 		within(screen.getByRole("dialog")).getByRole("button", {
 			name: "Edit",
@@ -102,7 +102,7 @@ test("uploads a file and resets the editor after cancellation", async () => {
 	);
 	expect(screen.getByText("Photo")).toBeInTheDocument();
 	expect(fetchMock).toHaveBeenLastCalledWith(
-		"/api/assets/a1/file?userId=1",
+		"/api/assets/a1/file",
 		expect.objectContaining({ method: "PUT", body: file }),
 	);
 });
@@ -140,8 +140,6 @@ test("requires confirmation before deleting an asset and supports cancellation",
 	expect(screen.getByText("No assets yet")).toBeInTheDocument();
 	expect(fetchMock).toHaveBeenLastCalledWith("/api/assets/a1", {
 		method: "DELETE",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ userId: 1 }),
 	});
 });
 

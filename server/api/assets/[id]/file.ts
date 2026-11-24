@@ -2,14 +2,10 @@ import { ERROR_MESSAGES } from "../../../../constants/errors";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import prisma from '../../../../server/db/prisma';
+import { getSessionUser } from '../../../../server/auth/session';
 
 const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 const CHUNK_SIZE = 8 * 1024 * 1024;
-
-function userIdFrom(value: unknown): number | null {
-  const userId = typeof value === 'string' ? Number(value) : value;
-  return typeof userId === 'number' && Number.isInteger(userId) && userId > 0 ? userId : null;
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,14 +15,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'PUT') { res.status(405).json({ message: ERROR_MESSAGES.METHOD_NOT_ALLOWED }); return; }
 
   const id = typeof req.query.id === 'string' ? req.query.id : null;
-  const userId = userIdFrom(req.query.userId);
+  const user = await getSessionUser(req);
   const expectedSize = Number(req.headers['content-length']);
-  if (!id || !userId || !Number.isInteger(expectedSize) || expectedSize < 0 || expectedSize > MAX_FILE_SIZE) {
+  if (!user) { res.status(401).json({ message: ERROR_MESSAGES.UNAUTHORIZED }); return; }
+  if (!id || !Number.isInteger(expectedSize) || expectedSize < 0 || expectedSize > MAX_FILE_SIZE) {
     res.status(400).json({ message: ERROR_MESSAGES.ASSET_UPLOAD_REQUIRED });
     return;
   }
 
-  const asset = await prisma.asset.findFirst({ where: { id, userId }, select: { id: true, size: true } });
+  const asset = await prisma.asset.findFirst({ where: { id, userId: user.id }, select: { id: true, size: true } });
   if (!asset || asset.size !== expectedSize) { res.status(404).json({ message: ERROR_MESSAGES.ASSET_FILE_CHANGED }); return; }
 
   let position = 0;

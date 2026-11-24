@@ -71,7 +71,6 @@ export default function AssetEditorModal({
 		}
 		setIsSaving(true);
 		const result = await saveAsset(
-			user.id,
 			form,
 			editingAsset ?? undefined,
 		);
